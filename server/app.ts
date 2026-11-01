@@ -56,6 +56,8 @@ app.use('/api', async (req, res, next) => {
       const account = await prisma.platformAdmin.findUnique({where:{id:payload.sub}});
       if (!account?.active || account.credentialVersion !== payload.version) return res.status(401).json({error:'unauthorized'});
       res.locals.identity = {kind:'platform',username:account.username};
+      res.locals.platformId = account.id;
+      res.locals.credentialVersion = account.credentialVersion;
     } else if (payload.kind === 'clinic') {
       const current = await clinicIdentity(payload.sub);
       if (!current?.user.active || current.user.credentialVersion !== payload.version) return res.status(401).json({error:'unauthorized'});
@@ -70,6 +72,32 @@ app.use('/api', async (req, res, next) => {
 app.get('/api/auth/me', (_req, res) => res.json(res.locals.identity));
 app.use('/api/clinics', (_req, res, next) => res.locals.identity.kind === 'platform' ? next() : res.status(401).json({error:'unauthorized'}));
 app.get('/api/clinics', async (_req, res) => res.json(await prisma.clinic.findMany({ select: { id: true, name: true, code: true }, orderBy: { name: 'asc' } })));
+const isUuid=(v:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+app.get('/api/clinics/:clinicId/admins',async(req,res)=>{
+  if(!isUuid(req.params.clinicId))return res.status(404).json({error:'not_found'});
+  const clinic=await prisma.clinic.findUnique({where:{id:req.params.clinicId},select:{id:true}});
+  if(!clinic)return res.status(404).json({error:'not_found'});
+  return res.json(await prisma.user.findMany({where:{clinicId:clinic.id,userRoles:{some:{role:{key:'admin'}}}},select:{id:true,name:true,username:true,active:true},orderBy:{name:'asc'}}));
+});
+app.post('/api/clinics/:clinicId/admins/:userId/reset-password',async(req,res)=>{
+  if(!isUuid(req.params.clinicId)||!isUuid(req.params.userId))return res.status(404).json({error:'not_found'});
+  const password=req.body?.password;
+  if(typeof password!=='string'||!password.trim()||password.length>1024)return res.status(400).json({error:'invalid_input'});
+  const passwordHash=await hashPassword(password);
+  const outcome=await prisma.$transaction(async tx=>{
+    await tx.$queryRaw`SELECT id FROM clinics WHERE id = ${req.params.clinicId}::uuid FOR UPDATE`;
+    await tx.$queryRaw`SELECT id FROM platform_admins WHERE id = ${res.locals.platformId}::uuid FOR UPDATE`;
+    const actor=await tx.platformAdmin.findFirst({where:{id:res.locals.platformId,active:true,credentialVersion:res.locals.credentialVersion},select:{id:true}});
+    if(!actor)return 'unauthorized';
+    const target=await tx.user.findFirst({where:{id:req.params.userId,clinicId:req.params.clinicId,userRoles:{some:{role:{key:'admin'}}}},select:{id:true}});
+    if(!target)return 'not_found';
+    await tx.user.update({where:{id:target.id},data:{passwordHash,credentialVersion:{increment:1}}});
+    return 'ok';
+  });
+  if(outcome==='unauthorized')return res.status(401).json({error:'unauthorized'});
+  if(outcome==='not_found')return res.status(404).json({error:'not_found'});
+  return res.status(204).end();
+});
 
 app.post('/api/clinics', async (req, res, next) => {
   const { name, code, managerName, managerUsername, managerPassword } = req.body || {};
