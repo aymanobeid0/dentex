@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { hashPassword, verifyPassword } from './password';
 import { Prisma } from '@prisma/client';
+import { employeeRouter } from './employees';
 
 export const prisma = new PrismaClient();
 export const app = express();
@@ -60,6 +61,7 @@ app.use('/api', async (req, res, next) => {
       res.locals.identity = current.identity;
       res.locals.clinicId = current.user.clinicId;
       res.locals.userId = current.user.id;
+      res.locals.credentialVersion = current.user.credentialVersion;
     } else return res.status(401).json({error:'unauthorized'});
     next();
   } catch { return res.status(401).json({error:'unauthorized'}); }
@@ -89,6 +91,7 @@ app.post('/api/clinics', async (req, res, next) => {
   }
 });
 
+app.use('/api/clinic', employeeRouter(prisma));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));
 if (process.env.NODE_ENV === 'production') app.use(express.static('dist'));
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => { console.error('Request failed'); res.status(500).json({ error: 'server_error' }); });
