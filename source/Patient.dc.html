@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ملف المريض</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible,.tab:focus-visible,.tooth:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.tab:hover{color:#1A1A1A !important}
+.tooth:hover{background:#F4F4F5 !important}
+.row:hover td{background:#FAFAFA}
+a{color:#2563EB}a:hover{color:#1D4ED8}
+</style>
+</helmet>
+
+<div dir="rtl" style="display:flex;flex-wrap:wrap;min-height:100vh;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="patients" hint-size="232px,1100px"></dc-import></div>
+<div dir="rtl" style="flex:999 1 560px;min-width:0;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh">
+<div style="max-width:1240px;margin:0 auto;padding:20px 28px 48px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="مسار التنقل" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#616161">
+    <a href="Patients.dc.html" style="display:inline-flex;align-items:center;gap:4px;text-decoration:none;color:#4A4A4A">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>المرضى</a>
+    <span aria-hidden="true">/</span>
+    <span style="color:#1A1A1A;font-weight:500">مريم أحمد</span>
+  </nav>
+
+  <!-- Patient header card -->
+  <section aria-label="بطاقة المريض" style="border:1px solid #EBEBEB;border-radius:12px;background:#FFFFFF">
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px;padding:20px">
+      <div style="width:56px;height:56px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex:none">مأ</div>
+      <div style="flex:1 1 320px;display:flex;flex-direction:column;gap:8px;min-width:0">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+          <h1 style="margin:0;font-size:20px;font-weight:600">مريم أحمد</h1>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:#DCF5E6;color:#0F6B32"><span style="width:6px;height:6px;border-radius:50%;background:#15803D"></span>مريض نشط</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:#4A4A4A">
+          <span>ملف رقم 1042</span>
+          <span aria-hidden="true" style="color:#CFCFCF">|</span>
+          <span>أنثى · 34 سنة</span>
+          <span aria-hidden="true" style="color:#CFCFCF">|</span>
+          <span style="direction:ltr;unicode-bidi:isolate">46 10 88 34</span>
+          <span aria-hidden="true" style="color:#CFCFCF">|</span>
+          <span>مريضة منذ مارس 2025</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:#FDDEDE;color:#A31616;font-size:12px;font-weight:600">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></svg>حساسية: بنسلين</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:#FDEBC0;color:#734600;font-size:12px;font-weight:600">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>ضغط دم مرتفع</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <a class="btn" href="Session.dc.html" style="display:inline-flex;align-items:center;gap:6px;height:32px;box-sizing:border-box;padding:0 12px;border:1px solid #B9CEF8;border-radius:8px;background:#DCE7FE;color:#1A44B8;font-size:13px;font-weight:500;text-decoration:none">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 3 14 9-14 9V3z"/></svg>بدء الجلسة</a>
+        <a class="btn" href="Xray.dc.html" aria-label="الأشعة" style="width:32px;height:32px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg></a>
+        <button class="btn" type="button" aria-label="مراسلة على واتساب" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></button>
+        <button class="btn" type="button" aria-label="تعديل بيانات المريض" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #15803D;border-radius:8px;background:#15803D;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>تسجيل دفعة</button>
+        <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>موعد جديد</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border-top:1px solid #EBEBEB">
+      <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-left:1px solid #F1F1F2">
+        <span style="font-size:12px;color:#616161">الطبيب المعالج</span>
+        <span style="font-size:13px;font-weight:600">د. أحمد</span>
+      </div>
+      <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-left:1px solid #F1F1F2">
+        <span style="font-size:12px;color:#616161">آخر زيارة</span>
+        <span style="font-size:13px;font-weight:600">12 أكتوبر 2026</span>
+      </div>
+      <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-left:1px solid #F1F1F2">
+        <span style="font-size:12px;color:#616161">الموعد القادم</span>
+        <span style="font-size:13px;font-weight:600;color:#1A44B8">4 نوفمبر · 11:00</span>
+      </div>
+      <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-left:1px solid #F1F1F2">
+        <span style="font-size:12px;color:#616161">خطة العلاج</span>
+        <span style="font-size:13px;font-weight:600">1 من 4 خطوات</span>
+      </div>
+      <div style="padding:14px 20px;display:flex;flex-direction:column;gap:4px">
+        <span style="font-size:12px;color:#616161">الرصيد المتبقي</span>
+        <span style="font-size:13px;font-weight:600;color:#A31616">15,000 أوقية</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabs -->
+  <div role="tablist" aria-label="أقسام ملف المريض" style="display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid #EBEBEB">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+      <button class="tab" type="button" role="tab" aria-selected="{{t.active}}" onClick="{{t.pick}}" style="{{t.style}}">
+        <sc-if value="{{t.isChart}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3c-2.2 0-4 1.8-4 4.2 0 2.3.8 3.6 1.3 5.3.6 2.2.7 5.3 1.7 7.6.4 1 1.7 1 2.1 0 .6-1.6.9-3.6 1.9-4.6.6-.6 1.4-.6 2 0 1 1 1.3 3 1.9 4.6.4 1 1.7 1 2.1 0 1-2.3 1.1-5.4 1.7-7.6.5-1.7 1.3-3 1.3-5.3C21 4.8 19.2 3 17 3c-1.9 0-3 1-5 1S8.9 3 7 3Z"/></svg></sc-if>
+        <sc-if value="{{t.isVisits}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></sc-if>
+        <sc-if value="{{t.isPlans}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></sc-if>
+        <sc-if value="{{t.isMoney}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></sc-if>
+        {{t.label}}
+        <sc-if value="{{t.hasCount}}" hint-placeholder-val="{{false}}">
+          <span style="font-size:11px;font-weight:600;color:#3F3F3F;background:#F1F1F2;border-radius:5px;padding:1px 6px">{{t.count}}</span>
+        </sc-if>
+      </button>
+    </sc-for>
+  </div>
+
+  <!-- ============ TAB: Dental chart ============ -->
+  <sc-if value="{{isChart}}" hint-placeholder-val="{{true}}">
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+      <section aria-label="مخطط الأسنان" style="flex:999 1 620px;min-width:0;border:1px solid #EBEBEB;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+          <h2 style="margin:0;font-size:14px;font-weight:600">مخطط الأسنان</h2>
+          <span style="font-size:12px;color:#616161">ترقيم FDI · اضغط على أي سن لعرض تفاصيله</span>
+          <div role="group" aria-label="نوع الأسنان" style="margin-inline-start:auto;display:flex;gap:2px;background:#F4F4F5;border-radius:8px;padding:2px">
+            <button type="button" aria-pressed="true" style="height:26px;padding:0 10px;border:0;border-radius:6px;background:#FFFFFF;color:#1A1A1A;font-family:inherit;font-size:12px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08);cursor:pointer">دائمة</button>
+            <button type="button" aria-pressed="false" style="height:26px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#4A4A4A;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">لبنية</button>
+          </div>
+        </div>
+
+        <div dir="ltr" style="overflow-x:auto">
+          <div style="min-width:780px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0">
+            <div style="display:flex;justify-content:space-between;width:100%;max-width:780px;font-size:11px;color:#616161;direction:rtl">
+              <span>يسار المريض</span><span>الفك العلوي</span><span>يمين المريض</span>
+            </div>
+            <div style="display:flex;align-items:stretch;gap:0">
+              <div style="display:flex;gap:2px">
+                <sc-for list="{{q1}}" as="t" hint-placeholder-count="8">
+                  <button class="tooth" type="button" aria-label="{{t.aria}}" aria-pressed="{{t.selected}}" onClick="{{t.pick}}" style="{{t.style}}">
+                    <span style="{{t.numStyle}}">{{t.n}}</span>
+                    <svg width="30" height="38" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(180deg);opacity:{{t.opacity}}"><path d="M7 3c-2.2 0-4 1.8-4 4.2 0 2.3.8 3.6 1.3 5.3.6 2.2.7 5.3 1.7 7.6.4 1 1.7 1 2.1 0 .6-1.6.9-3.6 1.9-4.6.6-.6 1.4-.6 2 0 1 1 1.3 3 1.9 4.6.4 1 1.7 1 2.1 0 1-2.3 1.1-5.4 1.7-7.6.5-1.7 1.3-3 1.3-5.3C21 4.8 19.2 3 17 3c-1.9 0-3 1-5 1S8.9 3 7 3Z" fill="{{t.fill}}" stroke="{{t.stroke}}" stroke-width="1.4" stroke-dasharray="{{t.dash}}" stroke-linejoin="round"/></svg>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="width:1px;background:#DCDCDC;margin:0 8px"></div>
+              <div style="display:flex;gap:2px">
+                <sc-for list="{{q2}}" as="t" hint-placeholder-count="8">
+                  <button class="tooth" type="button" aria-label="{{t.aria}}" aria-pressed="{{t.selected}}" onClick="{{t.pick}}" style="{{t.style}}">
+                    <span style="{{t.numStyle}}">{{t.n}}</span>
+                    <svg width="30" height="38" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(180deg);opacity:{{t.opacity}}"><path d="M7 3c-2.2 0-4 1.8-4 4.2 0 2.3.8 3.6 1.3 5.3.6 2.2.7 5.3 1.7 7.6.4 1 1.7 1 2.1 0 .6-1.6.9-3.6 1.9-4.6.6-.6 1.4-.6 2 0 1 1 1.3 3 1.9 4.6.4 1 1.7 1 2.1 0 1-2.3 1.1-5.4 1.7-7.6.5-1.7 1.3-3 1.3-5.3C21 4.8 19.2 3 17 3c-1.9 0-3 1-5 1S8.9 3 7 3Z" fill="{{t.fill}}" stroke="{{t.stroke}}" stroke-width="1.4" stroke-dasharray="{{t.dash}}" stroke-linejoin="round"/></svg>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="width:100%;max-width:780px;height:1px;background:#DCDCDC;margin:4px 0"></div>
+            <div style="display:flex;align-items:stretch;gap:0">
+              <div style="display:flex;gap:2px">
+                <sc-for list="{{q4}}" as="t" hint-placeholder-count="8">
+                  <button class="tooth" type="button" aria-label="{{t.aria}}" aria-pressed="{{t.selected}}" onClick="{{t.pick}}" style="{{t.style}}">
+                    <svg width="30" height="38" viewBox="0 0 24 24" aria-hidden="true" style="opacity:{{t.opacity}}"><path d="M7 3c-2.2 0-4 1.8-4 4.2 0 2.3.8 3.6 1.3 5.3.6 2.2.7 5.3 1.7 7.6.4 1 1.7 1 2.1 0 .6-1.6.9-3.6 1.9-4.6.6-.6 1.4-.6 2 0 1 1 1.3 3 1.9 4.6.4 1 1.7 1 2.1 0 1-2.3 1.1-5.4 1.7-7.6.5-1.7 1.3-3 1.3-5.3C21 4.8 19.2 3 17 3c-1.9 0-3 1-5 1S8.9 3 7 3Z" fill="{{t.fill}}" stroke="{{t.stroke}}" stroke-width="1.4" stroke-dasharray="{{t.dash}}" stroke-linejoin="round"/></svg>
+                    <span style="{{t.numStyle}}">{{t.n}}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="width:1px;background:#DCDCDC;margin:0 8px"></div>
+              <div style="display:flex;gap:2px">
+                <sc-for list="{{q3}}" as="t" hint-placeholder-count="8">
+                  <button class="tooth" type="button" aria-label="{{t.aria}}" aria-pressed="{{t.selected}}" onClick="{{t.pick}}" style="{{t.style}}">
+                    <svg width="30" height="38" viewBox="0 0 24 24" aria-hidden="true" style="opacity:{{t.opacity}}"><path d="M7 3c-2.2 0-4 1.8-4 4.2 0 2.3.8 3.6 1.3 5.3.6 2.2.7 5.3 1.7 7.6.4 1 1.7 1 2.1 0 .6-1.6.9-3.6 1.9-4.6.6-.6 1.4-.6 2 0 1 1 1.3 3 1.9 4.6.4 1 1.7 1 2.1 0 1-2.3 1.1-5.4 1.7-7.6.5-1.7 1.3-3 1.3-5.3C21 4.8 19.2 3 17 3c-1.9 0-3 1-5 1S8.9 3 7 3Z" fill="{{t.fill}}" stroke="{{t.stroke}}" stroke-width="1.4" stroke-dasharray="{{t.dash}}" stroke-linejoin="round"/></svg>
+                    <span style="{{t.numStyle}}">{{t.n}}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:center;width:100%;max-width:780px;font-size:11px;color:#616161">
+              <span>الفك السفلي</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px 16px;padding-top:12px;border-top:1px solid #EBEBEB">
+          <sc-for list="{{legend}}" as="l" hint-placeholder-count="6">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#4A4A4A">
+              <span style="{{l.swatch}}"></span>{{l.label}}<span style="color:#616161">({{l.count}})</span>
+            </span>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- Tooth detail -->
+      <section aria-label="تفاصيل السن" style="flex:1 1 300px;min-width:0;border:1px solid #EBEBEB;border-radius:12px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid #EBEBEB">
+          <div style="{{sel.tile}}">{{sel.n}}</div>
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
+            <span style="font-size:14px;font-weight:600">السن {{sel.n}}</span>
+            <span style="font-size:12px;color:#616161">{{sel.name}}</span>
+          </div>
+          <span style="{{sel.badge}}">{{sel.label}}</span>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:12px;font-weight:600;color:#616161">السجل</span>
+          <sc-if value="{{sel.hasHist}}" hint-placeholder-val="{{true}}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{sel.hist}}" as="h" hint-placeholder-count="2">
+                <div style="display:flex;gap:10px">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#A3A3A3;margin-top:6px;flex:none"></span>
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:13px;font-weight:500">{{h.a}}</span>
+                    <span style="font-size:12px;color:#616161">{{h.d}} · {{h.doc}}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{sel.noHist}}" hint-placeholder-val="{{false}}">
+            <span style="font-size:13px;color:#616161">لا توجد إجراءات مسجلة لهذا السن</span>
+          </sc-if>
+          <sc-if value="{{sel.hasPlan}}" hint-placeholder-val="{{false}}">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:#DCE7FE">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A44B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span style="font-size:12px;font-weight:500;color:#173A9E">في خطة العلاج: {{sel.plan}}</span>
+            </div>
+          </sc-if>
+        </div>
+        <div style="margin-top:auto;display:flex;gap:8px;padding:14px 16px;border-top:1px solid #EBEBEB">
+          <button class="btn" type="button" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>تغيير الحالة</button>
+          <button class="btn" type="button" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>إضافة إجراء</button>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+
+  <!-- ============ TAB: Visits ============ -->
+  <sc-if value="{{isVisits}}" hint-placeholder-val="{{false}}">
+    <section style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #EBEBEB">
+        <h2 style="margin:0;font-size:14px;font-weight:600">سجل الزيارات</h2>
+        <span style="font-size:12px;color:#616161">8 زيارات منذ مارس 2025</span>
+        <div style="margin-inline-start:auto;display:flex;gap:8px">
+          <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>طباعة السجل</button>
+          <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>زيارة جديدة</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:820px">
+          <thead>
+            <tr>
+              <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">التاريخ</th>
+              <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الطبيب</th>
+              <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الإجراءات</th>
+              <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الأسنان</th>
+              <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الملاحظات</th>
+              <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">المبلغ</th>
+              <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الدفع</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{visits}}" as="v" hint-placeholder-count="5">
+              <tr class="row">
+                <td style="padding:12px 16px;border-bottom:1px solid #F1F1F2;white-space:nowrap;font-weight:500">{{v.d}}</td>
+                <td style="padding:12px 16px;border-bottom:1px solid #F1F1F2;color:#4A4A4A;white-space:nowrap">{{v.doc}}</td>
+                <td style="padding:12px 16px;border-bottom:1px solid #F1F1F2">{{v.p}}</td>
+                <td style="padding:12px 16px;border-bottom:1px solid #F1F1F2;color:#4A4A4A;font-variant-numeric:tabular-nums">{{v.teeth}}</td>
+                <td style="padding:12px 16px;border-bottom:1px solid #F1F1F2;color:#616161;font-size:12px;max-width:220px">{{v.note}}</td>
+                <td style="padding:12px 16px;border-bottom:1px solid #F1F1F2;font-variant-numeric:tabular-nums;white-space:nowrap">{{v.amt}}</td>
+                <td style="padding:12px 16px;border-bottom:1px solid #F1F1F2"><span style="{{v.badge}}">{{v.stLabel}}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </sc-if>
+
+  <!-- ============ TAB: Treatment plans ============ -->
+  <sc-if value="{{isPlans}}" hint-placeholder-val="{{false}}">
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+      <section style="flex:999 1 560px;min-width:0;border:1px solid #EBEBEB;border-radius:12px">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:16px;border-bottom:1px solid #EBEBEB">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <h2 style="margin:0;font-size:14px;font-weight:600">ترميم الفك السفلي</h2>
+            <span style="font-size:12px;color:#616161">بدأت 28 سبتمبر 2026 · د. أحمد</span>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:#DCE7FE;color:#1A44B8"><span style="width:6px;height:6px;border-radius:50%;background:#2563EB"></span>قيد التنفيذ</span>
+          <div style="margin-inline-start:auto;display:flex;gap:8px">
+            <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>تعديل الخطة</button>
+          </div>
+        </div>
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #EBEBEB">
+          <div style="display:flex;font-size:12px;color:#4A4A4A"><span>التقدم</span><span style="margin-inline-start:auto;font-weight:600;color:#1A1A1A">1 من 4 خطوات · 25,000 من 76,000 أوقية</span></div>
+          <div style="height:8px;border-radius:99px;background:#F1F1F2;overflow:hidden" role="img" aria-label="تم إنجاز 33 بالمئة من قيمة الخطة"><div style="width:33%;height:100%;background:#2563EB;border-radius:99px"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{steps}}" as="st" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F1F2">
+              <span style="{{st.iconBox}}">
+                <sc-if value="{{st.done}}" hint-placeholder-val="{{false}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></sc-if>
+                <sc-if value="{{st.notDone}}" hint-placeholder-val="{{true}}"><span style="font-size:12px;font-weight:600">{{st.i}}</span></sc-if>
+              </span>
+              <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
+                <span style="{{st.titleStyle}}">{{st.t}}</span>
+                <span style="font-size:12px;color:#616161">السن {{st.tooth}} · {{st.note}}</span>
+              </div>
+              <span style="font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap">{{st.cost}}</span>
+              <span style="{{st.badge}}">{{st.label}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="flex:1 1 320px;min-width:0;border:1px solid #EBEBEB;border-radius:12px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px;border-bottom:1px solid #EBEBEB">
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <h2 style="margin:0;font-size:14px;font-weight:600">تقويم شفاف</h2>
+            <span style="font-size:12px;color:#616161">مقترحة في 12 أكتوبر 2026</span>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:#FDEBC0;color:#734600"><span style="width:6px;height:6px;border-radius:50%;background:#D98E04"></span>بانتظار الموافقة</span>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;font-size:13px"><span style="color:#616161">المدة المتوقعة</span><span style="margin-inline-start:auto;font-weight:500">12 شهراً</span></div>
+          <div style="display:flex;font-size:13px"><span style="color:#616161">عدد الجلسات</span><span style="margin-inline-start:auto;font-weight:500">14 جلسة</span></div>
+          <div style="display:flex;font-size:13px"><span style="color:#616161">التكلفة</span><span style="margin-inline-start:auto;font-weight:600">180,000 أوقية</span></div>
+          <div style="display:flex;font-size:13px"><span style="color:#616161">طريقة الدفع</span><span style="margin-inline-start:auto;font-weight:500">12 قسطاً شهرياً</span></div>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px;border-top:1px solid #EBEBEB">
+          <button class="btn" type="button" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid #15803D;border-radius:8px;background:#15803D;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>قبول الخطة</button>
+          <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #F1B9B9;border-radius:8px;background:#FDDEDE;color:#A31616;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>رفض</button>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+
+  <!-- ============ TAB: Finance ============ -->
+  <sc-if value="{{isMoney}}" hint-placeholder-val="{{false}}">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+        <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:#F1F1F2;color:#303030;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg></div>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#616161">إجمالي العلاج</span><span style="font-size:18px;font-weight:600">67,000 <span style="font-size:12px;font-weight:400;color:#616161">أوقية</span></span></div>
+        </div>
+        <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:#DCF5E6;color:#0F6B32;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#616161">المدفوع</span><span style="font-size:18px;font-weight:600">52,000 <span style="font-size:12px;font-weight:400;color:#616161">أوقية</span></span></div>
+        </div>
+        <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:#FDDEDE;color:#A31616;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></svg></div>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#616161">المتبقي</span><span style="font-size:18px;font-weight:600;color:#A31616">15,000 <span style="font-size:12px;font-weight:400;color:#616161">أوقية</span></span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+        <section style="flex:999 1 560px;min-width:0;border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #EBEBEB">
+            <h2 style="margin:0;font-size:14px;font-weight:600">الدفعات</h2>
+            <div style="margin-inline-start:auto;display:flex;gap:8px">
+              <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>إرسال كشف حساب</button>
+              <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #15803D;border-radius:8px;background:#15803D;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>تسجيل دفعة</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:560px">
+              <thead>
+                <tr>
+                  <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">التاريخ</th>
+                  <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الفاتورة</th>
+                  <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الطريقة</th>
+                  <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">المبلغ</th>
+                  <th style="text-align:end;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">إجراءات</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{payments}}" as="p" hint-placeholder-count="4">
+                  <tr class="row">
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;font-weight:500;white-space:nowrap">{{p.d}}</td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;color:#4A4A4A">{{p.inv}}</td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;color:#4A4A4A">{{p.m}}</td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;font-weight:600;color:#0F6B32;font-variant-numeric:tabular-nums">{{p.a}}</td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;text-align:end">
+                      <button class="btn" type="button" aria-label="طباعة الإيصال" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section style="flex:1 1 300px;min-width:0;border:1px solid #EBEBEB;border-radius:12px">
+          <div style="padding:14px 16px;border-bottom:1px solid #EBEBEB"><h2 style="margin:0;font-size:14px;font-weight:600">جدول الأقساط</h2></div>
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F1F2">
+              <div style="width:32px;height:32px;border-radius:9px;background:#FDDEDE;color:#A31616;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></svg></div>
+              <div style="display:flex;flex-direction:column;gap:2px;flex:1"><span style="font-size:13px;font-weight:500">25 أكتوبر 2026</span><span style="font-size:12px;color:#A31616;font-weight:500">متأخر 5 أيام</span></div>
+              <span style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">5,000</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F1F2">
+              <div style="width:32px;height:32px;border-radius:9px;background:#FDEBC0;color:#734600;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+              <div style="display:flex;flex-direction:column;gap:2px;flex:1"><span style="font-size:13px;font-weight:500">25 نوفمبر 2026</span><span style="font-size:12px;color:#734600;font-weight:500">القسط القادم</span></div>
+              <span style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">5,000</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F1F2">
+              <div style="width:32px;height:32px;border-radius:9px;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+              <div style="display:flex;flex-direction:column;gap:2px;flex:1"><span style="font-size:13px;font-weight:500">25 ديسمبر 2026</span><span style="font-size:12px;color:#616161">مجدول</span></div>
+              <span style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">5,000</span>
+            </div>
+          </div>
+          <div style="padding:14px 16px">
+            <button class="btn" type="button" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border:1px solid #F5A524;border-radius:8px;background:#F5A524;color:#2B1D00;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>تذكير بالقسط المتأخر</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var s = this.state || {};
+    var tab = s.tab || 'chart';
+    var selN = s.tooth || 36;
+
+    var S = {
+      healthy: { label: 'سليم', fill: '#FFFFFF', stroke: '#B5B5B5', bg: '#F1F1F2', fg: '#3F3F3F' },
+      caries:  { label: 'تسوس', fill: '#FDDEDE', stroke: '#A31616', bg: '#FDDEDE', fg: '#A31616' },
+      filling: { label: 'حشوة', fill: '#DCE7FE', stroke: '#1A44B8', bg: '#DCE7FE', fg: '#1A44B8' },
+      crown:   { label: 'تاج', fill: '#FDEBC0', stroke: '#734600', bg: '#FDEBC0', fg: '#734600' },
+      rct:     { label: 'علاج عصب', fill: '#DCF5E6', stroke: '#0F6B32', bg: '#DCF5E6', fg: '#0F6B32' },
+      missing: { label: 'مفقود', fill: '#FFFFFF', stroke: '#9A9A9A', bg: '#F1F1F2', fg: '#616161' }
+    };
+    var T = { 18: 'missing', 17: 'filling', 16: 'filling', 11: 'filling', 21: 'crown', 24: 'caries', 26: 'crown', 35: 'filling', 36: 'rct', 37: 'filling', 38: 'missing', 46: 'caries', 48: 'missing' };
+    var H = {
+      36: [{ a: 'علاج عصب — الجلسة الثانية', d: '12 أكتوبر 2026', doc: 'د. أحمد' }, { a: 'علاج عصب — الجلسة الأولى', d: '28 سبتمبر 2026', doc: 'د. أحمد' }, { a: 'أشعة ذروية', d: '14 سبتمبر 2026', doc: 'د. سارة' }],
+      46: [{ a: 'تشخيص تسوس عميق', d: '12 أكتوبر 2026', doc: 'د. أحمد' }],
+      24: [{ a: 'تشخيص تسوس سطحي', d: '14 سبتمبر 2026', doc: 'د. سارة' }],
+      16: [{ a: 'حشوة تجميلية', d: '3 مارس 2025', doc: 'د. سارة' }],
+      17: [{ a: 'حشوة تجميلية', d: '3 مارس 2025', doc: 'د. سارة' }],
+      21: [{ a: 'تركيب تاج خزفي', d: 'قبل الانضمام للعيادة', doc: '—' }],
+      26: [{ a: 'تركيب تاج معدني خزفي', d: 'قبل الانضمام للعيادة', doc: '—' }]
+    };
+    var P = { 36: 'تاج زيركون بعد علاج العصب', 46: 'حشوة — الجلسة القادمة 4 نوفمبر', 24: 'حشوة تجميلية' };
+    var POS = ['', 'قاطع مركزي', 'قاطع جانبي', 'ناب', 'ضاحك أول', 'ضاحك ثانٍ', 'رحى أولى', 'رحى ثانية', 'ضرس العقل'];
+    var QN = { 1: 'علوي أيمن', 2: 'علوي أيسر', 3: 'سفلي أيسر', 4: 'سفلي أيمن' };
+    function nameOf(n) { return POS[n % 10] + ' — ' + QN[Math.floor(n / 10)]; }
+
+    function tooth(n) {
+      var st = T[n] || 'healthy';
+      var m = S[st];
+      var sel = n === selN;
+      return {
+        n: n, selected: sel,
+        aria: 'السن ' + n + '، ' + m.label,
+        fill: m.fill, stroke: m.stroke,
+        dash: st === 'missing' ? '2.5 2' : 'none',
+        opacity: st === 'missing' ? '.7' : '1',
+        style: 'display:flex;flex-direction:column;align-items:center;gap:4px;width:44px;padding:6px 0;border-radius:8px;border:1px solid ' + (sel ? '#A3A3A3' : 'transparent') + ';background:' + (sel ? '#F7F7F8' : 'transparent') + ';cursor:pointer;font-family:inherit',
+        numStyle: 'font-size:11px;font-weight:' + (sel ? '700' : '500') + ';color:' + (sel ? '#1A1A1A' : '#616161') + ';font-variant-numeric:tabular-nums',
+        pick: function () { self.setState({ tooth: n }); }
+      };
+    }
+    function range(a, b) { var r = []; var step = a < b ? 1 : -1; for (var i = a; i !== b + step; i += step) r.push(i); return r; }
+
+    var counts = {};
+    range(11, 18).concat(range(21, 28), range(31, 38), range(41, 48)).forEach(function (n) { var k = T[n] || 'healthy'; counts[k] = (counts[k] || 0) + 1; });
+    var legend = ['healthy', 'caries', 'filling', 'crown', 'rct', 'missing'].map(function (k) {
+      var m = S[k];
+      return { label: m.label, count: counts[k] || 0, swatch: 'width:12px;height:12px;border-radius:4px;background:' + m.fill + ';border:1.4px ' + (k === 'missing' ? 'dashed ' : 'solid ') + m.stroke };
+    });
+
+    var sst = T[selN] || 'healthy';
+    var sm = S[sst];
+    var hist = H[selN] || [];
+    var sel = {
+      n: selN, name: nameOf(selN), label: sm.label,
+      tile: 'width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:none;background:' + sm.bg + ';color:' + sm.fg,
+      badge: 'display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:' + sm.bg + ';color:' + sm.fg,
+      hist: hist, hasHist: hist.length > 0, noHist: hist.length === 0,
+      hasPlan: !!P[selN], plan: P[selN] || ''
+    };
+
+    var tabDefs = [
+      { id: 'chart', label: 'مخطط الأسنان', count: '' },
+      { id: 'visits', label: 'الزيارات', count: '8' },
+      { id: 'plans', label: 'خطط العلاج', count: '2' },
+      { id: 'money', label: 'التفاصيل المالية', count: '' }
+    ];
+    var tabs = tabDefs.map(function (t) {
+      var a = t.id === tab;
+      return {
+        label: t.label, count: t.count, hasCount: !!t.count, active: a,
+        isChart: t.id === 'chart', isVisits: t.id === 'visits', isPlans: t.id === 'plans', isMoney: t.id === 'money',
+        style: 'display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 12px;margin-bottom:-1px;border:0;border-bottom:2px solid ' + (a ? '#2563EB' : 'transparent') + ';background:transparent;color:' + (a ? '#1A1A1A' : '#616161') + ';font-family:inherit;font-size:13px;font-weight:' + (a ? '600' : '500') + ';cursor:pointer',
+        pick: function () { self.setState({ tab: t.id }); }
+      };
+    });
+
+    var PS = {
+      paid: { l: 'مدفوعة', bg: '#DCF5E6', fg: '#0F6B32' },
+      partial: { l: 'جزئي', bg: '#FDEBC0', fg: '#734600' }
+    };
+    var visits = [
+      { d: '12 أكتوبر 2026', doc: 'د. أحمد', p: 'علاج عصب (الجلسة 2)، تشخيص', teeth: '36، 46', note: 'تسوس عميق في 46، يحتاج حشوة', amt: '15,000', st: 'partial' },
+      { d: '28 سبتمبر 2026', doc: 'د. أحمد', p: 'علاج عصب (الجلسة 1)', teeth: '36', note: 'تخدير موضعي دون مضاعفات', amt: '12,000', st: 'paid' },
+      { d: '14 سبتمبر 2026', doc: 'د. سارة', p: 'فحص شامل، أشعة بانورامية، تنظيف', teeth: '—', note: 'وضع خطة ترميم الفك السفلي', amt: '10,000', st: 'paid' },
+      { d: '20 يونيو 2025', doc: 'د. سارة', p: 'تنظيف وتلميع', teeth: '—', note: '', amt: '6,000', st: 'paid' },
+      { d: '3 مارس 2025', doc: 'د. سارة', p: 'حشوة تجميلية × 2', teeth: '16، 17', note: 'أول زيارة', amt: '14,000', st: 'paid' }
+    ].map(function (v) {
+      var m = PS[v.st];
+      return Object.assign({}, v, { stLabel: m.l, badge: 'display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;background:' + m.bg + ';color:' + m.fg });
+    });
+
+    var STP = {
+      done: { l: 'مكتملة', bg: '#DCF5E6', fg: '#0F6B32', box: 'background:#15803D;color:#FFFFFF;border:1px solid #15803D' },
+      next: { l: 'التالية · 4 نوفمبر', bg: '#DCE7FE', fg: '#1A44B8', box: 'background:#FFFFFF;color:#1A44B8;border:1.5px solid #2563EB' },
+      todo: { l: 'لم تبدأ', bg: '#F1F1F2', fg: '#3F3F3F', box: 'background:#FFFFFF;color:#616161;border:1px solid #DCDCDC' }
+    };
+    var steps = [
+      { i: 1, t: 'علاج عصب', tooth: '36', note: 'جلستان', cost: '25,000', s: 'done' },
+      { i: 2, t: 'حشوة تجميلية', tooth: '46', note: 'جلسة واحدة', cost: '8,000', s: 'next' },
+      { i: 3, t: 'تاج زيركون', tooth: '36', note: 'جلستان، يحتاج طبعة', cost: '35,000', s: 'todo' },
+      { i: 4, t: 'حشوة تجميلية', tooth: '24', note: 'جلسة واحدة', cost: '8,000', s: 'todo' }
+    ].map(function (x) {
+      var m = STP[x.s];
+      return Object.assign({}, x, {
+        done: x.s === 'done', notDone: x.s !== 'done', label: m.l,
+        iconBox: 'width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;' + m.box,
+        titleStyle: 'font-size:13px;font-weight:600;color:' + (x.s === 'done' ? '#616161' : '#1A1A1A'),
+        badge: 'display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;background:' + m.bg + ';color:' + m.fg
+      });
+    });
+
+    var payments = [
+      { d: '12 أكتوبر 2026', inv: 'INV-2150', m: 'نقداً', a: '10,000' },
+      { d: '28 سبتمبر 2026', inv: 'INV-2093', m: 'تحويل عبر تطبيق بنكي', a: '12,000' },
+      { d: '14 سبتمبر 2026', inv: 'INV-2061', m: 'نقداً', a: '10,000' },
+      { d: '20 يونيو 2025', inv: 'INV-1512', m: 'نقداً', a: '6,000' },
+      { d: '3 مارس 2025', inv: 'INV-1288', m: 'نقداً', a: '14,000' }
+    ];
+
+    return {
+      tabs: tabs,
+      isChart: tab === 'chart', isVisits: tab === 'visits', isPlans: tab === 'plans', isMoney: tab === 'money',
+      q1: range(18, 11).map(tooth), q2: range(21, 28).map(tooth),
+      q4: range(48, 41).map(tooth), q3: range(31, 38).map(tooth),
+      legend: legend, sel: sel,
+      visits: visits, steps: steps, payments: payments
+    };
+  }
+}
+</script>
+</body>
+</html>

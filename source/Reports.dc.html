@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>التقارير</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.bar:hover{filter:brightness(.9)}
+.row:hover td{background:#FAFAFA}
+</style>
+</helmet>
+<div dir="rtl" style="display:flex;flex-wrap:wrap;min-height:100vh;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="reports" hint-size="232px,1180px"></dc-import></div>
+<div dir="rtl" style="flex:999 1 560px;min-width:0;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh">
+<div style="max-width:1280px;margin:0 auto;padding:24px 28px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <h1 style="margin:0;font-size:20px;font-weight:600">التقارير</h1>
+      <p style="margin:0;font-size:13px;color:#616161">أكتوبر 2026 · مقارنة بسبتمبر</p>
+    </div>
+    <div style="margin-inline-start:auto;display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn" type="button" aria-haspopup="listbox" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>هذا الشهر<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="btn" type="button" aria-haspopup="listbox" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">كل الأطباء<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>تصدير Excel</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+    <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+      <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;color:#4A4A4A">{{k.label}}</span>
+        <span style="display:flex;align-items:baseline;gap:6px"><span style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums">{{k.value}}</span><span style="font-size:12px;color:#616161">{{k.unit}}</span></span>
+        <span style="{{k.deltaStyle}}">{{k.delta}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- Revenue chart -->
+  <section style="border:1px solid #EBEBEB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+      <h2 style="margin:0;font-size:14px;font-weight:600">الإيرادات اليومية</h2>
+      <span style="font-size:12px;color:#616161">بالأوقية · اليوم الأخير غير مكتمل</span>
+      <span style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:14px;font-size:12px;color:#4A4A4A">
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#2563EB"></span>محصّل</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#B9CEF8"></span>غير محصّل</span>
+      </span>
+    </div>
+    <div dir="ltr" style="display:flex;gap:8px">
+      <div style="display:flex;flex-direction:column;justify-content:space-between;height:200px;font-size:11px;color:#616161;text-align:right;width:40px;font-variant-numeric:tabular-nums"><span>60k</span><span>40k</span><span>20k</span><span>0</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+        <div role="img" aria-label="رسم بياني للإيرادات اليومية في أكتوبر" style="position:relative;height:200px;display:flex;align-items:flex-end;gap:4px;background-image:linear-gradient(to bottom,#EBEBEB 1px,transparent 1px);background-size:100% 66.66px;border-bottom:1px solid #D4D4D4">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="30">
+            <div class="bar" title="{{b.tip}}" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;cursor:default">
+              <div style="{{b.unpaid}}"></div>
+              <div style="{{b.paid}}"></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:4px;font-size:10px;color:#616161;font-variant-numeric:tabular-nums">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="30"><span style="flex:1;text-align:center">{{b.lbl}}</span></sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+    <!-- Doctors -->
+    <section style="flex:1 1 420px;min-width:0;border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #EBEBEB"><h2 style="margin:0;font-size:14px;font-weight:600">حسب الطبيب</h2></div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الطبيب</th>
+          <th style="text-align:left;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الزيارات</th>
+          <th style="text-align:left;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الإيراد</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB;width:34%">الحصة</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{docs}}" as="d" hint-placeholder-count="3">
+            <tr class="row">
+              <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;font-weight:600">{{d.n}}</td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2;text-align:left;font-variant-numeric:tabular-nums">{{d.v}}</td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2;text-align:left;font-variant-numeric:tabular-nums;font-weight:500">{{d.r}}</td>
+              <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2"><div style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:8px;border-radius:99px;background:#F1F1F2;overflow:hidden"><span style="{{d.bar}}"></span></span><span style="font-size:12px;color:#4A4A4A;width:34px;font-variant-numeric:tabular-nums">{{d.pct}}</span></div></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Procedures -->
+    <section style="flex:1 1 420px;min-width:0;border:1px solid #EBEBEB;border-radius:12px">
+      <div style="padding:14px 16px;border-bottom:1px solid #EBEBEB;display:flex;align-items:center"><h2 style="margin:0;font-size:14px;font-weight:600">أعلى الإجراءات إيراداً</h2></div>
+      <div style="padding:8px 16px 14px;display:flex;flex-direction:column">
+        <sc-for list="{{procs}}" as="p" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:6px;padding:9px 0;border-bottom:1px solid #F4F4F5">
+            <div style="display:flex;align-items:baseline;gap:8px;font-size:13px"><span style="font-weight:500">{{p.n}}</span><span style="font-size:12px;color:#616161">{{p.c}} مرة</span><span style="margin-inline-start:auto;font-weight:600;font-variant-numeric:tabular-nums">{{p.r}}</span></div>
+            <span style="height:6px;border-radius:99px;background:#F1F1F2;overflow:hidden"><span style="{{p.bar}}"></span></span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- Debts -->
+    <section style="flex:1 1 420px;min-width:0;border:1px solid #EBEBEB;border-radius:12px">
+      <div style="padding:14px 16px;border-bottom:1px solid #EBEBEB;display:flex;align-items:center;gap:8px"><h2 style="margin:0;font-size:14px;font-weight:600;flex:1">الديون المتأخرة</h2><span style="font-size:13px;font-weight:700;color:#A31616">128,000 أوقية</span></div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+        <div role="img" aria-label="توزيع الديون: 0 إلى 30 يوماً 50 بالمئة، 31 إلى 60 يوماً 33 بالمئة، أكثر من 60 يوماً 17 بالمئة" style="display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px">
+          <span style="width:50%;background:#F5A524"></span><span style="width:33%;background:#E0682B"></span><span style="width:17%;background:#A31616"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#4A4A4A"><span style="width:8px;height:8px;border-radius:2px;background:#F5A524"></span>0–30 يوماً</span><span style="font-size:14px;font-weight:600">64,000</span><span style="font-size:11px;color:#616161">5 مرضى</span></div>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#4A4A4A"><span style="width:8px;height:8px;border-radius:2px;background:#E0682B"></span>31–60 يوماً</span><span style="font-size:14px;font-weight:600">42,000</span><span style="font-size:11px;color:#616161">4 مرضى</span></div>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#4A4A4A"><span style="width:8px;height:8px;border-radius:2px;background:#A31616"></span>أكثر من 60</span><span style="font-size:14px;font-weight:600;color:#A31616">22,000</span><span style="font-size:11px;color:#616161">3 مرضى</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;border-top:1px solid #EBEBEB;padding-top:6px">
+          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13px"><span style="font-weight:500;flex:1">خديجة سالم</span><span style="font-size:12px;color:#A31616;font-weight:500">75 يوماً</span><span style="font-weight:600;font-variant-numeric:tabular-nums;width:64px;text-align:left">22,000</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13px"><span style="font-weight:500;flex:1">مريم أحمد</span><span style="font-size:12px;color:#616161">5 أيام</span><span style="font-weight:600;font-variant-numeric:tabular-nums;width:64px;text-align:left">15,000</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13px"><span style="font-weight:500;flex:1">فاطمة محمد</span><span style="font-size:12px;color:#616161">اليوم</span><span style="font-weight:600;font-variant-numeric:tabular-nums;width:64px;text-align:left">6,600</span></div>
+        </div>
+        <button class="btn" type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;border:1px solid #F5A524;border-radius:8px;background:#F5A524;color:#2B1D00;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>تذكير الجميع عبر واتساب</button>
+      </div>
+    </section>
+  </div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    function fmt(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+    var MAX = 60000, vals = [], unp = [];
+    for (var i = 0; i < 30; i++) {
+      var v = 22000 + ((i * 7919 + 13) % 23) * 1500;
+      if (i % 7 === 5) v = Math.round(v * 0.55);
+      if (i === 29) v = 26600;
+      vals.push(v);
+      unp.push(i > 25 ? Math.round(v * 0.25) : ((i * 31) % 9 === 0 ? 4000 : 0));
+    }
+    var total = vals.reduce(function (a, b) { return a + b; }, 0);
+    var unpaid = unp.reduce(function (a, b) { return a + b; }, 0);
+    var bars = vals.map(function (v, i) {
+      var u = unp[i], p = v - u;
+      return {
+        lbl: (i % 3 === 0 || i === 29) ? String(i + 1) : '',
+        tip: (i + 1) + ' أكتوبر: ' + fmt(v) + ' أوقية',
+        paid: 'height:' + (p / MAX * 100) + '%;background:' + (i === 29 ? '#93B4F5' : '#2563EB') + ';border-radius:' + (u ? '0' : '3px 3px 0 0'),
+        unpaid: 'height:' + (u / MAX * 100) + '%;background:#B9CEF8;border-radius:3px 3px 0 0'
+      };
+    });
+    var visits = 142;
+    var kpis = [
+      { label: 'إيرادات الشهر', value: fmt(total), unit: 'أوقية', delta: '▲ 12% عن سبتمبر', deltaStyle: 'font-size:12px;font-weight:500;color:#0F6B32' },
+      { label: 'المحصّل فعلياً', value: fmt(total - unpaid), unit: 'أوقية', delta: Math.round((total - unpaid) / total * 100) + '% من الإيرادات', deltaStyle: 'font-size:12px;font-weight:500;color:#4A4A4A' },
+      { label: 'الزيارات', value: String(visits), unit: 'زيارة', delta: '▲ 9 زيارات عن سبتمبر', deltaStyle: 'font-size:12px;font-weight:500;color:#0F6B32' },
+      { label: 'نسبة الغياب', value: '7%', unit: '', delta: '▼ من 11% بعد تفعيل التذكير', deltaStyle: 'font-size:12px;font-weight:500;color:#0F6B32' }
+    ];
+    var D = [{ n: 'د. أحمد', v: 68, s: 0.51 }, { n: 'د. سارة', v: 58, s: 0.385 }, { n: 'د. يوسف', v: 16, s: 0.105 }];
+    var docs = D.map(function (d) { return { n: d.n, v: d.v, r: fmt(Math.round(total * d.s / 500) * 500), pct: Math.round(d.s * 100) + '%', bar: 'display:block;height:100%;width:' + (d.s * 100) + '%;background:#2563EB;border-radius:99px' }; });
+    var PR = [{ n: 'تاج زيركون', c: 9, r: 315000 }, { n: 'علاج عصب', c: 17, r: 212500 }, { n: 'حشوة تجميلية', c: 26, r: 182000 }, { n: 'تبييض', c: 8, r: 120000 }, { n: 'تنظيف وتلميع', c: 14, r: 112000 }];
+    var procs = PR.map(function (p) { return { n: p.n, c: p.c, r: fmt(p.r), bar: 'display:block;height:100%;width:' + (p.r / 315000 * 100) + '%;background:#1A1A1A;border-radius:99px;opacity:.75' }; });
+    return { kpis: kpis, bars: bars, docs: docs, procs: procs };
+  }
+}
+</script>
+</body>
+</html>

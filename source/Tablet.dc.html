@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الاستقبال على التابلت</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.btn:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.btn:active{filter:brightness(.92)}
+</style>
+</helmet>
+<div dir="rtl" style="width:1194px;height:834px;box-sizing:border-box;padding:24px;background:#FFFFFF;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;display:flex;flex-direction:column;gap:18px">
+  <header style="display:flex;align-items:center;gap:14px">
+    <div style="display:flex;flex-direction:column"><h1 style="margin:0;font-size:22px;font-weight:600">الاستقبال</h1><span style="font-size:14px;color:#616161">الجمعة 30 أكتوبر · {{arrivedCount}} من 7 حضروا</span></div>
+    <label style="margin-inline-start:auto;width:300px;display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border:1px solid #E3E3E3;border-radius:12px;background:#FAFAFA;color:#616161">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" aria-label="بحث عن مريض" placeholder="الاسم أو رقم الهاتف" style="flex:1;min-width:0;border:0;background:transparent;font-family:inherit;font-size:15px;outline:none">
+    </label>
+    <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 18px;border:1px solid #2563EB;border-radius:12px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>مريض بدون موعد</button>
+  </header>
+
+  <div style="flex:1;display:flex;gap:18px;min-height:0">
+    <section aria-label="مواعيد اليوم" style="flex:1.6;border:1px solid #EBEBEB;border-radius:16px;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid #EBEBEB;font-size:16px;font-weight:600">مواعيد اليوم</div>
+      <div style="flex:1;overflow-y:auto">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid #F1F1F2">
+            <span style="font-size:16px;font-weight:600;width:52px;font-variant-numeric:tabular-nums">{{r.t}}</span>
+            <span style="width:44px;height:44px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:none">{{r.ini}}</span>
+            <span style="display:flex;flex-direction:column;flex:1;min-width:0"><span style="font-size:16px;font-weight:600">{{r.n}}</span><span style="font-size:13px;color:#616161">{{r.p}} · {{r.doc}}</span></span>
+            <sc-if value="{{r.canCheck}}" hint-placeholder-val="{{true}}">
+              <button class="btn" type="button" onClick="{{r.check}}" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 18px;border:1px solid #15803D;border-radius:12px;background:#15803D;color:#FFFFFF;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>تسجيل الحضور</button>
+            </sc-if>
+            <sc-if value="{{r.showBadge}}" hint-placeholder-val="{{false}}">
+              <span style="{{r.badge}}"><span style="{{r.dot}}"></span>{{r.label}}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="flex:1;display:flex;flex-direction:column;gap:18px;min-width:0">
+      <section aria-label="قاعة الانتظار" style="border:1px solid #EBEBEB;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center"><span style="font-size:16px;font-weight:600;flex:1">في الانتظار</span><a href="Queue.dc.html" style="font-size:13px;font-weight:500;color:#2563EB;text-decoration:none">شاشة القاعة</a></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:#DCE7FE">
+          <span style="font-size:26px;font-weight:700;color:#173A9E;font-variant-numeric:tabular-nums">A12</span>
+          <span style="display:flex;flex-direction:column;flex:1"><span style="font-size:15px;font-weight:600;color:#173A9E">إبراهيم سالم</span><span style="font-size:13px;color:#1A44B8">داخل العيادة 1 الآن</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:6px 4px"><span style="font-size:18px;font-weight:700;width:52px;font-variant-numeric:tabular-nums">A13</span><span style="flex:1;font-size:15px">زينب محمد</span><span style="font-size:13px;color:#616161">ينتظر 8 د</span></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:6px 4px"><span style="font-size:18px;font-weight:700;width:52px;font-variant-numeric:tabular-nums">A14</span><span style="flex:1;font-size:15px">عبد الرحمن محمود</span><span style="font-size:13px;color:#734600;font-weight:600">ينتظر 22 د</span></div>
+      </section>
+      <section aria-label="الأطباء" style="border:1px solid #EBEBEB;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:16px;font-weight:600">الأطباء</span>
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:40px;height:40px;border-radius:50%;background:#F1F1F2;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">أح</span><span style="flex:1;font-size:15px;font-weight:500">د. أحمد</span><span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:8px;background:#DCE7FE;color:#1A44B8;font-size:13px;font-weight:600">في جلسة · ينتهي 15:30</span></div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:40px;height:40px;border-radius:50%;background:#F1F1F2;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">سا</span><span style="flex:1;font-size:15px;font-weight:500">د. سارة</span><span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:8px;background:#DCF5E6;color:#0F6B32;font-size:13px;font-weight:600">متاحة</span></div>
+      </section>
+      <a href="Consent.dc.html" class="btn" style="display:flex;align-items:center;justify-content:center;gap:10px;height:56px;border:1px solid #E3E3E3;border-radius:14px;background:#FFFFFF;color:#303030;font-size:15px;font-weight:600;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>تسليم التابلت للمريض لتعبئة الاستمارة</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1194,"height":834}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var done = s.done || {};
+    var M = { arrived: { l: 'حضر', bg: '#DCF5E6', fg: '#0F6B32', d: '#15803D' }, inside: { l: 'في الجلسة', bg: '#DCE7FE', fg: '#1A44B8', d: '#2563EB' }, finished: { l: 'انتهى', bg: '#EDEDEE', fg: '#3F3F3F', d: '#8A8A8A' }, late: { l: 'متأخر 10 د', bg: '#FDEBC0', fg: '#734600', d: '#D98E04' } };
+    var R = [
+      { id: 1, t: '12:00', n: 'يحيى أحمد', ini: 'يأ', p: 'فحص وأشعة', doc: 'د. أحمد', st: 'finished' },
+      { id: 2, t: '14:00', n: 'إبراهيم سالم', ini: 'إس', p: 'تحضير تاج', doc: 'د. أحمد', st: 'inside' },
+      { id: 3, t: '14:30', n: 'زينب محمد', ini: 'زم', p: 'تبييض', doc: 'د. سارة', st: 'arrived' },
+      { id: 4, t: '15:30', n: 'عبد الرحمن محمود', ini: 'عم', p: 'فحص أولي', doc: 'د. سارة', st: 'arrived' },
+      { id: 5, t: '16:00', n: 'حواء محمد', ini: 'حم', p: 'حشوة', doc: 'د. أحمد', st: '' },
+      { id: 6, t: '16:30', n: 'سالم محمد', ini: 'سم', p: 'خلع', doc: 'د. سارة', st: '' },
+      { id: 7, t: '17:00', n: 'ليلى أحمد', ini: 'لأ', p: 'متابعة', doc: 'د. سارة', st: '' }
+    ];
+    var arrived = 0;
+    var rows = R.map(function (r) {
+      var st = done[r.id] ? 'arrived' : r.st;
+      if (st) arrived++;
+      var m = M[st];
+      return Object.assign({}, r, {
+        canCheck: !st, showBadge: !!st, label: m ? m.l : '',
+        badge: m ? 'display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;background:' + m.bg + ';color:' + m.fg : '',
+        dot: m ? 'width:8px;height:8px;border-radius:50%;background:' + m.d : '',
+        check: function () { var n = Object.assign({}, done); n[r.id] = true; self.setState({ done: n }); }
+      });
+    });
+    return { rows: rows, arrivedCount: arrived };
+  }
+}
+</script>
+</body>
+</html>

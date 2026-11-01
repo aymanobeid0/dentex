@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الاستمارة الطبية والموافقة</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.opt:focus-visible,.btn:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+</style>
+</helmet>
+<div dir="rtl" style="width:834px;height:1194px;box-sizing:border-box;padding:32px 36px;background:#FFFFFF;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;display:flex;flex-direction:column;gap:20px">
+
+  <header style="display:flex;align-items:center;gap:12px">
+    <div style="width:40px;height:40px;border-radius:10px;background:#1A1A1A;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></div>
+    <div style="display:flex;flex-direction:column;flex:1"><span style="font-size:16px;font-weight:600">[اسم العيادة]</span><span style="font-size:13px;color:#616161">مرحباً مريم، يرجى إكمال هذه الاستمارة قبل الجلسة</span></div>
+    <span style="font-size:13px;color:#4A4A4A">الخطوة 2 من 3</span>
+  </header>
+  <div style="display:flex;gap:6px" aria-hidden="true"><span style="flex:1;height:4px;border-radius:99px;background:#2563EB"></span><span style="flex:1;height:4px;border-radius:99px;background:#2563EB"></span><span style="flex:1;height:4px;border-radius:99px;background:#E3E3E3"></span></div>
+
+  <section style="border:1px solid #EBEBEB;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:6px">
+    <h1 style="margin:0 0 6px;font-size:18px;font-weight:600">التاريخ الطبي</h1>
+    <sc-for list="{{qs}}" as="q" hint-placeholder-count="6">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F1F1F2">
+        <span id="{{q.id}}" style="flex:1;font-size:15px">{{q.t}}</span>
+        <div role="radiogroup" aria-labelledby="{{q.id}}" style="display:flex;gap:6px">
+          <button class="opt" type="button" role="radio" aria-checked="{{q.yes}}" onClick="{{q.setYes}}" style="{{q.yesStyle}}">نعم</button>
+          <button class="opt" type="button" role="radio" aria-checked="{{q.no}}" onClick="{{q.setNo}}" style="{{q.noStyle}}">لا</button>
+        </div>
+      </div>
+    </sc-for>
+    <label style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:14px;font-weight:500">إذا كانت لديك حساسية، اذكرها
+      <input type="text" value="بنسلين" style="height:48px;padding:0 14px;border:1px solid #E3E3E3;border-radius:10px;font-family:inherit;font-size:15px;outline:none">
+    </label>
+  </section>
+
+  <section style="border:1px solid #EBEBEB;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+    <h2 style="margin:0;font-size:18px;font-weight:600">الموافقة على العلاج</h2>
+    <div style="font-size:14px;line-height:1.8;color:#303030;background:#F7F7F8;border-radius:10px;padding:14px 16px">
+      أوافق على إجراء <b style="font-weight:600">حشوة تجميلية للسن 46</b> تحت التخدير الموضعي. شرح لي الطبيب طبيعة الإجراء وبدائله، والآثار الجانبية المحتملة مثل الحساسية المؤقتة أو الحاجة لعلاج العصب لاحقاً إذا كان التسوس قريباً من العصب.
+    </div>
+    <label style="display:flex;align-items:center;gap:12px;font-size:15px;cursor:pointer;min-height:44px"><input type="checkbox" checked="{{true}}" style="width:22px;height:22px;margin:0;accent-color:#2563EB">قرأت ما سبق وأوافق عليه</label>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center"><span style="font-size:14px;font-weight:500">التوقيع</span><button class="btn" type="button" style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#4A4A4A;font-family:inherit;font-size:14px;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>مسح</button></div>
+      <div role="img" aria-label="مساحة التوقيع، تم التوقيع" style="position:relative;height:150px;border:1px dashed #CFCFCF;border-radius:12px;background:#FCFCFC;display:flex;align-items:center;justify-content:center">
+        <svg width="260" height="90" viewBox="0 0 260 90" aria-hidden="true"><path d="M20 60 C40 20, 60 20, 62 50 S80 80, 95 45 S120 15, 130 50 S150 70, 165 40 C175 25, 190 30, 185 55 C182 68, 200 62, 215 48 S240 40, 245 52" fill="none" stroke="#1A1A1A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span style="position:absolute;bottom:22px;inset-inline:40px;border-top:1px solid #DCDCDC"></span>
+        <span style="position:absolute;bottom:6px;inset-inline-start:40px;font-size:12px;color:#616161">مريم أحمد · 30/10/2026</span>
+      </div>
+    </div>
+  </section>
+
+  <div style="margin-top:auto;display:flex;gap:10px">
+    <button class="btn" type="button" style="height:52px;padding:0 22px;border:1px solid #E3E3E3;border-radius:12px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer">رجوع</button>
+    <button class="btn" type="button" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;border:1px solid #2563EB;border-radius:12px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>إرسال الاستمارة</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":834,"height":1194}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var A = s.a || { q1: true, q2: false, q3: false, q4: true, q5: false, q6: false };
+    var Q = [
+      { id: 'q1', t: 'هل لديك حساسية من أدوية؟' },
+      { id: 'q2', t: 'هل تعاني من مرض السكري؟' },
+      { id: 'q3', t: 'هل تعاني من أمراض القلب؟' },
+      { id: 'q4', t: 'هل تعاني من ارتفاع ضغط الدم؟' },
+      { id: 'q5', t: 'هل تتناول أدوية مميعة للدم؟' },
+      { id: 'q6', t: 'هل أنت حامل أو مرضعة؟' }
+    ];
+    function st(on, yes) {
+      return 'min-width:72px;height:44px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:' + (on ? '600' : '500') + ';cursor:pointer;' +
+        (on ? (yes ? 'background:#FDEBC0;color:#5E3A00;border:1.5px solid #D98E04' : 'background:#F1F1F2;color:#1A1A1A;border:1.5px solid #8A8A8A') : 'background:#FFFFFF;color:#4A4A4A;border:1px solid #E3E3E3');
+    }
+    var qs = Q.map(function (q) {
+      var v = A[q.id];
+      function set(val) { return function () { var n = Object.assign({}, A); n[q.id] = val; self.setState({ a: n }); }; }
+      return { id: q.id, t: q.t, yes: v === true, no: v === false, setYes: set(true), setNo: set(false), yesStyle: st(v === true, true), noStyle: st(v === false, false) };
+    });
+    return { qs: qs };
+  }
+}
+</script>
+</body>
+</html>

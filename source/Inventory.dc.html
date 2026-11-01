@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>المخزون</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible,.chip:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.row:hover td{background:#FAFAFA}
+.field:focus-within{border-color:#A3A3A3 !important;background:#FFFFFF !important}
+</style>
+</helmet>
+<div dir="rtl" style="display:flex;flex-wrap:wrap;min-height:100vh;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="inventory" hint-size="232px,900px"></dc-import></div>
+<div dir="rtl" style="flex:999 1 560px;min-width:0;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh">
+<div style="max-width:1240px;margin:0 auto;padding:24px 28px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:20px;font-weight:600">المخزون والمستلزمات</h1><p style="margin:0;font-size:13px;color:#616161">48 صنفاً · آخر جرد 25 أكتوبر</p></div>
+    <div style="margin-inline-start:auto;display:flex;gap:8px">
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>بدء الجرد</button>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>إضافة صنف</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+    <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px"><span style="width:36px;height:36px;border-radius:10px;background:#FDDEDE;color:#A31616;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></svg></span><span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#616161">تحت الحد الأدنى</span><span style="font-size:20px;font-weight:600">2 صنف</span></span></div>
+    <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px"><span style="width:36px;height:36px;border-radius:10px;background:#FDEBC0;color:#734600;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#616161">ينتهي خلال 60 يوماً</span><span style="font-size:20px;font-weight:600">3 أصناف</span></span></div>
+    <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px"><span style="width:36px;height:36px;border-radius:10px;background:#DCE7FE;color:#1A44B8;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4ZM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span><span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#616161">طلبات شراء مفتوحة</span><span style="font-size:20px;font-weight:600">1 طلب</span></span></div>
+    <div style="border:1px solid #EBEBEB;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px"><span style="width:36px;height:36px;border-radius:10px;background:#F1F1F2;color:#303030;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5V8ZM3 8l9 5 9-5M12 13v8"/></svg></span><span style="display:flex;flex-direction:column"><span style="font-size:12px;color:#616161">قيمة المخزون</span><span style="font-size:20px;font-weight:600">[القيمة]</span></span></div>
+  </div>
+
+  <section style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #EBEBEB">
+      <label class="field" style="flex:1 1 240px;max-width:320px;display:flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FAFAFA;color:#616161"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" aria-label="بحث في المخزون" placeholder="بحث عن صنف" style="flex:1;min-width:0;border:0;background:transparent;font-family:inherit;font-size:13px;outline:none"></label>
+      <div role="group" aria-label="التصنيف" style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-for list="{{cats}}" as="c" hint-placeholder-count="5"><button class="chip" type="button" aria-pressed="{{c.on}}" onClick="{{c.pick}}" style="{{c.style}}">{{c.l}}</button></sc-for>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:900px">
+        <thead><tr>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الصنف</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB;width:24%">الكمية المتبقية</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الحد الأدنى</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">انتهاء الصلاحية</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">المورد</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الحالة</th>
+          <th style="background:#FAFAFA;border-bottom:1px solid #EBEBEB;width:100px"></th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+            <tr class="row">
+              <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2"><div style="display:flex;flex-direction:column"><span style="font-weight:600">{{r.n}}</span><span style="font-size:12px;color:#616161">{{r.c}}</span></div></td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2"><div style="display:flex;align-items:center;gap:10px"><span style="flex:1;height:6px;border-radius:99px;background:#F1F1F2;overflow:hidden"><span style="{{r.bar}}"></span></span><span style="font-variant-numeric:tabular-nums;font-weight:500;min-width:72px">{{r.q}}</span></div></td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2;color:#4A4A4A">{{r.min}}</td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2"><span style="{{r.expStyle}}">{{r.exp}}</span></td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2;color:#4A4A4A">{{r.sup}}</td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2"><span style="{{r.badge}}"><span style="{{r.dot}}"></span>{{r.stL}}</span></td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2">
+                <sc-if value="{{r.low}}" hint-placeholder-val="{{false}}"><button class="btn" type="button" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #2563EB;border-radius:7px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>طلب شراء</button></sc-if>
+                <sc-if value="{{r.ok}}" hint-placeholder-val="{{true}}"><button class="btn" type="button" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">صرف</button></sc-if>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var cat = s.cat || 'all';
+    var C = [{ id: 'all', l: 'الكل' }, { id: 'anes', l: 'تخدير' }, { id: 'rest', l: 'مواد ترميم' }, { id: 'cons', l: 'مستهلكات' }, { id: 'ster', l: 'تعقيم' }];
+    var cats = C.map(function (c) {
+      var on = c.id === cat;
+      return { l: c.l, on: on, pick: function () { self.setState({ cat: c.id }); },
+        style: 'height:30px;padding:0 10px;border-radius:99px;font-family:inherit;font-size:12px;font-weight:' + (on ? '600' : '500') + ';cursor:pointer;' + (on ? 'background:#1A1A1A;color:#FFFFFF;border:1px solid #1A1A1A' : 'background:#FFFFFF;color:#303030;border:1px solid #E3E3E3') };
+    });
+    var ST = { low: { l: 'منخفض', bg: '#FDDEDE', fg: '#A31616', d: '#DC2626', bar: '#DC2626' }, exp: { l: 'قارب الانتهاء', bg: '#FDEBC0', fg: '#734600', d: '#D98E04', bar: '#D98E04' }, ok: { l: 'متوفر', bg: '#DCF5E6', fg: '#0F6B32', d: '#15803D', bar: '#15803D' } };
+    var R = [
+      { n: 'ليدوكائين 2% · كاربولات', c: 'anes', cl: 'تخدير', q: 6, max: 100, u: 'أمبولة', min: '20 أمبولة', exp: '03/2027', sup: '[اسم المورد]', st: 'low' },
+      { n: 'قفازات نتريل مقاس M', c: 'cons', cl: 'مستهلكات', q: 2, max: 20, u: 'علبة', min: '5 علب', exp: '—', sup: '[اسم المورد]', st: 'low' },
+      { n: 'كومبوزيت A2', c: 'rest', cl: 'مواد ترميم', q: 4, max: 10, u: 'أنبوب', min: '2 أنبوب', exp: '12/2026', sup: '[اسم المورد]', st: 'exp' },
+      { n: 'مادة لاصقة (بوند)', c: 'rest', cl: 'مواد ترميم', q: 3, max: 6, u: 'عبوة', min: '1 عبوة', exp: '11/2026', sup: '[اسم المورد]', st: 'exp' },
+      { n: 'كلورهيكسيدين 0.12%', c: 'ster', cl: 'تعقيم', q: 12, max: 20, u: 'عبوة', min: '4 عبوات', exp: '12/2026', sup: '[اسم المورد]', st: 'exp' },
+      { n: 'أكياس تعقيم', c: 'ster', cl: 'تعقيم', q: 600, max: 1000, u: 'كيس', min: '200 كيس', exp: '—', sup: '[اسم المورد]', st: 'ok' },
+      { n: 'كمامات طبية', c: 'cons', cl: 'مستهلكات', q: 14, max: 20, u: 'علبة', min: '4 علب', exp: '—', sup: '[اسم المورد]', st: 'ok' },
+      { n: 'إبر تخدير قصيرة', c: 'anes', cl: 'تخدير', q: 180, max: 300, u: 'إبرة', min: '50 إبرة', exp: '08/2028', sup: '[اسم المورد]', st: 'ok' }
+    ];
+    var rows = R.filter(function (r) { return cat === 'all' || r.c === cat; }).map(function (r) {
+      var m = ST[r.st];
+      return { n: r.n, c: r.cl, q: r.q + ' ' + r.u, min: r.min, exp: r.exp, sup: r.sup, stL: m.l, low: r.st === 'low', ok: r.st !== 'low',
+        bar: 'display:block;height:100%;width:' + Math.max(4, r.q / r.max * 100) + '%;background:' + m.bar + ';border-radius:99px',
+        expStyle: r.st === 'exp' ? 'color:#734600;font-weight:600' : 'color:#4A4A4A',
+        badge: 'display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;background:' + m.bg + ';color:' + m.fg,
+        dot: 'width:6px;height:6px;border-radius:50%;background:' + m.d };
+    });
+    return { cats: cats, rows: rows };
+  }
+}
+</script>
+</body>
+</html>

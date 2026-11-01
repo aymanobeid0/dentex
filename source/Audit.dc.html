@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>سجل النشاط</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible,.chip:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.row:hover td{background:#FAFAFA}
+</style>
+</helmet>
+<div dir="rtl" style="display:flex;flex-wrap:wrap;min-height:100vh;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="audit" hint-size="232px,900px"></dc-import></div>
+<div dir="rtl" style="flex:999 1 560px;min-width:0;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh">
+<div style="max-width:1240px;margin:0 auto;padding:24px 28px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:20px;font-weight:600">سجل النشاط</h1><p style="margin:0;font-size:13px;color:#616161">كل تعديل في النظام: من، ماذا، ومتى</p></div>
+    <div style="margin-inline-start:auto;display:flex;gap:8px">
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>آخر 7 أيام<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>تصدير</button>
+    </div>
+  </div>
+
+  <section style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EBEBEB">
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="5"><button class="chip" type="button" aria-pressed="{{f.on}}" onClick="{{f.pick}}" style="{{f.style}}">{{f.l}}</button></sc-for>
+      <span style="margin-inline-start:auto;font-size:12px;color:#616161">كل المستخدمين</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:880px">
+        <thead><tr>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الوقت</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">المستخدم</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">العملية</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">التفاصيل</th>
+          <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الجهاز</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+            <tr class="row">
+              <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;white-space:nowrap;color:#4A4A4A;font-variant-numeric:tabular-nums">{{r.time}}</td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2"><div style="display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600">{{r.ini}}</span><span style="font-weight:500;white-space:nowrap">{{r.u}}</span></div></td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2"><span style="{{r.badge}}">{{r.act}}</span></td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2"><div style="display:flex;flex-direction:column;gap:3px"><span>{{r.what}}</span><sc-if value="{{r.hasDiff}}" hint-placeholder-val="{{false}}"><span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="text-decoration:line-through;color:#A31616;background:#FFF5F5;padding:0 5px;border-radius:4px">{{r.from}}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="إلى" role="img"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span style="color:#0F6B32;background:#F2FBF5;padding:0 5px;border-radius:4px;font-weight:500">{{r.to}}</span></span></sc-if></div></td>
+              <td style="padding:11px 12px;border-bottom:1px solid #F1F1F2;color:#616161;font-size:12px">{{r.dev}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var f = s.f || 'all';
+    var A = { create: { l: 'إضافة', bg: '#DCF5E6', fg: '#0F6B32' }, edit: { l: 'تعديل', bg: '#DCE7FE', fg: '#1A44B8' }, del: { l: 'حذف', bg: '#FDDEDE', fg: '#A31616' }, money: { l: 'مالي', bg: '#FDEBC0', fg: '#734600' }, login: { l: 'دخول', bg: '#F1F1F2', fg: '#3F3F3F' } };
+    var R = [
+      { time: 'اليوم 14:12', u: 'عائشة', ini: 'عا', a: 'money', what: 'سجّلت دفعة نقدية لفاطمة محمد · RC-4410', dev: 'تابلت الاستقبال' },
+      { time: 'اليوم 13:58', u: 'د. أحمد', ini: 'أح', a: 'edit', what: 'عدّل حالة السن 46 لمريم أحمد', from: 'تسوس', to: 'حشوة', dev: 'كمبيوتر العيادة 1' },
+      { time: 'اليوم 12:05', u: 'عائشة', ini: 'عا', a: 'edit', what: 'نقلت موعد خديجة سالم', from: 'الجمعة 11:15', to: 'ملغى', dev: 'تابلت الاستقبال' },
+      { time: 'اليوم 11:40', u: 'محمد سالم', ini: 'مس', a: 'money', what: 'عدّل خصم فاتورة INV-2187', from: '0%', to: '5%', dev: 'كمبيوتر المحاسبة' },
+      { time: 'اليوم 09:02', u: 'د. سارة', ini: 'سا', a: 'login', what: 'تسجيل دخول', dev: 'جوال · نواكشوط' },
+      { time: 'أمس 18:20', u: 'د. أحمد', ini: 'أح', a: 'edit', what: 'عدّل سعر خدمة تاج زيركون', from: '32,000', to: '35,000', dev: 'كمبيوتر العيادة 1' },
+      { time: 'أمس 17:45', u: 'عائشة', ini: 'عا', a: 'create', what: 'أضافت مريضاً جديداً: عبد الرحمن محمود · 1201', dev: 'تابلت الاستقبال' },
+      { time: 'أمس 16:10', u: 'محمد سالم', ini: 'مس', a: 'del', what: 'حذف فاتورة مكررة INV-2179', dev: 'كمبيوتر المحاسبة' },
+      { time: 'أمس 10:30', u: 'د. أحمد', ini: 'أح', a: 'create', what: 'دعا مستخدماً جديداً: محمد سالم (محاسب)', dev: 'كمبيوتر العيادة 1' }
+    ];
+    var F = [{ id: 'all', l: 'الكل' }, { id: 'money', l: 'المالية' }, { id: 'edit', l: 'التعديلات' }, { id: 'del', l: 'الحذف' }, { id: 'login', l: 'الدخول' }];
+    var filters = F.map(function (x) { var on = x.id === f; return { l: x.l, on: on, pick: function () { self.setState({ f: x.id }); }, style: 'height:30px;padding:0 10px;border-radius:99px;font-family:inherit;font-size:12px;font-weight:' + (on ? '600' : '500') + ';cursor:pointer;' + (on ? 'background:#1A1A1A;color:#FFFFFF;border:1px solid #1A1A1A' : 'background:#FFFFFF;color:#303030;border:1px solid #E3E3E3') }; });
+    var rows = R.filter(function (r) { return f === 'all' || r.a === f; }).map(function (r) {
+      var m = A[r.a];
+      return Object.assign({}, r, { act: m.l, hasDiff: !!r.from, from: r.from || '', to: r.to || '', badge: 'display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:' + m.bg + ';color:' + m.fg });
+    });
+    return { filters: filters, rows: rows };
+  }
+}
+</script>
+</body>
+</html>

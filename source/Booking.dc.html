@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حجز موعد جديد</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.btn{transition:filter .15s ease}
+.btn:hover:not(:disabled){filter:brightness(.96)}
+.btn:focus-visible,.opt:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.opt:hover:not(:disabled){border-color:#BDBDBD !important}
+.field:focus-within{border-color:#A3A3A3 !important;background:#FFFFFF !important}
+</style>
+</helmet>
+<div dir="rtl" style="width:1200px;height:860px;box-sizing:border-box;position:relative;background:#F4F4F5;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;overflow:hidden">
+
+  <!-- dimmed app behind -->
+  <div aria-hidden="true" style="position:absolute;inset:0;display:flex;gap:0">
+    <div style="width:232px;background:#FFFFFF;border-left:1px solid #EBEBEB"></div>
+    <div style="flex:1;padding:28px;display:flex;flex-direction:column;gap:16px">
+      <div style="height:34px;width:40%;background:#FFFFFF;border-radius:8px"></div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px"><div style="height:96px;background:#FFFFFF;border-radius:12px"></div><div style="height:96px;background:#FFFFFF;border-radius:12px"></div><div style="height:96px;background:#FFFFFF;border-radius:12px"></div><div style="height:96px;background:#FFFFFF;border-radius:12px"></div></div>
+      <div style="flex:1;background:#FFFFFF;border-radius:12px"></div>
+    </div>
+  </div>
+  <div aria-hidden="true" style="position:absolute;inset:0;background:rgba(20,20,20,.38)"></div>
+
+  <!-- Modal -->
+  <div role="dialog" aria-modal="true" aria-labelledby="bk-title" style="position:absolute;top:36px;left:50%;transform:translateX(-50%);width:640px;background:#FFFFFF;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #EBEBEB">
+      <div style="width:32px;height:32px;border-radius:9px;background:#DCE7FE;color:#1A44B8;display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      </div>
+      <h2 id="bk-title" style="margin:0;font-size:16px;font-weight:600;flex:1">موعد جديد</h2>
+      <button class="btn" type="button" aria-label="إغلاق" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:transparent;color:#4A4A4A;cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+
+    <div style="padding:18px 20px;display:flex;flex-direction:column;gap:16px">
+      <!-- Patient -->
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center"><span id="bk-p" style="font-size:13px;font-weight:500;color:#303030">المريض</span><a href="#" style="margin-inline-start:auto;font-size:12px;font-weight:500;text-decoration:none;color:#2563EB">+ مريض جديد</a></div>
+        <div class="field" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 6px 0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF">
+          <span style="display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 4px 0 8px;border-radius:6px;background:#F4F4F5">
+            <span style="width:20px;height:20px;border-radius:50%;background:#E4E4E7;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600">مأ</span>
+            <span style="font-size:13px;font-weight:500">مريم أحمد</span>
+            <span style="font-size:12px;color:#616161">· 1042</span>
+            <button type="button" aria-label="إزالة المريض" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:4px;background:transparent;color:#616161;cursor:pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          </span>
+          <span style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:#FDDEDE;color:#A31616;font-size:11px;font-weight:600">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>حساسية بنسلين · رصيد 15,000</span>
+        </div>
+      </div>
+
+      <!-- Doctor -->
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:13px;font-weight:500;color:#303030">الطبيب</span>
+        <div role="radiogroup" aria-label="الطبيب" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+          <sc-for list="{{doctors}}" as="d" hint-placeholder-count="3">
+            <button class="opt" type="button" role="radio" aria-checked="{{d.on}}" disabled="{{d.disabled}}" onClick="{{d.pick}}" style="{{d.style}}">
+              <span style="width:28px;height:28px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none">{{d.ini}}</span>
+              <span style="display:flex;flex-direction:column;flex:1;text-align:start">
+                <span style="font-size:13px;font-weight:600">{{d.name}}</span>
+                <span style="font-size:11px;color:#616161">{{d.sub}}</span>
+              </span>
+              <span style="{{d.radio}}"></span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Procedure -->
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:13px;font-weight:500;color:#303030">الإجراء</span>
+        <button class="btn" type="button" aria-haspopup="listbox" style="display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#1A1A1A;font-family:inherit;font-size:13px;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.03)">
+          <span style="font-weight:500">حشوة تجميلية</span>
+          <span style="font-size:12px;color:#616161">· السن 46</span>
+          <span style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#4A4A4A"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>45 دقيقة</span>
+          <span style="font-size:12px;font-weight:600">8,000 أوقية</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+      </div>
+
+      <!-- Day -->
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center"><span style="font-size:13px;font-weight:500;color:#303030">اليوم</span><button class="btn" type="button" style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 6px;border:0;border-radius:6px;background:transparent;color:#2563EB;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>تاريخ آخر</button></div>
+        <div role="radiogroup" aria-label="اليوم" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="6">
+            <button class="opt" type="button" role="radio" aria-checked="{{d.on}}" disabled="{{d.disabled}}" onClick="{{d.pick}}" style="{{d.style}}">
+              <span style="font-size:11px;opacity:.85">{{d.wd}}</span>
+              <span style="font-size:16px;font-weight:600;line-height:1.1">{{d.n}}</span>
+              <span style="font-size:10px;opacity:.85">{{d.free}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Slots -->
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:13px;font-weight:500;color:#303030">الوقت المتاح</span>
+        <div role="radiogroup" aria-label="الوقت" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">
+          <sc-for list="{{slots}}" as="s" hint-placeholder-count="12">
+            <button class="opt" type="button" role="radio" aria-checked="{{s.on}}" disabled="{{s.disabled}}" onClick="{{s.pick}}" style="{{s.style}}">{{s.t}}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Notes + whatsapp -->
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="bk-notes" style="font-size:13px;font-weight:500;color:#303030">ملاحظات <span style="color:#616161;font-weight:400">(اختياري)</span></label>
+        <textarea id="bk-notes" rows="2" placeholder="مثال: المريضة تفضل التخدير الموضعي الخفيف" style="resize:none;padding:8px 10px;border:1px solid #E3E3E3;border-radius:8px;font-family:inherit;font-size:13px;color:#1A1A1A;outline:none"></textarea>
+      </div>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <button type="button" role="switch" aria-checked="{{wa}}" onClick="{{toggleWa}}" style="{{waTrack}}"><span style="{{waKnob}}"></span></button>
+        <span style="display:flex;flex-direction:column">
+          <span style="font-size:13px;font-weight:500">إرسال تأكيد عبر واتساب</span>
+          <span style="font-size:12px;color:#616161">وتذكير قبل الموعد بيوم</span>
+        </span>
+      </label>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid #EBEBEB;background:#FAFAFA;border-radius:0 0 14px 14px">
+      <div style="display:flex;flex-direction:column;flex:1">
+        <span style="font-size:12px;color:#616161">الموعد</span>
+        <span style="font-size:13px;font-weight:600">{{summary}}</span>
+      </div>
+      <a class="btn" href="Main.dc.html" style="display:inline-flex;align-items:center;height:32px;box-sizing:border-box;padding:0 14px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-size:13px;font-weight:500;text-decoration:none">إلغاء</a>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>تأكيد الحجز</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var doc = s.doc || 'sara', day = s.day === undefined ? 1 : s.day, slot = s.slot || '10:30';
+    var wa = s.wa === undefined ? true : s.wa;
+    var D = [
+      { id: 'ahmad', name: 'د. أحمد', sub: '2 مواعيد متاحة', ini: 'أح' },
+      { id: 'sara', name: 'د. سارة', sub: '6 مواعيد متاحة', ini: 'سا' },
+      { id: 'yousef', name: 'د. يوسف', sub: 'في إجازة', ini: 'يو', disabled: true }
+    ];
+    var doctors = D.map(function (d) {
+      var on = d.id === doc;
+      return Object.assign({}, d, { on: on, disabled: !!d.disabled,
+        style: 'display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-family:inherit;color:#1A1A1A;cursor:' + (d.disabled ? 'not-allowed' : 'pointer') + ';opacity:' + (d.disabled ? '.55' : '1') + ';background:' + (on ? '#F7F9FF' : '#FFFFFF') + ';border:1px solid ' + (on ? '#2563EB' : '#E3E3E3'),
+        radio: 'width:16px;height:16px;border-radius:50%;box-sizing:border-box;flex:none;' + (on ? 'border:5px solid #2563EB;background:#FFFFFF' : 'border:1.5px solid #BDBDBD'),
+        pick: function () { self.setState({ doc: d.id }); } });
+    });
+    var DY = [
+      { wd: 'السبت', n: '31', m: 'أكتوبر', free: '3 متاح' },
+      { wd: 'الأحد', n: '1', m: 'نوفمبر', free: '6 متاح' },
+      { wd: 'الاثنين', n: '2', m: 'نوفمبر', free: '4 متاح' },
+      { wd: 'الثلاثاء', n: '3', m: 'نوفمبر', free: '5 متاح' },
+      { wd: 'الأربعاء', n: '4', m: 'نوفمبر', free: '1 متاح' },
+      { wd: 'الخميس', n: '5', m: 'نوفمبر', free: 'ممتلئ', disabled: true }
+    ];
+    var days = DY.map(function (d, i) {
+      var on = i === day;
+      return Object.assign({}, d, { on: on, disabled: !!d.disabled,
+        style: 'display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0;border-radius:9px;font-family:inherit;cursor:' + (d.disabled ? 'not-allowed' : 'pointer') + ';' + (on ? 'background:#2563EB;color:#FFFFFF;border:1px solid #2563EB' : d.disabled ? 'background:#FAFAFA;color:#9A9A9A;border:1px solid #EBEBEB' : 'background:#FFFFFF;color:#1A1A1A;border:1px solid #E3E3E3'),
+        pick: function () { self.setState({ day: i }); } });
+    });
+    var SL = ['09:00', '09:45', '10:30', '11:15', '12:00', '12:45', '14:00', '14:45', '15:30', '16:15', '17:00', '17:45'];
+    var booked = { '09:00': 1, '11:15': 1, '12:00': 1, '14:45': 1, '17:45': 1 };
+    var slots = SL.map(function (t) {
+      var on = t === slot, b = !!booked[t];
+      return { t: t, on: on, disabled: b,
+        style: 'height:32px;border-radius:8px;font-family:inherit;font-size:13px;font-variant-numeric:tabular-nums;cursor:' + (b ? 'not-allowed' : 'pointer') + ';' + (on ? 'background:#2563EB;color:#FFFFFF;border:1px solid #2563EB;font-weight:600' : b ? 'background:#FAFAFA;color:#9A9A9A;border:1px solid #EBEBEB;text-decoration:line-through' : 'background:#FFFFFF;color:#1A1A1A;border:1px solid #E3E3E3;font-weight:500'),
+        pick: function () { self.setState({ slot: t }); } };
+    });
+    var dd = DY[day], dn = D.filter(function (x) { return x.id === doc; })[0];
+    return {
+      doctors: doctors, days: days, slots: slots, wa: wa,
+      toggleWa: function () { self.setState({ wa: !wa }); },
+      waTrack: 'position:relative;width:36px;height:20px;border-radius:99px;border:0;padding:0;cursor:pointer;flex:none;background:' + (wa ? '#15803D' : '#D4D4D4'),
+      waKnob: 'position:absolute;top:2px;' + (wa ? 'left:2px' : 'left:18px') + ';width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s ease',
+      summary: dd.wd + ' ' + dd.n + ' ' + dd.m + ' · ' + slot + ' · ' + dn.name
+    };
+  }
+}
+</script>
+</body>
+</html>

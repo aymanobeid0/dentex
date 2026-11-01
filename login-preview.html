@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تسجيل الدخول | Dentex</title>
+  <link rel="stylesheet" href="design-tokens.css">
+  <style>
+    *{box-sizing:border-box}body{margin:0;color:var(--text);background:var(--bg);font-family:var(--font-sans)}button,input{font:inherit}button{cursor:pointer} .page{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}.login{min-height:100vh;display:flex;flex-direction:column;padding:32px 40px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font-size:15px;font-weight:600;letter-spacing:.1px}.brand strong{display:inline-grid;place-items:center;margin-inline-end:9px;width:32px;height:32px;border-radius:8px;background:var(--text);color:#fff;font-size:16px}.language{height:32px;border:1px solid var(--border-control);border-radius:8px;background:var(--bg);padding:0 12px;font-size:12px;color:var(--text-strong)}.body{width:100%;max-width:360px;margin:auto; padding:44px 0}.body h1{font-size:24px;line-height:1.35;margin:0 0 6px;font-weight:600}.lead{margin:0 0 28px;color:var(--text-muted);font-size:13px;line-height:1.7}.field{display:block;margin-bottom:18px}.field span{display:block;font-size:13px;font-weight:500;margin-bottom:8px}.field input{width:100%;height:42px;padding:0 13px;border:1px solid var(--border-control);border-radius:8px;background:#fff;color:var(--text);outline:none;text-align:start}.field input:focus{border-color:var(--border-focus)}.field input::placeholder{color:var(--text-disabled)}.code{direction:ltr;unicode-bidi:isolate;text-align:start!important}.password-wrap{display:flex;align-items:center;border:1px solid var(--border-control);border-radius:8px}.password-wrap:focus-within{border-color:var(--border-focus)}.password-wrap input{border:0;flex:1;min-width:0}.reveal{border:0;background:transparent;color:var(--text-muted);padding:8px 12px;font-size:12px}.submit{width:100%;height:42px;background:var(--primary);color:var(--on-primary);border:1px solid var(--primary);border-radius:8px;font-weight:600;font-size:13px}.submit:hover{filter:brightness(.95)}button:focus-visible,input:focus-visible{outline:1px solid var(--border-focus);outline-offset:2px}.helper{margin:20px 0 0;color:var(--text-muted);font-size:12px;text-align:center;line-height:1.8}.message{min-height:20px;color:var(--text-muted);font-size:12px;margin:12px 0 0;line-height:1.7}.foot{font-size:11px;color:var(--text-muted);padding-top:10px}.visual{background:#f7f7f8;display:flex;align-items:center;justify-content:center;padding:60px}.visual-content{width:100%;max-width:400px}.visual h2{font-size:30px;font-weight:600;line-height:1.45;margin:0 0 12px}.visual p{font-size:13px;color:var(--text-muted);line-height:1.9;margin:0}.detail{margin-top:30px;padding:22px 24px;background:#fff;border:1px solid var(--border);border-radius:12px}.detail-title{font-size:13px;font-weight:600;margin:0 0 14px}.detail p{font-size:12px}.detail-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--border-soft);font-size:12px;color:var(--text-3)}.tag{font-size:11px;background:var(--success-soft-bg);color:var(--success-soft-fg);padding:4px 9px;border-radius:6px}.visual-note{margin-top:16px!important;font-size:11px!important}.preview{color:var(--text-muted)}@media(max-width:760px){.page{display:flex;flex-direction:column}.login{min-height:100vh;padding:24px}.visual{display:none}.body{padding:56px 0}.body h1{font-size:22px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+    /* Soft single-edge controls: no stacked border and focus ring. */
+    .login { --border-control: #ebebeb; --border-hover: #dedede; }
+    .field > span.password-wrap { display:flex; margin-bottom:0; }
+    .field .password-wrap input { border:0; outline:0; box-shadow:none; }
+    .field input:focus-visible { outline:none; box-shadow:none; }
+    .field > input:focus, .password-wrap:focus-within { border-color:#b8b8b8; }
+    .field > input, .password-wrap, .language { border-width:1px; box-shadow:none; }
+    .reveal:focus-visible { outline:1px solid var(--border-focus); outline-offset:-3px; }
+    .language,.submit,.reveal{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+    .lucide{width:16px;height:16px;stroke-width:1.75;flex-shrink:0}
+    .field > .input-shell,.field > .password-wrap{display:flex;align-items:center;gap:10px;margin-bottom:0;padding-inline:12px;border:1px solid var(--border-control);border-radius:8px}
+    .input-shell > .lucide,.password-wrap > .lucide{color:var(--text-muted)}
+    .field .input-shell input,.field .password-wrap input{border:0;outline:none;box-shadow:none;padding-inline:0;min-width:0;flex:1}
+    .field .input-shell:focus-within,.field .password-wrap:focus-within{border-color:#b8b8b8}
+    .field .input-shell span,.field .password-wrap span{margin:0}
+    .reveal{padding:6px;min-width:28px;min-height:28px}
+    .detail-row > span:first-child{display:inline-flex;align-items:center;gap:9px}
+    [dir="rtl"] .directional{transform:scaleX(-1)}
+    /* Keep browser autofill consistent with the white input surface. */
+    .field input:autofill,
+    .field input:-webkit-autofill,
+    .field input:-webkit-autofill:hover,
+    .field input:-webkit-autofill:focus,
+    .field input:-webkit-autofill:active {
+      -webkit-box-shadow:0 0 0 1000px var(--bg) inset;
+      box-shadow:0 0 0 1000px var(--bg) inset;
+      -webkit-text-fill-color:var(--text);
+      caret-color:var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <main class="login">
+      <header class="top"><div class="brand"><strong aria-hidden="true">D</strong>Dentex</div><button type="button" class="language" id="language" aria-label="Changer la langue"><i data-lucide="globe" aria-hidden="true"></i><span id="language-text">Français</span></button></header>
+      <div class="body">
+        <h1 data-i="heading">تسجيل الدخول</h1>
+        <p class="lead" data-i="lead">أدخل بيانات حسابك للوصول إلى عيادتك.</p>
+        <form id="login-form">
+          <label class="field"><span data-i="clinic">رمز العيادة</span><span class="input-shell"><i data-lucide="building-2" aria-hidden="true"></i><input class="code" id="clinic" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="0000" autocomplete="off" required></span></label>
+          <label class="field"><span data-i="user">اسم المستخدم</span><span class="input-shell"><i data-lucide="user-round" aria-hidden="true"></i><input id="user" autocomplete="username" data-placeholder="userPlaceholder" placeholder="أدخل اسم المستخدم" required></span></label>
+          <label class="field"><span data-i="password">كلمة المرور</span><span class="password-wrap"><i data-lucide="lock-keyhole" aria-hidden="true"></i><input id="password" type="password" autocomplete="current-password" data-placeholder="passwordPlaceholder" placeholder="أدخل كلمة المرور" required><button class="reveal" id="reveal" type="button" aria-label="إظهار كلمة المرور" aria-pressed="false"><i data-lucide="eye" aria-hidden="true"></i></button></span></label>
+          <button class="submit" type="submit"><span data-i="submit">دخول</span><i data-lucide="arrow-right" class="directional" aria-hidden="true"></i></button>
+          <p id="message" class="message" role="status" aria-live="polite"></p>
+        </form>
+        <p class="helper" data-i="help">تحتاج مساعدة في الدخول؟ تواصل مع مدير العيادة.</p>
+      </div>
+      <footer class="foot" data-i="footer">نموذج بصري · إدارة عيادات الأسنان</footer>
+    </main>
+    <aside class="visual" aria-label="Dentex">
+      <div class="visual-content"><h2 data-i="visualTitle">عيادتك كلها<br>في شاشة واحدة</h2><p data-i="visualLead">مساحة واضحة لتنظيم عمل عيادتك، يومًا بعد يوم.</p>
+        <section class="detail" aria-label="Dentex"><h3 class="detail-title" data-i="detailTitle">مساحة عمل عيادتك</h3><div class="detail-row"><span data-i="patients">ملفات المرضى</span><span class="tag" data-i="organized">منظّمة</span></div><div class="detail-row"><span data-i="appointments">المواعيد</span><span class="preview" data-i="clear">في مكان واحد</span></div><div class="detail-row"><span data-i="team">فريق العيادة</span><span class="preview" data-i="together">معًا بسهولة</span></div></section>
+        <p class="visual-note" data-i="visualNote">نظرة أبسط على تفاصيل يومك.</p>
+      </div>
+    </aside>
+  </div>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script>
+    const copy={ar:{heading:'تسجيل الدخول',lead:'أدخل بيانات حسابك للوصول إلى عيادتك.',clinic:'رمز العيادة',user:'اسم المستخدم',password:'كلمة المرور',userPlaceholder:'أدخل اسم المستخدم',passwordPlaceholder:'أدخل كلمة المرور',show:'إظهار',hide:'إخفاء',submit:'دخول',help:'تحتاج مساعدة في الدخول؟ تواصل مع مدير العيادة.',footer:'نموذج بصري · إدارة عيادات الأسنان',visualTitle:'عيادتك كلها<br>في شاشة واحدة',visualLead:'مساحة واضحة لتنظيم عمل عيادتك، يومًا بعد يوم.',detailTitle:'مساحة عمل عيادتك',patients:'ملفات المرضى',organized:'منظّمة',appointments:'المواعيد',clear:'في مكان واحد',team:'فريق العيادة',together:'معًا بسهولة',visualNote:'نظرة أبسط على تفاصيل يومك.',message:'هذا نموذج بصري فقط؛ تسجيل الدخول غير متصل بالخادم.'},fr:{heading:'Se connecter',lead:'Saisissez vos identifiants pour accéder à votre cabinet.',clinic:'Code du cabinet',user:'Nom d’utilisateur',password:'Mot de passe',userPlaceholder:'Saisissez votre nom d’utilisateur',passwordPlaceholder:'Saisissez votre mot de passe',show:'Afficher',hide:'Masquer',submit:'Se connecter',help:'Besoin d’aide ? Contactez votre administrateur.',footer:'Aperçu visuel · Gestion de cabinet dentaire',visualTitle:'Tout votre cabinet<br>au même endroit',visualLead:'Un espace clair pour organiser votre cabinet au quotidien.',detailTitle:'Votre espace de travail',patients:'Dossiers patients',organized:'Organisés',appointments:'Rendez-vous',clear:'Au même endroit',team:'Équipe du cabinet',together:'En toute simplicité',visualNote:'Une vue plus simple de votre journée.',message:'Ceci est un aperçu visuel ; la connexion n’est pas reliée au serveur.'}};let lang='ar';const password=document.querySelector('#password'),reveal=document.querySelector('#reveal'),message=document.querySelector('#message');function render(){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.title=copy[lang].heading+' | Dentex';document.querySelectorAll('[data-i]').forEach(el=>{let key=el.dataset.i;if(key==='visualTitle')el.innerHTML=copy[lang][key];else if(key==='show')el.textContent=copy[lang][password.type==='password'?'show':'hide'];else el.textContent=copy[lang][key]});document.querySelectorAll('[data-placeholder]').forEach(el=>el.placeholder=copy[lang][el.dataset.placeholder]);document.querySelector('#language-text').textContent=lang==='ar'?'Français':'العربية';document.querySelector('#language').setAttribute('aria-label',lang==='ar'?'Changer la langue en français':'التغيير إلى اللغة العربية');message.textContent='';reveal.setAttribute('aria-label',copy[lang][password.type==='password'?'show':'hide']+' '+copy[lang].password);reveal.setAttribute('aria-pressed',String(password.type==='text'));reveal.innerHTML='<i data-lucide="'+(password.type==='password'?'eye':'eye-off')+'" aria-hidden="true"></i>';if(window.lucide)lucide.createIcons()}document.querySelector('#language').addEventListener('click',()=>{lang=lang==='ar'?'fr':'ar';render()});reveal.addEventListener('click',()=>{password.type=password.type==='password'?'text':'password';render()});document.querySelector('#login-form').addEventListener('submit',e=>{e.preventDefault();message.textContent=copy[lang].message});render();
+  </script>
+</body>
+</html>

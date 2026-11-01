@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تقويم المواعيد</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.96)}
+.btn:focus-visible,.day:focus-visible,.cell:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+.day:hover{background:#F1F1F2 !important}
+.cell:hover{filter:brightness(.985)}
+</style>
+</helmet>
+<div dir="rtl" style="display:flex;width:1592px;min-height:960px;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="appts" hint-size="232px,960px"></dc-import></div>
+<div dir="rtl" style="width:1360px;min-height:960px;box-sizing:border-box;padding:32px;background:#FFFFFF;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;display:flex;gap:20px;align-items:flex-start">
+
+  <!-- Side column -->
+  <aside style="width:300px;flex:none;display:flex;flex-direction:column;gap:16px">
+
+    <button class="btn" type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>موعد جديد</button>
+
+    <!-- Date picker -->
+    <section aria-label="منتقي التاريخ" style="border:1px solid #EBEBEB;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:14px;font-weight:600;flex:1">{{pickTitle}}</span>
+        <button class="btn" type="button" aria-label="الشهر السابق" onClick="{{pickPrev}}" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;cursor:pointer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+        <button class="btn" type="button" aria-label="الشهر التالي" onClick="{{pickNext}}" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;cursor:pointer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px">
+        <sc-for list="{{shortDays}}" as="w" hint-placeholder-count="7">
+          <span style="height:26px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#616161">{{w}}</span>
+        </sc-for>
+        <sc-for list="{{pickCells}}" as="c" hint-placeholder-count="35">
+          <button class="day" type="button" aria-label="{{c.aria}}" aria-pressed="{{c.selected}}" onClick="{{c.pick}}" style="{{c.style}}">
+            {{c.day}}
+            <span style="{{c.dotStyle}}"></span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:6px;border-top:1px solid #EBEBEB;padding-top:10px">
+        <button class="btn" type="button" onClick="{{goToday}}" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>اليوم</button>
+        <button class="btn" type="button" onClick="{{goTomorrow}}" style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">غداً</button>
+      </div>
+    </section>
+
+    <!-- Selected day list -->
+    <section style="border:1px solid #EBEBEB;border-radius:12px;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #EBEBEB">
+        <h2 style="margin:0;font-size:13px;font-weight:600;flex:1">{{selTitle}}</h2>
+        <span style="font-size:11px;font-weight:600;color:#3F3F3F;background:#F1F1F2;border-radius:6px;padding:2px 6px">{{selCount}}</span>
+      </div>
+      <sc-if value="{{hasSel}}" hint-placeholder-val="{{true}}">
+        <div style="display:flex;flex-direction:column;padding:4px 0">
+          <sc-for list="{{selEvents}}" as="e" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 14px">
+              <span style="font-size:12px;font-weight:600;color:#3F3F3F;width:38px;font-variant-numeric:tabular-nums">{{e.t}}</span>
+              <span style="{{e.barStyle}}"></span>
+              <span style="display:flex;flex-direction:column;flex:1;min-width:0">
+                <span style="font-size:13px;font-weight:500">{{e.n}}</span>
+                <span style="font-size:11px;color:#616161">{{e.p}} · {{e.label}}</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{noSel}}" hint-placeholder-val="{{false}}">
+        <div style="padding:22px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+          <div style="width:36px;height:36px;border-radius:10px;background:#F1F1F2;color:#4A4A4A;display:flex;align-items:center;justify-content:center">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </div>
+          <span style="font-size:13px;font-weight:500">لا توجد مواعيد في هذا اليوم</span>
+          <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>إضافة موعد</button>
+        </div>
+      </sc-if>
+    </section>
+  </aside>
+
+  <!-- Month calendar -->
+  <section aria-label="تقويم الشهر" style="flex:1;min-width:0;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+      <h1 style="margin:0;font-size:20px;font-weight:600">{{viewTitle}}</h1>
+      <div style="display:flex;gap:4px">
+        <button class="btn" type="button" aria-label="الشهر السابق" onClick="{{viewPrev}}" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+        <button class="btn" type="button" aria-label="الشهر التالي" onClick="{{viewNext}}" style="width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      </div>
+      <button class="btn" type="button" onClick="{{goToday}}" style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.04)">اليوم</button>
+
+      <div style="margin-inline-start:auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+          <span style="width:20px;height:20px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600">أح</span>
+          د. أحمد
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div role="group" aria-label="طريقة العرض" style="display:flex;gap:2px;background:#F4F4F5;border-radius:8px;padding:2px">
+          <a href="DayView.dc.html" style="display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:6px;color:#4A4A4A;font-size:12px;font-weight:500;text-decoration:none">يوم</a>
+          <button type="button" aria-pressed="false" style="height:28px;padding:0 12px;border:0;border-radius:6px;background:transparent;color:#4A4A4A;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">أسبوع</button>
+          <button type="button" aria-pressed="true" style="height:28px;padding:0 12px;border:0;border-radius:6px;background:#FFFFFF;color:#1A1A1A;font-family:inherit;font-size:12px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08);cursor:pointer">شهر</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#FAFAFA;border-bottom:1px solid #EBEBEB">
+        <sc-for list="{{longDays}}" as="w" hint-placeholder-count="7">
+          <span style="height:34px;display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:500;color:#616161">{{w}}</span>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:#EBEBEB">
+        <sc-for list="{{bigCells}}" as="c" hint-placeholder-count="35">
+          <button class="cell" type="button" aria-label="{{c.aria}}" onClick="{{c.pick}}" style="{{c.style}}">
+            <span style="{{c.numStyle}}">{{c.day}}</span>
+            <sc-for list="{{c.chips}}" as="ch" hint-placeholder-count="1">
+              <span style="{{ch.style}}">{{ch.text}}</span>
+            </sc-for>
+            <sc-if value="{{c.hasMore}}" hint-placeholder-val="{{false}}">
+              <span style="font-size:11px;font-weight:500;color:#4A4A4A;padding:0 4px">{{c.more}}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#4A4A4A">
+      <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#15803D"></span>مؤكد</span>
+      <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#D98E04"></span>بانتظار التأكيد</span>
+      <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#2563EB"></span>في العيادة</span>
+      <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#DC2626"></span>ملغى</span>
+    </div>
+  </section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1592,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var s = this.state || {};
+    var TODAY = '2026-10-30';
+    var MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    var WD = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    var M = {
+      confirmed: { label: 'مؤكد', bg: '#DCF5E6', fg: '#0F6B32', dot: '#15803D' },
+      pending:   { label: 'بانتظار التأكيد', bg: '#FDEBC0', fg: '#734600', dot: '#D98E04' },
+      arrived:   { label: 'في العيادة', bg: '#DCE7FE', fg: '#1A44B8', dot: '#2563EB' },
+      cancelled: { label: 'ملغى', bg: '#FDDEDE', fg: '#A31616', dot: '#DC2626' }
+    };
+    var E = {
+      '2026-10-05': [{ t: '10:00', n: 'أمينة سيدي', p: 'فحص أولي', s: 'confirmed' }],
+      '2026-10-07': [{ t: '09:30', n: 'محمد الأمين', p: 'متابعة تقويم', s: 'confirmed' }, { t: '12:00', n: 'زينب محمد', p: 'تبييض', s: 'confirmed' }],
+      '2026-10-12': [{ t: '11:00', n: 'مريم أحمد', p: 'فحص أولي', s: 'confirmed' }],
+      '2026-10-14': [{ t: '09:00', n: 'عبد الله سالم', p: 'حشوة', s: 'cancelled' }, { t: '10:30', n: 'خديجة سالم', p: 'أشعة', s: 'confirmed' }],
+      '2026-10-19': [{ t: '13:00', n: 'فاطمة محمد', p: 'تنظيف', s: 'confirmed' }],
+      '2026-10-21': [{ t: '09:00', n: 'سيدي عبد الله', p: 'فحص أولي', s: 'confirmed' }, { t: '10:00', n: 'أحمد ولد محمد', p: 'خلع', s: 'confirmed' }, { t: '11:30', n: 'ليلى أحمد', p: 'حشوة', s: 'confirmed' }],
+      '2026-10-26': [{ t: '09:00', n: 'زينب محمد', p: 'متابعة تبييض', s: 'confirmed' }, { t: '11:00', n: 'محمد الأمين', p: 'متابعة تقويم', s: 'confirmed' }],
+      '2026-10-27': [{ t: '10:30', n: 'عائشة يحيى', p: 'علاج عصب', s: 'cancelled' }],
+      '2026-10-28': [{ t: '09:00', n: 'إبراهيم سالم', p: 'تنظيف', s: 'confirmed' }, { t: '10:00', n: 'مريم أحمد', p: 'أشعة', s: 'confirmed' }, { t: '11:30', n: 'حواء محمد', p: 'حشوة', s: 'cancelled' }, { t: '13:00', n: 'يحيى أحمد', p: 'فحص', s: 'confirmed' }],
+      '2026-10-30': [{ t: '09:00', n: 'فاطمة محمد', p: 'تنظيف وتلميع', s: 'arrived' }, { t: '09:45', n: 'سيدي عبد الله', p: 'حشوة تجميلية', s: 'confirmed' }, { t: '10:30', n: 'مريم أحمد', p: 'خلع ضرس', s: 'pending' }, { t: '11:15', n: 'محمد الأمين', p: 'متابعة تقويم', s: 'confirmed' }, { t: '12:00', n: 'خديجة سالم', p: 'علاج عصب', s: 'cancelled' }],
+      '2026-10-31': [{ t: '10:00', n: 'عبد الرحمن محمود', p: 'فحص أولي', s: 'pending' }, { t: '11:00', n: 'أم كلثوم', p: 'تنظيف', s: 'pending' }],
+      '2026-11-01': [{ t: '09:30', n: 'سالم محمد', p: 'حشوة', s: 'pending' }, { t: '12:00', n: 'زينب محمد', p: 'متابعة', s: 'pending' }],
+      '2026-11-02': [{ t: '10:00', n: 'محمد الأمين', p: 'متابعة تقويم', s: 'confirmed' }],
+      '2026-11-04': [{ t: '09:00', n: 'فاطمة محمد', p: 'متابعة', s: 'confirmed' }, { t: '11:00', n: 'مريم أحمد', p: 'غرز', s: 'confirmed' }],
+      '2026-11-09': [{ t: '10:30', n: 'خديجة سالم', p: 'علاج عصب', s: 'confirmed' }],
+      '2026-11-11': [{ t: '09:00', n: 'أحمد ولد محمد', p: 'تركيب تاج', s: 'confirmed' }]
+    };
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function key(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+    function parse(k) { var a = k.split('-'); return new Date(+a[0], +a[1] - 1, +a[2]); }
+    function shift(v, n) { var d = new Date(v.y, v.m + n, 1); return { y: d.getFullYear(), m: d.getMonth() }; }
+    function cells(v) {
+      var first = new Date(v.y, v.m, 1);
+      var off = (first.getDay() + 1) % 7;
+      var dim = new Date(v.y, v.m + 1, 0).getDate();
+      var total = Math.ceil((off + dim) / 7) * 7;
+      var out = [];
+      for (var i = 0; i < total; i++) {
+        var d = new Date(v.y, v.m, 1 - off + i);
+        out.push({ d: d, k: key(d), day: d.getDate(), inMonth: d.getMonth() === v.m });
+      }
+      return out;
+    }
+    function aria(d) { return WD[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+
+    var sel = s.sel || TODAY;
+    var view = s.view || { y: 2026, m: 9 };
+    var pv = s.pv || { y: 2026, m: 9 };
+    function select(k) {
+      var d = parse(k);
+      var v = { y: d.getFullYear(), m: d.getMonth() };
+      self.setState({ sel: k, view: v, pv: v });
+    }
+
+    var pickCells = cells(pv).map(function (c) {
+      var isS = c.k === sel, isT = c.k === TODAY, has = !!E[c.k];
+      var st = 'position:relative;height:36px;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;font-variant-numeric:tabular-nums;';
+      if (isS) st += 'background:#2563EB;color:#FFFFFF;font-weight:600;border:1px solid #2563EB;';
+      else if (isT) st += 'background:transparent;border:1px solid #CFCFCF;color:#1A1A1A;font-weight:600;';
+      else st += 'background:transparent;border:1px solid transparent;color:' + (c.inMonth ? '#1A1A1A' : '#9A9A9A') + ';font-weight:400;';
+      return {
+        day: c.day, selected: isS, aria: aria(c.d), style: st,
+        dotStyle: has ? 'position:absolute;bottom:4px;left:50%;margin-left:-2px;width:4px;height:4px;border-radius:50%;background:' + (isS ? '#FFFFFF' : '#2563EB') : 'display:none',
+        pick: function () { select(c.k); }
+      };
+    });
+
+    var bigCells = cells(view).map(function (c) {
+      var ev = E[c.k] || [];
+      var isS = c.k === sel, isT = c.k === TODAY;
+      return {
+        day: c.day,
+        aria: aria(c.d) + '، ' + ev.length + ' مواعيد',
+        style: 'display:flex;flex-direction:column;align-items:stretch;gap:4px;min-height:112px;padding:8px;border:0;font-family:inherit;text-align:start;cursor:pointer;box-sizing:border-box;background:' + (c.inMonth ? '#FFFFFF' : '#FAFAFA') + ';' + (isS ? 'box-shadow:inset 0 0 0 1px #A3A3A3;' : ''),
+        numStyle: isT
+          ? 'display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;width:24px;height:24px;border-radius:50%;background:#2563EB;color:#FFFFFF;font-size:12px;font-weight:600'
+          : 'display:inline-flex;align-items:center;align-self:flex-start;height:24px;padding:0 2px;font-size:12px;font-weight:' + (isS ? '700' : '500') + ';color:' + (c.inMonth ? '#1A1A1A' : '#9A9A9A'),
+        chips: ev.slice(0, 2).map(function (e) {
+          var m = M[e.s];
+          return { text: e.t + ' ' + e.n, style: 'display:block;font-size:11px;font-weight:500;line-height:20px;padding:0 6px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:' + m.bg + ';color:' + m.fg + (e.s === 'cancelled' ? ';text-decoration:line-through' : '') };
+        }),
+        hasMore: ev.length > 2,
+        more: '+' + (ev.length - 2) + ' المزيد',
+        pick: function () { select(c.k); }
+      };
+    });
+
+    var sd = parse(sel);
+    var se = (E[sel] || []).map(function (e) {
+      var m = M[e.s];
+      return Object.assign({}, e, { label: m.label, barStyle: 'width:3px;align-self:stretch;border-radius:2px;background:' + m.dot });
+    });
+    var tomorrow = new Date(2026, 9, 31);
+
+    return {
+      shortDays: ['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'],
+      longDays: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
+      pickTitle: MONTHS[pv.m] + ' ' + pv.y,
+      pickPrev: function () { self.setState({ pv: shift(pv, -1) }); },
+      pickNext: function () { self.setState({ pv: shift(pv, 1) }); },
+      pickCells: pickCells,
+      viewTitle: MONTHS[view.m] + ' ' + view.y,
+      viewPrev: function () { self.setState({ view: shift(view, -1) }); },
+      viewNext: function () { self.setState({ view: shift(view, 1) }); },
+      bigCells: bigCells,
+      goToday: function () { select(TODAY); },
+      goTomorrow: function () { select(key(tomorrow)); },
+      selTitle: (sel === TODAY ? 'اليوم، ' : '') + aria(sd),
+      selCount: String(se.length),
+      selEvents: se,
+      hasSel: se.length > 0,
+      noSel: se.length === 0
+    };
+  }
+}
+</script>
+</body>
+</html>

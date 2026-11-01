@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مركز الإشعارات</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.it:hover{background:#FAFAFA !important}
+.it:focus-visible,button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+</style>
+</helmet>
+<div dir="rtl" style="width:440px;height:760px;box-sizing:border-box;padding:20px;background:#F4F4F5;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A">
+  <section role="dialog" aria-label="الإشعارات" style="height:100%;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.10);display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:8px;padding:14px 16px">
+      <h1 style="margin:0;font-size:15px;font-weight:600;flex:1">الإشعارات</h1>
+      <button type="button" onClick="{{readAll}}" style="height:28px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#2563EB;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">تعليم الكل كمقروء</button>
+      <button type="button" aria-label="إعدادات الإشعارات" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#4A4A4A;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></button>
+    </div>
+    <div role="tablist" style="display:flex;gap:4px;padding:0 16px;border-bottom:1px solid #EBEBEB">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.l}}</button></sc-for>
+    </div>
+    <div style="flex:1;overflow-y:auto">
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+        <div style="padding:10px 16px 4px;font-size:11px;font-weight:600;color:#616161">{{g.l}}</div>
+        <sc-for list="{{g.items}}" as="n" hint-placeholder-count="3">
+          <a class="it" href="{{n.href}}" style="{{n.style}}">
+            <span style="{{n.tile}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{n.icon}}"/></svg></span>
+            <span style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
+              <span style="{{n.titleStyle}}">{{n.t}}</span>
+              <span style="font-size:12px;color:#616161;line-height:1.5">{{n.d}}</span>
+              <span style="font-size:11px;color:#616161">{{n.time}}</span>
+            </span>
+            <sc-if value="{{n.unread}}" hint-placeholder-val="{{false}}"><span aria-label="غير مقروء" style="width:8px;height:8px;border-radius:50%;background:#2563EB;margin-top:6px;flex:none"></span></sc-if>
+          </a>
+        </sc-for>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":440,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var tab = s.tab || 'all', allRead = !!s.read;
+    var I = { msg: 'M7.9 20A9 9 0 1 0 4 16.1L2 22Z', cal: 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2ZM16 2v4M8 2v4M3 10h18', money: 'M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2ZM12 10a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z', box: 'M21 8 12 3 3 8v8l9 5 9-5V8ZM3 8l9 5 9-5M12 13v8', lab: 'M9 3h6M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3', check: 'M20 6 9 17l-5-5' };
+    var T = { red: 'background:#FDDEDE;color:#A31616', amber: 'background:#FDEBC0;color:#734600', blue: 'background:#DCE7FE;color:#1A44B8', green: 'background:#DCF5E6;color:#0F6B32', gray: 'background:#F1F1F2;color:#303030' };
+    var N = [
+      { g: 'اليوم', k: 'msg', c: 'red', t: 'رسالة عاجلة: ألم شديد', d: 'رقم جديد يطلب موعداً اليوم', time: 'قبل 40 دقيقة', unread: true, cat: 'msg', href: 'Inbox.dc.html' },
+      { g: 'اليوم', k: 'cal', c: 'amber', t: 'زينب محمد طلبت إعادة جدولة', d: 'موعد السبت 10:00 مع د. سارة', time: 'قبل ساعة', unread: true, cat: 'appt', href: 'Inbox.dc.html' },
+      { g: 'اليوم', k: 'check', c: 'green', t: 'تم تأكيد 4 مواعيد للغد', d: 'رد المرضى على تذكير واتساب', time: '13:10', unread: true, cat: 'appt', href: 'Calendar.dc.html' },
+      { g: 'اليوم', k: 'box', c: 'red', t: 'مخزون التخدير تحت الحد الأدنى', d: 'ليدوكائين: متبقٍ 6 أمبولات', time: '09:00', unread: false, cat: 'sys', href: 'Inventory.dc.html' },
+      { g: 'أمس', k: 'money', c: 'amber', t: 'قسط متأخر: مريم أحمد', d: '5,000 أوقية · مستحق منذ 25 أكتوبر', time: 'أمس 18:00', unread: false, cat: 'sys', href: 'Patient.dc.html' },
+      { g: 'أمس', k: 'lab', c: 'blue', t: 'قشور ليلى أحمد تأخرت في المعمل', d: 'كان متوقعاً وصولها 27 أكتوبر', time: 'أمس 11:20', unread: false, cat: 'sys', href: 'Lab.dc.html' }
+    ];
+    var TB = [{ id: 'all', l: 'الكل' }, { id: 'appt', l: 'المواعيد' }, { id: 'msg', l: 'الرسائل' }];
+    var tabs = TB.map(function (t) { var on = t.id === tab; return { l: t.l, on: on, pick: function () { self.setState({ tab: t.id }); }, style: 'height:36px;padding:0 10px;margin-bottom:-1px;border:0;border-bottom:2px solid ' + (on ? '#2563EB' : 'transparent') + ';background:transparent;color:' + (on ? '#1A1A1A' : '#616161') + ';font-family:inherit;font-size:13px;font-weight:' + (on ? '600' : '500') + ';cursor:pointer' }; });
+    var groups = ['اليوم', 'أمس'].map(function (g) {
+      return { l: g, items: N.filter(function (n) { return n.g === g && (tab === 'all' || n.cat === tab); }).map(function (n) {
+        var u = n.unread && !allRead;
+        return { t: n.t, d: n.d, time: n.time, href: n.href, unread: u, icon: I[n.k],
+          tile: 'width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;' + T[n.c],
+          titleStyle: 'font-size:13px;font-weight:' + (u ? '700' : '600') + ';color:#1A1A1A',
+          style: 'display:flex;align-items:flex-start;gap:12px;padding:10px 16px;text-decoration:none;color:#1A1A1A;background:' + (u ? '#F7F9FF' : 'transparent') };
+      }) };
+    });
+    return { tabs: tabs, groups: groups, readAll: function () { self.setState({ read: true }); } };
+  }
+}
+</script>
+</body>
+</html>

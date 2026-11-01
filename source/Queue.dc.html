@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>شاشة قاعة الانتظار</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div dir="rtl" style="width:1920px;height:1080px;box-sizing:border-box;padding:56px 64px;background:#FFFFFF;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;display:flex;flex-direction:column;gap:40px">
+  <header style="display:flex;align-items:center;gap:20px">
+    <div style="width:72px;height:72px;border-radius:18px;background:#1A1A1A;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></div>
+    <span style="font-size:40px;font-weight:700;flex:1">[اسم العيادة]</span>
+    <div style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-size:56px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums">14:17</span><span style="font-size:24px;color:#4A4A4A">الجمعة 30 أكتوبر</span></div>
+  </header>
+
+  <div style="flex:1;display:flex;gap:40px;min-height:0">
+    <section aria-label="الدور الحالي" style="flex:1.4;border-radius:32px;background:#2563EB;color:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+      <span style="font-size:40px;font-weight:500;opacity:.9">الدور الآن</span>
+      <span style="font-size:240px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">A12</span>
+      <span style="display:inline-flex;align-items:center;gap:16px;height:84px;padding:0 36px;border-radius:24px;background:#FFFFFF;color:#173A9E;font-size:44px;font-weight:700">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>العيادة 1</span>
+    </section>
+
+    <section aria-label="الأدوار التالية" style="flex:1;border:2px solid #EBEBEB;border-radius:32px;padding:36px 40px;display:flex;flex-direction:column;gap:8px">
+      <span style="font-size:32px;font-weight:600;color:#4A4A4A;margin-bottom:12px">التالي</span>
+      <div style="display:flex;align-items:center;gap:24px;padding:22px 0;border-bottom:2px solid #F1F1F2"><span style="font-size:80px;font-weight:700;line-height:1;width:220px;font-variant-numeric:tabular-nums">A13</span><span style="flex:1;font-size:32px;color:#303030">العيادة 2</span><span style="font-size:28px;color:#4A4A4A">~ 5 دقائق</span></div>
+      <div style="display:flex;align-items:center;gap:24px;padding:22px 0;border-bottom:2px solid #F1F1F2"><span style="font-size:80px;font-weight:700;line-height:1;width:220px;font-variant-numeric:tabular-nums">A14</span><span style="flex:1;font-size:32px;color:#303030">العيادة 2</span><span style="font-size:28px;color:#4A4A4A">~ 20 دقيقة</span></div>
+      <div style="display:flex;align-items:center;gap:24px;padding:22px 0"><span style="font-size:80px;font-weight:700;line-height:1;width:220px;font-variant-numeric:tabular-nums;color:#4A4A4A">A15</span><span style="flex:1;font-size:32px;color:#4A4A4A">العيادة 1</span><span style="font-size:28px;color:#616161">~ 45 دقيقة</span></div>
+    </section>
+  </div>
+
+  <footer style="display:flex;align-items:center;gap:20px;height:88px;padding:0 32px;border-radius:24px;background:#F7F7F8">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1A44B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+    <span style="font-size:30px;color:#303030">احجز موعدك القادم عبر واتساب: <b style="font-weight:700;direction:ltr;unicode-bidi:isolate">[رقم واتساب العيادة]</b></span>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

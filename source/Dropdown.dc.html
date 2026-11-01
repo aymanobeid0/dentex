@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>القوائم المنسدلة</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.btn{transition:filter .15s ease,border-color .15s ease}
+.btn:hover{filter:brightness(.97)}
+.btn:focus-visible,.item:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+.item:hover:not(:disabled){background:#F4F4F5 !important}
+.field:focus-within{border-color:#A3A3A3 !important;background:#FFFFFF !important}
+</style>
+</helmet>
+<div dir="rtl" style="width:1200px;height:600px;box-sizing:border-box;padding:40px;background:#FFFFFF;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;display:flex;flex-direction:column;gap:24px">
+
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h1 style="margin:0;font-size:20px;font-weight:600">القوائم المنسدلة</h1>
+    <p style="margin:0;font-size:13px;color:#616161">قائمة اختيار، قائمة إجراءات، وقائمة تصفية</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;flex:1">
+
+    <!-- 1. Select -->
+    <section style="border:1px solid #EBEBEB;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;font-weight:600;color:#616161">قائمة اختيار</span>
+      <div style="position:relative;display:flex;flex-direction:column;gap:6px">
+        <span id="doc-label" style="font-size:13px;font-weight:500;color:#303030">الطبيب</span>
+        <button class="btn" type="button" aria-haspopup="listbox" aria-expanded="{{open}}" aria-labelledby="doc-label" onClick="{{toggle}}" style="{{triggerStyle}}">
+          <sc-if value="{{current.isAll}}" hint-placeholder-val="{{false}}">
+            <span style="width:22px;height:22px;border-radius:6px;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;flex:none">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+          </sc-if>
+          <sc-if value="{{current.notAll}}" hint-placeholder-val="{{true}}">
+            <span style="width:22px;height:22px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex:none">{{current.initials}}</span>
+          </sc-if>
+          <span style="flex:1;text-align:start">{{current.name}}</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{chevronStyle}}"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+
+        <sc-if value="{{open}}" hint-placeholder-val="{{true}}">
+          <div role="listbox" aria-labelledby="doc-label" style="position:absolute;top:66px;inset-inline:0;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);padding:4px;display:flex;flex-direction:column;gap:2px;z-index:2">
+            <label class="field" style="display:flex;align-items:center;gap:6px;height:30px;margin:2px 2px 4px;padding:0 8px;border:1px solid #EBEBEB;border-radius:7px;background:#FAFAFA;color:#616161">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" aria-label="بحث عن طبيب" placeholder="بحث" style="flex:1;min-width:0;border:0;background:transparent;font-family:inherit;font-size:12px;color:#1A1A1A;outline:none">
+            </label>
+            <sc-for list="{{doctors}}" as="d" hint-placeholder-count="4">
+              <button class="item" type="button" role="option" aria-selected="{{d.selected}}" disabled="{{d.disabled}}" onClick="{{d.pick}}" style="{{d.style}}">
+                <sc-if value="{{d.isAll}}" hint-placeholder-val="{{false}}">
+                  <span style="width:24px;height:24px;border-radius:6px;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;flex:none">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </span>
+                </sc-if>
+                <sc-if value="{{d.notAll}}" hint-placeholder-val="{{true}}">
+                  <span style="width:24px;height:24px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex:none">{{d.initials}}</span>
+                </sc-if>
+                <span style="display:flex;flex-direction:column;gap:0;flex:1;text-align:start">
+                  <span style="font-size:13px;font-weight:500">{{d.name}}</span>
+                  <span style="font-size:11px;color:#616161">{{d.sub}}</span>
+                </span>
+                <sc-if value="{{d.selected}}" hint-placeholder-val="{{false}}">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                </sc-if>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <!-- 2. Actions menu -->
+    <section style="border:1px solid #EBEBEB;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;font-weight:600;color:#616161">قائمة إجراءات</span>
+      <div style="position:relative;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #EBEBEB;border-radius:10px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">مأ</div>
+          <div style="display:flex;flex-direction:column;flex:1">
+            <span style="font-size:13px;font-weight:500">مريم أحمد</span>
+            <span style="font-size:11px;color:#616161">10:30 · خلع ضرس</span>
+          </div>
+          <button class="btn" type="button" aria-haspopup="menu" aria-expanded="true" style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:1px solid #A3A3A3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">
+            إجراءات
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate(180deg)"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+
+        <div role="menu" aria-label="إجراءات الموعد" style="position:absolute;top:58px;inset-inline-end:0;width:236px;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);padding:4px;display:flex;flex-direction:column;gap:1px">
+          <button class="item" type="button" role="menuitem" style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#303030;font-family:inherit;font-size:13px;cursor:pointer;text-align:start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+            <span style="flex:1">عرض ملف المريض</span>
+          </button>
+          <button class="item" type="button" role="menuitem" style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border:0;border-radius:6px;background:#F4F4F5;color:#1A1A1A;font-family:inherit;font-size:13px;cursor:pointer;text-align:start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#303030" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            <span style="flex:1">تعديل الموعد</span>
+            <span style="font-size:11px;color:#616161">E</span>
+          </button>
+          <button class="item" type="button" role="menuitem" style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#303030;font-family:inherit;font-size:13px;cursor:pointer;text-align:start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            <span style="flex:1">إرسال تذكير واتساب</span>
+          </button>
+          <button class="item" type="button" role="menuitem" aria-haspopup="menu" style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#303030;font-family:inherit;font-size:13px;cursor:pointer;text-align:start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7"/></svg>
+            <span style="flex:1">نقل لطبيب آخر</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button class="item" type="button" role="menuitem" style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#303030;font-family:inherit;font-size:13px;cursor:pointer;text-align:start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span style="flex:1">تأجيل</span>
+          </button>
+          <div role="separator" style="height:1px;background:#EBEBEB;margin:4px 6px"></div>
+          <button class="item" type="button" role="menuitem" style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#A31616;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;text-align:start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span style="flex:1">إلغاء الموعد</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Filter -->
+    <section style="border:1px solid #EBEBEB;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;font-weight:600;color:#616161">قائمة تصفية</span>
+      <div style="position:relative;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px">
+          <button class="btn" type="button" aria-haspopup="dialog" aria-expanded="true" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid #A3A3A3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+            الحالة
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:5px;background:#DCE7FE;color:#1A44B8;font-size:11px;font-weight:600">{{activeCount}}</span>
+          </button>
+          <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px dashed #D4D4D4;border-radius:8px;background:#FFFFFF;color:#4A4A4A;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>
+            الطبيب
+          </button>
+        </div>
+
+        <div role="dialog" aria-label="تصفية حسب الحالة" style="position:absolute;top:40px;inset-inline-start:0;width:260px;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);display:flex;flex-direction:column">
+          <div style="padding:10px 12px 6px;font-size:12px;font-weight:600;color:#616161">تصفية حسب الحالة</div>
+          <div style="padding:0 4px 4px;display:flex;flex-direction:column;gap:1px">
+            <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+              <label class="item" style="display:flex;align-items:center;gap:10px;height:32px;padding:0 8px;border-radius:6px;cursor:pointer;font-size:13px">
+                <input type="checkbox" checked="{{f.on}}" onChange="{{f.toggle}}" style="width:15px;height:15px;margin:0;accent-color:#2563EB;cursor:pointer">
+                <span style="{{f.dotStyle}}"></span>
+                <span style="flex:1">{{f.label}}</span>
+                <span style="font-size:12px;color:#616161;font-variant-numeric:tabular-nums">{{f.count}}</span>
+              </label>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid #EBEBEB">
+            <button class="btn" type="button" onClick="{{clearAll}}" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border:0;border-radius:7px;background:transparent;color:#4A4A4A;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>مسح</button>
+            <button class="btn" type="button" style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #2563EB;border-radius:7px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>تطبيق</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":600}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var s = this.state || {};
+    var open = s.open === undefined ? true : s.open;
+    var doc = s.doc || 'ahmad';
+    var docs = [
+      { id: 'all', name: 'كل الأطباء', sub: '3 أطباء', initials: '' },
+      { id: 'ahmad', name: 'د. أحمد', sub: 'تقويم وتجميل', initials: 'أح' },
+      { id: 'sara', name: 'د. سارة', sub: 'جراحة الفم', initials: 'سا' },
+      { id: 'yousef', name: 'د. يوسف', sub: 'في إجازة حتى الأحد', initials: 'يو', disabled: true }
+    ];
+    var current = docs.filter(function (d) { return d.id === doc; })[0];
+    var doctors = docs.map(function (d) {
+      var sel = d.id === doc;
+      return Object.assign({}, d, {
+        isAll: d.id === 'all', notAll: d.id !== 'all', selected: sel, disabled: !!d.disabled,
+        style: 'display:flex;align-items:center;gap:10px;min-height:40px;padding:4px 8px;border:0;border-radius:6px;font-family:inherit;text-align:start;color:' + (d.disabled ? '#9A9A9A' : '#1A1A1A') + ';cursor:' + (d.disabled ? 'not-allowed' : 'pointer') + ';background:' + (sel ? '#F4F4F5' : 'transparent') + ';opacity:' + (d.disabled ? '.75' : '1'),
+        pick: function () { self.setState({ doc: d.id, open: false }); }
+      });
+    });
+    var F = s.f || { confirmed: true, pending: true, arrived: false, cancelled: false, postponed: false };
+    var defs = [
+      { id: 'confirmed', label: 'مؤكد', dot: '#15803D', count: 9 },
+      { id: 'pending', label: 'بانتظار التأكيد', dot: '#D98E04', count: 4 },
+      { id: 'arrived', label: 'في العيادة', dot: '#2563EB', count: 2 },
+      { id: 'postponed', label: 'مؤجل', dot: '#8A8A8A', count: 1 },
+      { id: 'cancelled', label: 'ملغى', dot: '#DC2626', count: 2 }
+    ];
+    var filters = defs.map(function (d) {
+      return Object.assign({}, d, {
+        on: !!F[d.id],
+        dotStyle: 'width:8px;height:8px;border-radius:50%;background:' + d.dot,
+        toggle: function () { var n = Object.assign({}, F); n[d.id] = !n[d.id]; self.setState({ f: n }); }
+      });
+    });
+    var activeCount = filters.filter(function (f) { return f.on; }).length;
+    return {
+      open: open,
+      toggle: function () { self.setState({ open: !open }); },
+      current: Object.assign({}, current, { isAll: current.id === 'all', notAll: current.id !== 'all' }),
+      doctors: doctors,
+      triggerStyle: 'display:flex;align-items:center;gap:8px;width:100%;height:34px;padding:0 10px;border:1px solid ' + (open ? '#A3A3A3' : '#E3E3E3') + ';border-radius:8px;background:#FFFFFF;color:#1A1A1A;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.04)',
+      chevronStyle: 'transition:transform .15s ease;transform:rotate(' + (open ? '180' : '0') + 'deg)',
+      filters: filters,
+      activeCount: activeCount,
+      clearAll: function () { self.setState({ f: {} }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

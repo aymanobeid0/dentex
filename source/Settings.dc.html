@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الإعدادات</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible,.nav:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.nav:hover{background:#F6F6F7 !important}
+.row:hover td{background:#FAFAFA}
+</style>
+</helmet>
+<div dir="rtl" style="display:flex;flex-wrap:wrap;min-height:100vh;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="settings" hint-size="232px,1000px"></dc-import></div>
+<div dir="rtl" style="flex:999 1 560px;min-width:0;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh">
+<div style="max-width:1280px;margin:0 auto;padding:24px 28px 40px;display:flex;flex-direction:column;gap:18px;box-sizing:border-box">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h1 style="margin:0;font-size:20px;font-weight:600">الإعدادات</h1>
+    <p style="margin:0;font-size:13px;color:#616161">الخدمات والأطباء والمستخدمون والرسائل</p>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+    <nav aria-label="أقسام الإعدادات" style="flex:1 1 220px;max-width:240px;display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
+        <button class="nav" type="button" aria-current="{{n.current}}" onClick="{{n.pick}}" style="{{n.style}}">
+          <sc-if value="{{n.isS}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><path d="M7 7h.01"/></svg></sc-if>
+          <sc-if value="{{n.isD}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></sc-if>
+          <sc-if value="{{n.isU}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></sc-if>
+          <sc-if value="{{n.isT}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></sc-if>
+          {{n.label}}
+        </button>
+      </sc-for>
+    </nav>
+
+    <div style="flex:999 1 640px;min-width:0;display:flex;flex-direction:column;gap:16px">
+
+      <!-- Services -->
+      <sc-if value="{{isS}}" hint-placeholder-val="{{true}}">
+        <section style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #EBEBEB">
+            <div style="display:flex;flex-direction:column;gap:2px"><h2 style="margin:0;font-size:15px;font-weight:600">الخدمات والأسعار</h2><span style="font-size:12px;color:#616161">تظهر في الحجز والفواتير وفي ردود واتساب</span></div>
+            <button class="btn" type="button" style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>إضافة خدمة</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:680px">
+              <thead><tr>
+                <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الخدمة</th>
+                <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">التصنيف</th>
+                <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">المدة</th>
+                <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">السعر</th>
+                <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">متاحة للحجز</th>
+                <th style="width:48px;background:#FAFAFA;border-bottom:1px solid #EBEBEB"></th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{services}}" as="s" hint-placeholder-count="7">
+                  <tr class="row">
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;font-weight:500">{{s.n}}</td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2"><span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:#F1F1F2;color:#3F3F3F;font-size:12px;font-weight:500">{{s.c}}</span></td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;color:#4A4A4A">{{s.d}}</td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2;font-weight:600;font-variant-numeric:tabular-nums">{{s.p}}</td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2"><button type="button" role="switch" aria-checked="{{s.on}}" aria-label="متاحة للحجز: {{s.n}}" onClick="{{s.toggle}}" style="{{s.track}}"><span style="{{s.knob}}"></span></button></td>
+                    <td style="padding:11px 16px;border-bottom:1px solid #F1F1F2"><button class="btn" type="button" aria-label="تعديل {{s.n}}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- Doctors & hours -->
+      <sc-if value="{{isD}}" hint-placeholder-val="{{false}}">
+        <section style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center"><h2 style="margin:0;font-size:15px;font-weight:600">الأطباء وساعات العمل</h2>
+            <button class="btn" type="button" style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>إضافة طبيب</button></div>
+          <sc-for list="{{doctors}}" as="d" hint-placeholder-count="3">
+            <div style="border:1px solid #EBEBEB;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="width:36px;height:36px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">{{d.ini}}</span>
+                <span style="display:flex;flex-direction:column;flex:1"><span style="font-size:14px;font-weight:600">{{d.name}}</span><span style="font-size:12px;color:#616161">{{d.spec}}</span></span>
+                <span style="{{d.badge}}">{{d.status}}</span>
+                <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>تعديل الجدول</button>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+                <sc-for list="{{d.week}}" as="w" hint-placeholder-count="7">
+                  <div style="{{w.style}}"><span style="font-size:11px;font-weight:600">{{w.day}}</span><span style="font-size:11px;font-variant-numeric:tabular-nums">{{w.h}}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <!-- Users & roles -->
+      <sc-if value="{{isU}}" hint-placeholder-val="{{false}}">
+        <section style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #EBEBEB">
+            <h2 style="margin:0;font-size:15px;font-weight:600;flex:1">المستخدمون</h2>
+            <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>دعوة مستخدم</button>
+          </div>
+          <sc-for list="{{users}}" as="u" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #F1F1F2">
+              <span style="width:32px;height:32px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">{{u.ini}}</span>
+              <span style="display:flex;flex-direction:column;flex:1"><span style="font-size:13px;font-weight:600">{{u.name}}</span><span style="font-size:12px;color:#616161">{{u.last}}</span></span>
+              <span style="{{u.badge}}">{{u.role}}</span>
+            </div>
+          </sc-for>
+        </section>
+        <section style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid #EBEBEB"><h2 style="margin:0;font-size:15px;font-weight:600">الصلاحيات حسب الدور</h2></div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:600px">
+              <thead><tr>
+                <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الصلاحية</th>
+                <th style="font-weight:600;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">مدير</th>
+                <th style="font-weight:600;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">طبيب</th>
+                <th style="font-weight:600;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">استقبال</th>
+                <th style="font-weight:600;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">محاسب</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{perms}}" as="p" hint-placeholder-count="7">
+                  <tr class="row">
+                    <td style="padding:10px 16px;border-bottom:1px solid #F1F1F2">{{p.n}}</td>
+                    <sc-for list="{{p.cells}}" as="c" hint-placeholder-count="4">
+                      <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;text-align:center">
+                        <sc-if value="{{c.on}}" hint-placeholder-val="{{true}}"><span role="img" aria-label="مسموح" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:#DCF5E6;color:#0F6B32"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span></sc-if>
+                        <sc-if value="{{c.off}}" hint-placeholder-val="{{false}}"><span role="img" aria-label="غير مسموح" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;color:#9A9A9A">—</span></sc-if>
+                      </td>
+                    </sc-for>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- Templates -->
+      <sc-if value="{{isT}}" hint-placeholder-val="{{false}}">
+        <section style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="display:flex;flex-direction:column;gap:2px;flex:1"><h2 style="margin:0;font-size:15px;font-weight:600">قوالب رسائل واتساب</h2><span style="font-size:12px;color:#616161">الرسائل التي تبدأها العيادة تحتاج قالباً معتمداً من ميتا</span></div>
+            <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>قالب جديد</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+            <sc-for list="{{templates}}" as="t" hint-placeholder-count="4">
+              <div style="border:1px solid #EBEBEB;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600;flex:1">{{t.n}}</span>
+                  <span style="{{t.badge}}"><span style="{{t.dot}}"></span>{{t.st}}</span>
+                </div>
+                <div style="font-size:12px;line-height:1.7;color:#303030;background:#F7F7F8;border-radius:8px;padding:10px 12px">{{t.body}}</div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#616161">
+                  <span>{{t.when}}</span>
+                  <button class="btn" type="button" aria-label="تعديل القالب" style="margin-inline-start:auto;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var sec = s.sec || 's';
+    var off = s.off || { 7: true };
+    var N = [{ id: 's', label: 'الخدمات والأسعار' }, { id: 'd', label: 'الأطباء وساعات العمل' }, { id: 'u', label: 'المستخدمون والصلاحيات' }, { id: 't', label: 'قوالب الرسائل' }];
+    var nav = N.map(function (n) {
+      var on = n.id === sec;
+      return { label: n.label, current: on ? 'page' : 'false', isS: n.id === 's', isD: n.id === 'd', isU: n.id === 'u', isT: n.id === 't',
+        style: 'display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:0;border-radius:8px;font-family:inherit;font-size:13px;text-align:start;cursor:pointer;' + (on ? 'background:#F1F1F2;color:#1A1A1A;font-weight:600' : 'background:transparent;color:#4A4A4A;font-weight:500'),
+        pick: function () { self.setState({ sec: n.id }); } };
+    });
+    var SV = [
+      { id: 1, n: 'فحص وتشخيص', c: 'وقاية', d: '20 دقيقة', p: '2,000' },
+      { id: 2, n: 'تنظيف وتلميع', c: 'وقاية', d: '45 دقيقة', p: '8,000' },
+      { id: 3, n: 'حشوة تجميلية', c: 'ترميم', d: '45 دقيقة', p: '7,000' },
+      { id: 4, n: 'علاج عصب', c: 'ترميم', d: '60 دقيقة', p: '12,500' },
+      { id: 5, n: 'تاج زيركون', c: 'تركيبات', d: '60 دقيقة', p: '35,000' },
+      { id: 6, n: 'خلع بسيط', c: 'جراحة', d: '30 دقيقة', p: '5,000' },
+      { id: 7, n: 'زراعة سن', c: 'جراحة', d: '90 دقيقة', p: '[حدد السعر]' },
+      { id: 8, n: 'تبييض', c: 'تجميل', d: '60 دقيقة', p: '15,000' }
+    ];
+    var services = SV.map(function (x) {
+      var on = !off[x.id];
+      return Object.assign({}, x, { on: on,
+        toggle: function () { var n = Object.assign({}, off); n[x.id] = on; self.setState({ off: n }); },
+        track: 'position:relative;width:36px;height:20px;border-radius:99px;border:0;padding:0;cursor:pointer;background:' + (on ? '#15803D' : '#D4D4D4'),
+        knob: 'position:absolute;top:2px;left:' + (on ? '2px' : '18px') + ';width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s ease' });
+    });
+    var DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    function week(hrs) {
+      return DAYS.map(function (d, i) {
+        var h = hrs[i];
+        return { day: d, h: h || 'عطلة', style: 'display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:8px;' + (h ? 'background:#F7F9FF;border:1px solid #DCE7FE;color:#173A9E' : 'background:#FAFAFA;border:1px dashed #E3E3E3;color:#767676') };
+      });
+    }
+    var DS = { on: { l: 'متاح', bg: '#DCF5E6', fg: '#0F6B32' }, off: { l: 'في إجازة حتى الأحد', bg: '#EDEDEE', fg: '#3F3F3F' } };
+    var doctors = [
+      { name: 'د. أحمد', ini: 'أح', spec: 'تقويم وتجميل · العيادة 1', st: 'on', hrs: ['9–17', '9–17', '9–17', '9–17', '9–17', '', '9–17'] },
+      { name: 'د. سارة', ini: 'سا', spec: 'جراحة الفم · العيادة 2', st: 'on', hrs: ['8–17', '8–17', '8–17', '', '8–17', '8–17', '8–17'] },
+      { name: 'د. يوسف', ini: 'يو', spec: 'علاج عصب · العيادة 3', st: 'off', hrs: ['14–20', '14–20', '14–20', '', '14–20', '', ''] }
+    ].map(function (d) {
+      var m = DS[d.st];
+      return Object.assign({}, d, { week: week(d.hrs), status: m.l, badge: 'display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:' + m.bg + ';color:' + m.fg });
+    });
+    var R = { admin: { l: 'مدير', bg: '#1A1A1A', fg: '#FFFFFF' }, doc: { l: 'طبيب', bg: '#DCE7FE', fg: '#1A44B8' }, rec: { l: 'استقبال', bg: '#FDEBC0', fg: '#734600' }, acc: { l: 'محاسب', bg: '#DCF5E6', fg: '#0F6B32' } };
+    var users = [
+      { name: 'د. أحمد', ini: 'أح', last: 'نشط الآن', r: 'admin' },
+      { name: 'د. سارة', ini: 'سا', last: 'آخر دخول: اليوم 08:12', r: 'doc' },
+      { name: 'عائشة', ini: 'عا', last: 'آخر دخول: اليوم 07:55', r: 'rec' },
+      { name: 'محمد سالم', ini: 'مس', last: 'آخر دخول: أمس', r: 'acc' }
+    ].map(function (u) { var m = R[u.r]; return Object.assign({}, u, { role: m.l, badge: 'display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:600;background:' + m.bg + ';color:' + m.fg }); });
+    var P = [
+      ['عرض المواعيد وحجزها', 1, 1, 1, 0], ['عرض الملف الطبي ومخطط الأسنان', 1, 1, 0, 0], ['كتابة الوصفات وخطط العلاج', 1, 1, 0, 0],
+      ['تسجيل الدفعات', 1, 0, 1, 1], ['تعديل الفواتير أو حذفها', 1, 0, 0, 1], ['عرض التقارير المالية', 1, 0, 0, 1],
+      ['الرد على رسائل واتساب', 1, 1, 1, 0], ['إدارة الإعدادات والمستخدمين', 1, 0, 0, 0]
+    ];
+    var perms = P.map(function (p) { return { n: p[0], cells: p.slice(1).map(function (v) { return { on: !!v, off: !v }; }) }; });
+    var TS = { ok: { l: 'معتمد', bg: '#DCF5E6', fg: '#0F6B32', d: '#15803D' }, rev: { l: 'قيد المراجعة', bg: '#FDEBC0', fg: '#734600', d: '#D98E04' }, rej: { l: 'مرفوض', bg: '#FDDEDE', fg: '#A31616', d: '#DC2626' } };
+    var templates = [
+      { n: 'تذكير بموعد', st: 'ok', when: 'يُرسل تلقائياً قبل الموعد بيوم', body: 'مرحباً {{1}}، نذكرك بموعدك {{2}} الساعة {{3}} مع {{4}}. للتأكيد أرسل 1، ولإعادة الجدولة أرسل 2.' },
+      { n: 'تأكيد الحجز', st: 'ok', when: 'يُرسل فور الحجز', body: 'تم حجز موعدك يوم {{1}} الساعة {{2}} في [اسم العيادة]. الموقع: {{3}}' },
+      { n: 'تذكير بقسط', st: 'rev', when: 'قبل الاستحقاق بثلاثة أيام', body: 'عزيزنا {{1}}، يستحق القسط بقيمة {{2}} أوقية بتاريخ {{3}}. يمكنك الدفع في العيادة أو عبر {{4}}.' },
+      { n: 'عرض تبييض', st: 'rej', when: 'رسالة تسويقية', body: 'خصم 20% على التبييض هذا الشهر! احجز الآن.' }
+    ].map(function (t) { var m = TS[t.st]; return Object.assign({}, t, { st: m.l, badge: 'display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:' + m.bg + ';color:' + m.fg, dot: 'width:6px;height:6px;border-radius:50%;background:' + m.d }); });
+    return { nav: nav, isS: sec === 's', isD: sec === 'd', isU: sec === 'u', isT: sec === 't', services: services, doctors: doctors, users: users, perms: perms, templates: templates };
+  }
+}
+</script>
+</body>
+</html>

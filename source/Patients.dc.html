@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>قائمة المرضى</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible,.chip:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+.chip:hover{border-color:#BDBDBD !important}
+.field:focus-within{border-color:#A3A3A3 !important;background:#FFFFFF !important}
+.row:hover td{background:#FAFAFA}
+a{color:#1A1A1A;text-decoration:none}a:hover{color:#2563EB}
+</style>
+</helmet>
+<div dir="rtl" style="display:flex;flex-wrap:wrap;min-height:100vh;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="patients" hint-size="232px,900px"></dc-import></div>
+<div dir="rtl" style="flex:999 1 560px;min-width:0;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh">
+<div style="max-width:1280px;margin:0 auto;padding:24px 28px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <h1 style="margin:0;font-size:20px;font-weight:600">المرضى</h1>
+      <p style="margin:0;font-size:13px;color:#616161">248 مريضاً · 12 عليهم رصيد متأخر</p>
+    </div>
+    <div style="margin-inline-start:auto;display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>استيراد</button>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>تصدير</button>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>مريض جديد</button>
+    </div>
+  </div>
+
+  <section style="border:1px solid #EBEBEB;border-radius:12px;overflow:hidden">
+    <!-- Toolbar -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #EBEBEB">
+      <label class="field" style="flex:1 1 260px;max-width:340px;display:flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FAFAFA;color:#616161">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" aria-label="بحث في المرضى" placeholder="الاسم، الهاتف أو رقم الملف" style="flex:1;min-width:0;border:0;background:transparent;font-family:inherit;font-size:13px;color:#1A1A1A;outline:none">
+      </label>
+      <div role="group" aria-label="تصفية سريعة" style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+          <button class="chip" type="button" aria-pressed="{{c.on}}" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}<span style="{{c.countStyle}}">{{c.count}}</span></button>
+        </sc-for>
+      </div>
+      <div style="margin-inline-start:auto;display:flex;gap:6px">
+        <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>تصفية</button>
+        <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 16 4 4 4-4M7 20V4M21 8l-4-4-4 4M17 4v16"/></svg>آخر زيارة</button>
+      </div>
+    </div>
+
+    <!-- Bulk bar -->
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#F7F9FF;border-bottom:1px solid #EBEBEB;font-size:13px">
+      <span style="font-weight:600;color:#1A44B8">تم تحديد 2</span>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #F2D58C;border-radius:7px;background:#FDEBC0;color:#734600;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>إرسال تذكير بالرصيد</button>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>تصدير المحدد</button>
+      <button class="btn" type="button" style="margin-inline-start:auto;display:inline-flex;align-items:center;height:28px;padding:0 8px;border:0;border-radius:7px;background:transparent;color:#4A4A4A;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">إلغاء التحديد</button>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:980px">
+        <thead>
+          <tr>
+            <th style="width:40px;padding:10px 0 10px 0;padding-inline-start:14px;background:#FAFAFA;border-bottom:1px solid #EBEBEB;text-align:start"><input type="checkbox" aria-label="تحديد الكل" style="width:15px;height:15px;margin:0;accent-color:#2563EB"></th>
+            <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">المريض</th>
+            <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">رقم الملف</th>
+            <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">آخر زيارة</th>
+            <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الموعد القادم</th>
+            <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الطبيب</th>
+            <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الرصيد</th>
+            <th style="text-align:start;font-weight:500;color:#616161;font-size:12px;padding:10px 12px;background:#FAFAFA;border-bottom:1px solid #EBEBEB">الحالة</th>
+            <th style="width:48px;background:#FAFAFA;border-bottom:1px solid #EBEBEB"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">إجراءات</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+            <tr class="row">
+              <td style="padding:10px 0;padding-inline-start:14px;border-bottom:1px solid #F1F1F2;background:{{r.rowBg}}"><input type="checkbox" checked="{{r.checked}}" onChange="{{r.toggle}}" aria-label="تحديد {{r.name}}" style="width:15px;height:15px;margin:0;accent-color:#2563EB"></td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;background:{{r.rowBg}}">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="width:30px;height:30px;border-radius:50%;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none">{{r.ini}}</span>
+                  <span style="display:flex;flex-direction:column">
+                    <a href="Patient.dc.html" style="font-weight:600">{{r.name}}</a>
+                    <span style="font-size:12px;color:#616161;direction:ltr;unicode-bidi:isolate;text-align:right">{{r.phone}}</span>
+                  </span>
+                  <sc-if value="{{r.alert}}" hint-placeholder-val="{{false}}">
+                    <span title="تنبيه طبي" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;background:#FDDEDE;color:#A31616"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-label="تنبيه طبي" role="img"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="10"/></svg></span>
+                  </sc-if>
+                </div>
+              </td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;color:#4A4A4A;font-variant-numeric:tabular-nums;background:{{r.rowBg}}">{{r.file}}</td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;color:#4A4A4A;background:{{r.rowBg}}">{{r.last}}</td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;background:{{r.rowBg}}"><span style="{{r.nextStyle}}">{{r.next}}</span></td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;color:#4A4A4A;background:{{r.rowBg}}">{{r.doc}}</td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;font-variant-numeric:tabular-nums;background:{{r.rowBg}}"><span style="{{r.balStyle}}">{{r.bal}}</span></td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;background:{{r.rowBg}}"><span style="{{r.badge}}"><span style="{{r.dot}}"></span>{{r.stLabel}}</span></td>
+              <td style="padding:10px 12px;border-bottom:1px solid #F1F1F2;background:{{r.rowBg}}">
+                <button class="btn" type="button" aria-label="إجراءات {{r.name}}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:8px;background:transparent;color:#4A4A4A;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 14px">
+      <span style="font-size:12px;color:#616161">عرض 1–8 من 248</span>
+      <nav aria-label="الصفحات" style="margin-inline-start:auto;display:flex;align-items:center;gap:4px">
+        <button class="btn" type="button" aria-label="الصفحة السابقة" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+        <button class="btn" type="button" aria-current="page" style="min-width:30px;height:30px;border:1px solid #1A1A1A;border-radius:8px;background:#1A1A1A;color:#FFFFFF;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">1</button>
+        <button class="btn" type="button" style="min-width:30px;height:30px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;cursor:pointer">2</button>
+        <button class="btn" type="button" style="min-width:30px;height:30px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;cursor:pointer">3</button>
+        <span style="font-size:12px;color:#616161;padding:0 4px">…</span>
+        <button class="btn" type="button" style="min-width:30px;height:30px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;cursor:pointer">31</button>
+        <button class="btn" type="button" aria-label="الصفحة التالية" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      </nav>
+    </div>
+  </section>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var f = s.f || 'all';
+    var sel = s.sel || { 2: true, 5: true };
+    var C = [
+      { id: 'all', label: 'الكل', count: '248' },
+      { id: 'debt', label: 'عليهم رصيد', count: '12' },
+      { id: 'month', label: 'زاروا هذا الشهر', count: '64' },
+      { id: 'nonext', label: 'بلا موعد قادم', count: '91' }
+    ];
+    var chips = C.map(function (c) {
+      var on = c.id === f;
+      return Object.assign({}, c, { on: on,
+        style: 'display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:99px;font-family:inherit;font-size:12px;font-weight:' + (on ? '600' : '500') + ';cursor:pointer;' + (on ? 'background:#1A1A1A;color:#FFFFFF;border:1px solid #1A1A1A' : 'background:#FFFFFF;color:#303030;border:1px solid #E3E3E3'),
+        countStyle: 'font-size:11px;font-weight:600;padding:0 5px;border-radius:99px;' + (on ? 'background:rgba(255,255,255,.18);color:#FFFFFF' : 'background:#F1F1F2;color:#3F3F3F'),
+        pick: function () { self.setState({ f: c.id }); } });
+    });
+    var ST = {
+      active: { l: 'نشط', bg: '#DCF5E6', fg: '#0F6B32', d: '#15803D' },
+      treat: { l: 'قيد العلاج', bg: '#DCE7FE', fg: '#1A44B8', d: '#2563EB' },
+      late: { l: 'رصيد متأخر', bg: '#FDDEDE', fg: '#A31616', d: '#DC2626' },
+      idle: { l: 'غير نشط', bg: '#EDEDEE', fg: '#3F3F3F', d: '#8A8A8A' }
+    };
+    var R = [
+      { id: 1, name: 'فاطمة محمد', ini: 'فم', phone: '22 41 18 09', file: '0987', last: '30 أكتوبر 2026', next: 'لا يوجد', doc: 'د. أحمد', bal: 6600, st: 'active' },
+      { id: 2, name: 'مريم أحمد', ini: 'مأ', phone: '46 10 88 34', file: '1042', last: '12 أكتوبر 2026', next: '4 نوفمبر', doc: 'د. أحمد', bal: 15000, st: 'late', alert: true },
+      { id: 3, name: 'سيدي عبد الله', ini: 'سع', phone: '36 55 02 71', file: '1103', last: '30 أكتوبر 2026', next: '13 نوفمبر', doc: 'د. أحمد', bal: 0, st: 'treat' },
+      { id: 4, name: 'محمد الأمين', ini: 'مل', phone: '22 90 61 15', file: '0754', last: '30 أكتوبر 2026', next: '2 نوفمبر', doc: 'د. سارة', bal: 0, st: 'treat' },
+      { id: 5, name: 'خديجة سالم', ini: 'خس', phone: '33 27 44 80', file: '0912', last: '14 أكتوبر 2026', next: '9 نوفمبر', doc: 'د. أحمد', bal: 22000, st: 'late' },
+      { id: 6, name: 'زينب محمد', ini: 'زم', phone: '41 08 37 26', file: '1150', last: '26 أكتوبر 2026', next: '1 نوفمبر', doc: 'د. سارة', bal: 0, st: 'active', alert: true },
+      { id: 7, name: 'عبد الرحمن محمود', ini: 'عم', phone: '41 73 19 52', file: '1201', last: 'زيارة أولى', next: '31 أكتوبر', doc: 'د. سارة', bal: 0, st: 'active' },
+      { id: 8, name: 'أحمد ولد محمد', ini: 'أم', phone: '20 66 14 93', file: '0433', last: '2 يناير 2026', next: 'لا يوجد', doc: 'د. يوسف', bal: 0, st: 'idle' }
+    ];
+    function fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+    var rows = R.map(function (r) {
+      var m = ST[r.st], ck = !!sel[r.id];
+      return Object.assign({}, r, {
+        checked: ck, rowBg: ck ? '#F7F9FF' : 'transparent',
+        toggle: function () { var n = Object.assign({}, sel); n[r.id] = !n[r.id]; self.setState({ sel: n }); },
+        bal: r.bal ? fmt(r.bal) + ' أوقية' : '—',
+        balStyle: r.bal ? 'font-weight:600;color:' + (r.st === 'late' ? '#A31616' : '#1A1A1A') : 'color:#616161',
+        nextStyle: r.next === 'لا يوجد' ? 'color:#616161' : 'font-weight:500;color:#1A1A1A',
+        stLabel: m.l,
+        badge: 'display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;background:' + m.bg + ';color:' + m.fg,
+        dot: 'width:6px;height:6px;border-radius:50%;background:' + m.d
+      });
+    });
+    return { chips: chips, rows: rows };
+  }
+}
+</script>
+</body>
+</html>

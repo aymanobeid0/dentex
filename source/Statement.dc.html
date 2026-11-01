@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>كشف حساب مريض</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+</style>
+</helmet>
+<div dir="rtl" style="width:794px;height:1123px;box-sizing:border-box;padding:56px 56px 40px;background:#FFFFFF;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;display:flex;flex-direction:column;gap:24px">
+
+  <header style="display:flex;align-items:flex-start;gap:16px">
+    <div style="display:flex;align-items:center;gap:12px;flex:1">
+      <div style="width:44px;height:44px;border-radius:11px;background:#1A1A1A;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:17px;font-weight:700">[اسم العيادة]</span>
+        <span style="font-size:12px;color:#616161">[العنوان] · [رقم الهاتف]</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <h1 style="margin:0;font-size:24px;font-weight:700">كشف حساب</h1>
+      <span style="font-size:12px;color:#4A4A4A">صادر في 30 أكتوبر 2026</span>
+    </div>
+  </header>
+
+  <section style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+    <div style="border:1px solid #E3E3E3;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:12px;font-weight:600;color:#616161">المريض</span>
+      <span style="font-size:15px;font-weight:600">مريم أحمد</span>
+      <span style="font-size:13px;color:#4A4A4A">ملف رقم 1042 · <span style="direction:ltr;unicode-bidi:isolate">46 10 88 34</span></span>
+    </div>
+    <div style="border:1px solid #E3E3E3;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:12px;font-weight:600;color:#616161">الفترة</span>
+      <span style="font-size:15px;font-weight:600">1 مارس 2025 – 30 أكتوبر 2026</span>
+      <span style="font-size:13px;color:#4A4A4A">5 فواتير · 5 دفعات</span>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #E3E3E3;border-radius:10px;overflow:hidden">
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:2px;border-left:1px solid #EBEBEB"><span style="font-size:12px;color:#616161">الرصيد الافتتاحي</span><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums">0</span></div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:2px;border-left:1px solid #EBEBEB"><span style="font-size:12px;color:#616161">إجمالي الفواتير</span><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums">67,000</span></div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:2px;border-left:1px solid #EBEBEB"><span style="font-size:12px;color:#616161">إجمالي المدفوع</span><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:#0F6B32">52,000</span></div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:2px;background:#FDDEDE"><span style="font-size:12px;color:#7F1111">الرصيد المستحق</span><span style="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:#A31616">15,000 <span style="font-size:11px;font-weight:500">أوقية</span></span></div>
+  </section>
+
+  <section>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+      <thead><tr>
+        <th style="text-align:start;font-weight:600;font-size:12px;color:#4A4A4A;padding:9px 10px;background:#F7F7F8;border-top:1px solid #E3E3E3;border-bottom:1px solid #E3E3E3">التاريخ</th>
+        <th style="text-align:start;font-weight:600;font-size:12px;color:#4A4A4A;padding:9px 10px;background:#F7F7F8;border-top:1px solid #E3E3E3;border-bottom:1px solid #E3E3E3">البيان</th>
+        <th style="text-align:start;font-weight:600;font-size:12px;color:#4A4A4A;padding:9px 10px;background:#F7F7F8;border-top:1px solid #E3E3E3;border-bottom:1px solid #E3E3E3">المرجع</th>
+        <th style="text-align:left;font-weight:600;font-size:12px;color:#4A4A4A;padding:9px 10px;background:#F7F7F8;border-top:1px solid #E3E3E3;border-bottom:1px solid #E3E3E3">مدين</th>
+        <th style="text-align:left;font-weight:600;font-size:12px;color:#4A4A4A;padding:9px 10px;background:#F7F7F8;border-top:1px solid #E3E3E3;border-bottom:1px solid #E3E3E3">دائن</th>
+        <th style="text-align:left;font-weight:600;font-size:12px;color:#4A4A4A;padding:9px 10px;background:#F7F7F8;border-top:1px solid #E3E3E3;border-bottom:1px solid #E3E3E3">الرصيد</th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+          <tr>
+            <td style="padding:9px 10px;border-bottom:1px solid #EBEBEB;white-space:nowrap;color:#4A4A4A">{{r.d}}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid #EBEBEB;font-weight:{{r.w}}">{{r.t}}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid #EBEBEB;color:#4A4A4A;direction:ltr;unicode-bidi:isolate;text-align:right">{{r.ref}}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid #EBEBEB;text-align:left;font-variant-numeric:tabular-nums">{{r.dr}}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid #EBEBEB;text-align:left;font-variant-numeric:tabular-nums;color:#0F6B32">{{r.cr}}</td>
+            <td style="padding:9px 10px;border-bottom:1px solid #EBEBEB;text-align:left;font-variant-numeric:tabular-nums;font-weight:600">{{r.bal}}</td>
+          </tr>
+        </sc-for>
+        <tr>
+          <td colspan="3" style="padding:10px;font-weight:700;background:#F7F7F8;border-bottom:1px solid #E3E3E3">المجموع</td>
+          <td style="padding:10px;text-align:left;font-weight:700;background:#F7F7F8;border-bottom:1px solid #E3E3E3;font-variant-numeric:tabular-nums">67,000</td>
+          <td style="padding:10px;text-align:left;font-weight:700;background:#F7F7F8;border-bottom:1px solid #E3E3E3;font-variant-numeric:tabular-nums;color:#0F6B32">52,000</td>
+          <td style="padding:10px;text-align:left;font-weight:700;background:#F7F7F8;border-bottom:1px solid #E3E3E3;font-variant-numeric:tabular-nums;color:#A31616">15,000</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="display:flex;gap:16px">
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid #E3E3E3;border-radius:10px">
+      <span style="font-size:12px;font-weight:600;color:#4A4A4A">جدول سداد الرصيد</span>
+      <div style="display:flex;font-size:12.5px"><span>25 أكتوبر 2026</span><span style="margin-inline-start:8px;color:#A31616;font-weight:600">متأخر</span><span style="margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:600">5,000</span></div>
+      <div style="display:flex;font-size:12.5px"><span>25 نوفمبر 2026</span><span style="margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:600">5,000</span></div>
+      <div style="display:flex;font-size:12.5px"><span>25 ديسمبر 2026</span><span style="margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:600">5,000</span></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:10px;background:#F7F7F8">
+      <span style="font-size:12px;font-weight:600;color:#4A4A4A">ملاحظات</span>
+      <span style="font-size:12px;color:#4A4A4A;line-height:1.7">إذا وجدت أي فرق في هذا الكشف، يرجى التواصل مع العيادة خلال 15 يوماً من تاريخ إصداره. يمكن السداد نقداً أو عبر [اسم التطبيق البنكي].</span>
+    </div>
+  </section>
+
+  <section style="margin-top:auto;display:flex;align-items:flex-end;gap:40px">
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:44px;border-bottom:1px solid #A3A3A3"></div><span style="font-size:12px;color:#616161">توقيع المحاسب</span></div>
+    <div style="width:110px;height:110px;border:1.5px dashed #BDBDBD;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#767676">ختم العيادة</div>
+  </section>
+
+  <footer style="display:flex;align-items:center;gap:12px;padding-top:14px;border-top:1px solid #E3E3E3;font-size:12px;color:#616161">
+    <span>المبالغ بالأوقية الموريتانية</span>
+    <span style="margin-inline-start:auto">[البريد الإلكتروني] · [الموقع]</span>
+    <span>صفحة 1 من 1</span>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":794,"height":1123}}'>
+class Component extends DCLogic {
+  renderVals() {
+    function fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+    var L = [
+      ['3 مارس 2025', 'فاتورة: حشوة تجميلية × 2 (16، 17)', 'INV-1288', 14000, 0],
+      ['3 مارس 2025', 'دفعة نقداً', 'RC-1290', 0, 14000],
+      ['20 يونيو 2025', 'فاتورة: تنظيف وتلميع', 'INV-1512', 6000, 0],
+      ['20 يونيو 2025', 'دفعة نقداً', 'RC-1515', 0, 6000],
+      ['14 سبتمبر 2026', 'فاتورة: فحص شامل، أشعة، تنظيف', 'INV-2061', 10000, 0],
+      ['14 سبتمبر 2026', 'دفعة نقداً', 'RC-2064', 0, 10000],
+      ['28 سبتمبر 2026', 'فاتورة: علاج عصب، الجلسة 1 (36)', 'INV-2093', 12000, 0],
+      ['28 سبتمبر 2026', 'دفعة: تحويل بنكي', 'RC-2097', 0, 12000],
+      ['12 أكتوبر 2026', 'فاتورة: علاج عصب، الجلسة 2 وتشخيص', 'INV-2150', 25000, 0],
+      ['12 أكتوبر 2026', 'دفعة نقداً', 'RC-2152', 0, 10000]
+    ];
+    var bal = 0;
+    var rows = L.map(function (r) {
+      bal += r[3] - r[4];
+      return { d: r[0], t: r[1], ref: r[2], dr: r[3] ? fmt(r[3]) : '', cr: r[4] ? fmt(r[4]) : '', bal: fmt(bal), w: r[3] ? '500' : '400' };
+    });
+    return { rows: rows };
+  }
+}
+</script>
+</body>
+</html>

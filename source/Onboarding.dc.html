@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>تسجيل عيادة جديدة</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.in:focus-within,.in:focus{border-color:#A3A3A3 !important;outline:none}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible,.chip:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+</style>
+</helmet>
+<div dir="rtl" style="font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh;display:flex;flex-wrap:wrap">
+
+  <aside style="flex:1 1 300px;max-width:340px;background:#F7F7F8;border-left:1px solid #EBEBEB;padding:32px 28px;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+    <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700"><span style="width:30px;height:30px;border-radius:8px;background:#1A1A1A;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span>[اسم النظام]</span>
+    <ol aria-label="خطوات الإعداد" style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px">
+      <li style="display:flex;gap:12px;padding:10px 0"><span style="width:28px;height:28px;border-radius:50%;background:#15803D;color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600;color:#4A4A4A">إنشاء الحساب</span><span style="font-size:12px;color:#616161">مكتمل</span></span></li>
+      <li aria-current="step" style="display:flex;gap:12px;padding:10px 12px;margin:0 -12px;border-radius:10px;background:#FFFFFF;border:1px solid #E3E3E3"><span style="width:28px;height:28px;border-radius:50%;background:#2563EB;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none">2</span><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600">بيانات العيادة</span><span style="font-size:12px;color:#616161">الاسم والعنوان والتخصص</span></span></li>
+      <li style="display:flex;gap:12px;padding:10px 0"><span style="width:28px;height:28px;border-radius:50%;border:1.5px solid #CFCFCF;color:#616161;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;box-sizing:border-box">3</span><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600;color:#4A4A4A">الأطباء وساعات العمل</span><span style="font-size:12px;color:#616161">يمكن تعديلها لاحقاً</span></span></li>
+      <li style="display:flex;gap:12px;padding:10px 0"><span style="width:28px;height:28px;border-radius:50%;border:1.5px solid #CFCFCF;color:#616161;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;box-sizing:border-box">4</span><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600;color:#4A4A4A">ربط واتساب</span><span style="font-size:12px;color:#616161">اختياري الآن</span></span></li>
+    </ol>
+    <div style="margin-top:auto;display:flex;gap:10px;padding:14px;border-radius:12px;background:#FFFFFF;border:1px solid #EBEBEB">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A44B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+      <span style="font-size:13px;line-height:1.7;color:#303030">تحتاج مساعدة؟ راسلنا على واتساب وسنكمل الإعداد معك.</span>
+    </div>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;padding:40px 48px;box-sizing:border-box;display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <form style="flex:1 1 420px;max-width:520px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:#616161">الخطوة 2 من 4</span><h1 style="margin:0;font-size:24px;font-weight:600">عرّفنا بعيادتك</h1></div>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">اسم العيادة<input class="in" type="text" value="{{name}}" onChange="{{onName}}" style="height:40px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;font-family:inherit;font-size:14px"></label>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">المدينة<span class="in" style="display:flex;align-items:center;height:40px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;font-size:14px;font-weight:400">نواكشوط<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="margin-inline-start:auto"><path d="m6 9 6 6 6-6"/></svg></span></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">عدد الكراسي<input class="in" type="number" value="3" style="height:40px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;font-family:inherit;font-size:14px"></label>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">العنوان<input class="in" type="text" placeholder="الحي والشارع ومعلم قريب" style="height:40px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;font-family:inherit;font-size:14px"></label>
+      <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+        <legend style="font-size:13px;font-weight:500;padding:0;margin-bottom:8px">الخدمات التي تقدمونها</legend>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{specs}}" as="s" hint-placeholder-count="7"><button class="chip" type="button" aria-pressed="{{s.on}}" onClick="{{s.pick}}" style="{{s.style}}">{{s.l}}</button></sc-for>
+        </div>
+        <span style="font-size:12px;color:#616161">سنجهّز قائمة الخدمات والأسعار المبدئية حسب اختيارك</span>
+      </fieldset>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px dashed #CFCFCF;border-radius:10px">
+        <span style="width:44px;height:44px;border-radius:10px;background:#F1F1F2;color:#4A4A4A;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg></span>
+        <span style="display:flex;flex-direction:column;flex:1"><span style="font-size:13px;font-weight:500">شعار العيادة</span><span style="font-size:12px;color:#616161">يظهر في الفواتير وصفحة الحجز</span></span>
+        <button class="btn" type="button" style="height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">رفع</button>
+      </div>
+      <div style="display:flex;gap:8px;padding-top:6px">
+        <a href="Landing.dc.html" class="btn" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border:1px solid #E3E3E3;border-radius:8px;color:#303030;font-size:14px;font-weight:500;text-decoration:none">رجوع</a>
+        <a href="Main.dc.html" class="btn" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:8px;background:#2563EB;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none">التالي: الأطباء<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></a>
+      </div>
+    </form>
+
+    <section aria-label="معاينة صفحة الحجز" style="flex:1 1 300px;max-width:340px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;font-weight:600;color:#616161">معاينة صفحة الحجز</span>
+      <div style="border:1px solid #E3E3E3;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;box-shadow:0 16px 40px rgba(0,0,0,.06)">
+        <div style="display:flex;align-items:center;gap:10px"><span style="width:40px;height:40px;border-radius:10px;background:#1A1A1A;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span><span style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600">{{name}}</span><span style="font-size:12px;color:#616161">نواكشوط · 3 كراسي</span></span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{chosen}}" as="c" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:6px;background:#F1F1F2;color:#3F3F3F;font-size:12px">{{c}}</span></sc-for></div>
+        <span style="height:40px;border-radius:10px;background:#2563EB;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600">احجز موعداً</span>
+      </div>
+      <a href="PublicBooking.dc.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none">فتح صفحة الحجز كاملة</a>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var name = s.name === undefined ? 'عيادة النور لطب الأسنان' : s.name;
+    var on = s.on || { g: true, c: true, o: true };
+    var S = [{ id: 'g', l: 'طب أسنان عام' }, { id: 'c', l: 'تجميل وتبييض' }, { id: 'o', l: 'تقويم' }, { id: 'e', l: 'علاج عصب' }, { id: 's', l: 'جراحة وزراعة' }, { id: 'p', l: 'أسنان أطفال' }, { id: 'r', l: 'تركيبات' }];
+    var specs = S.map(function (x) {
+      var o = !!on[x.id];
+      return { l: x.l, on: o, pick: function () { var n = Object.assign({}, on); n[x.id] = !n[x.id]; self.setState({ on: n }); },
+        style: 'display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:99px;font-family:inherit;font-size:13px;cursor:pointer;' + (o ? 'background:#DCE7FE;color:#1A44B8;border:1px solid #93B4F5;font-weight:600' : 'background:#FFFFFF;color:#303030;border:1px solid #E3E3E3;font-weight:500') };
+    });
+    return { name: name, onName: function (e) { self.setState({ name: e.target.value }); }, specs: specs,
+      chosen: S.filter(function (x) { return on[x.id]; }).map(function (x) { return x.l; }) };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+/* =========================================================
+   Clinic Management — Design Tokens
+   Source of truth for colors, type, spacing, radius, shadow.
+   Theme: add data-theme="green" on <html> for the green version.
+   Languages: French/LTR and Arabic/RTL — use logical properties.
+   ========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap");
+
+:root {
+  /* ---------- Typography ---------- */
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --fs-10: 10px;  /* tiny labels inside avatars only */
+  --fs-11: 11px;  /* meta, table sub-lines, counters */
+  --fs-12: 12px;  /* captions, badges, secondary text, table headers */
+  --fs-13: 13px;  /* DEFAULT UI text: body, buttons, inputs, table cells */
+  --fs-14: 14px;  /* card titles, emphasized values */
+  --fs-15: 15px;  /* section titles in panels, tablet body */
+  --fs-16: 16px;  /* dialog titles */
+  --fs-20: 20px;  /* page titles (h1) */
+  --fs-24: 24px;  /* KPI numbers */
+  --fs-26: 26px;  /* big KPI numbers in stat cards */
+
+  /* ---------- Neutrals (never tinted blue) ---------- */
+  --bg: #FFFFFF;            /* page + cards */
+  --bg-subtle: #FAFAFA;     /* table header, search field, out-of-month cells */
+  --bg-muted: #F7F7F8;      /* notes boxes, info strips, kanban columns */
+  --bg-hover: #F4F4F5;      /* hovered menu item, segmented-control track */
+  --bg-active: #F1F1F2;     /* active nav item, avatar, neutral icon tile, count pill */
+  --bg-strong: #EDEDEE;     /* neutral status bg (postponed / off) */
+
+  --border: #EBEBEB;        /* cards, sections, dividers */
+  --border-soft: #F1F1F2;   /* table row separators */
+  --border-control: #E3E3E3;/* buttons (secondary), inputs */
+  --border-hover: #D4D4D4;  /* input hover */
+  --border-focus: #A3A3A3;  /* input focus / open trigger / selected cell */
+  --border-dashed: #CFCFCF; /* empty states, dropzones, free slots */
+
+  --text: #1A1A1A;          /* primary text */
+  --text-strong: #303030;   /* secondary-button label, body in boxes */
+  --text-2: #3F3F3F;        /* text on neutral fills */
+  --text-3: #4A4A4A;        /* secondary text, inactive nav */
+  --text-muted: #616161;    /* captions, meta (min 4.5:1 on white) */
+  --text-disabled: #767676; /* disabled (lightest allowed grey) */
+  --text-faint: #9A9A9A;    /* out-of-month days, booked slots ONLY */
+
+  /* ---------- Primary (blue theme, default) ---------- */
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-soft-bg: #DCE7FE;
+  --primary-soft-fg: #1A44B8;
+  --primary-soft-border: #B9CEF8;
+  --primary-tint: #F7F9FF;     /* selected row / selected option bg */
+  --primary-ink: #173A9E;      /* dark text on primary tint */
+  --on-primary: #FFFFFF;
+
+  /* ---------- Success (green) ---------- */
+  --success: #15803D;
+  --success-soft-bg: #DCF5E6;
+  --success-soft-fg: #0F6B32;
+  --success-soft-border: #B5E3C6;
+  --success-dot: #15803D;
+  --on-success: #FFFFFF;
+
+  /* ---------- Warning (yellow / amber) ---------- */
+  --warning: #F5A524;
+  --warning-soft-bg: #FDEBC0;
+  --warning-soft-fg: #734600;
+  --warning-soft-border: #F2D58C;
+  --warning-dot: #D98E04;
+  --on-warning: #2B1D00;        /* dark text on yellow — never white */
+
+  /* ---------- Danger (red) ---------- */
+  --danger: #DC2626;
+  --danger-soft-bg: #FDDEDE;
+  --danger-soft-fg: #A31616;
+  --danger-soft-border: #F1B9B9;
+  --danger-ink: #7F1111;        /* text inside red strips */
+  --danger-tint: #FFF5F5;       /* error summary bg */
+  --on-danger: #FFFFFF;
+
+  /* ---------- Info status (blue theme = primary family) ---------- */
+  --info-soft-bg: var(--primary-soft-bg);
+  --info-soft-fg: var(--primary-soft-fg);
+  --info-dot: var(--primary);
+
+  /* ---------- Neutral status ---------- */
+  --neutral-soft-bg: #EDEDEE;
+  --neutral-soft-fg: #3F3F3F;
+  --neutral-dot: #8A8A8A;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 10px;
+  --space-6: 12px;
+  --space-7: 14px;
+  --space-8: 16px;
+  --space-9: 18px;
+  --space-10: 20px;
+  --space-12: 24px;
+  --space-14: 28px;
+  --space-16: 32px;
+  --space-20: 40px;
+
+  /* ---------- Radius ---------- */
+  --radius-xs: 4px;   /* kbd, tiny tags */
+  --radius-sm: 6px;   /* badges, menu items, segmented inner */
+  --radius-md: 7px;   /* small buttons (28px) */
+  --radius: 8px;      /* buttons, inputs, nav items */
+  --radius-lg: 10px;  /* inner boxes, icon tiles 36px, toasts */
+  --radius-xl: 12px;  /* cards, sections, tables */
+  --radius-2xl: 14px; /* modals */
+  --radius-pill: 999px;
+
+  /* ---------- Sizes ---------- */
+  --btn-h-sm: 28px;
+  --btn-h: 32px;
+  --btn-h-lg: 36px;
+  --icon-btn: 30px;
+  --input-h: 36px;
+  --input-h-lg: 40px;     /* login, onboarding, modal fields */
+  --touch-min: 44px;      /* tablet / phone controls */
+  --nav-item-h: 34px;
+  --sidebar-w: 232px;
+  --content-max: 1240px;
+
+  /* ---------- Shadows (overlays only — cards have NO shadow) ---------- */
+  --shadow-btn: 0 1px 0 rgba(0,0,0,.04);
+  --shadow-seg: 0 1px 2px rgba(0,0,0,.08);
+  --shadow-menu: 0 10px 30px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
+  --shadow-toast: 0 6px 18px rgba(0,0,0,.06);
+  --shadow-dialog: 0 24px 60px rgba(0,0,0,.18);
+  --overlay: rgba(20,20,20,.38);
+
+  /* ---------- Motion ---------- */
+  --dur: 150ms;
+  --ease: ease;
+}
+
+/* =========================================================
+   Green theme — primary becomes emerald,
+   info statuses ("in clinic", "in progress") move to purple
+   so they don't collide with success green.
+   ========================================================= */
+[data-theme="green"] {
+  --primary: #047857;
+  --primary-hover: #065F46;
+  --primary-soft-bg: #D1FAE5;
+  --primary-soft-fg: #065F46;
+  --primary-soft-border: #A7F3D0;
+  --primary-tint: #ECFDF5;
+  --primary-ink: #064E3B;
+
+  --info-soft-bg: #EDE9FE;
+  --info-soft-fg: #5B21B6;
+  --info-dot: #7C3AED;
+}
+
+/* =========================================================
+   Dark mode (reference only — light is the product default)
+   ========================================================= */
+[data-mode="dark"] {
+  --bg: #111214;
+  --bg-subtle: #18191C;
+  --bg-muted: #18191C;
+  --bg-hover: #232428;
+  --bg-active: #232428;
+  --border: #26272B;
+  --border-soft: #222327;
+  --border-control: #2F3035;
+  --text: #EDEDED;
+  --text-strong: #E5E5E5;
+  --text-3: #B5B5BA;
+  --text-muted: #A1A1A6;
+  --primary-soft-bg: rgba(59,130,246,.18);
+  --primary-soft-fg: #93B4F5;
+  --success-soft-bg: rgba(34,197,94,.16);
+  --success-soft-fg: #6EE7A0;
+  --warning-soft-bg: rgba(245,165,36,.18);
+  --warning-soft-fg: #F7C26B;
+  --danger-soft-bg: rgba(239,68,68,.18);
+  --danger-soft-fg: #FCA5A5;
+}
+
+/* =========================================================
+   Base
+   ========================================================= */
+html { font-family: var(--font-sans); color: var(--text); background: var(--bg); }
+body { margin: 0; font-size: var(--fs-13); }
+button, input, select, textarea { font-family: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+.ltr { direction: ltr; unicode-bidi: isolate; }
+
+/* Interaction defaults */
+.btn { transition: filter var(--dur) var(--ease); }
+.btn:hover:not(:disabled) { filter: brightness(.95); }
+.btn:active:not(:disabled) { filter: brightness(.9); }
+.btn:focus-visible, .nav-item:focus-visible, [role="tab"]:focus-visible {
+  outline: 1px solid var(--border-focus); outline-offset: 2px;
+}
+.field:focus-within { border-color: var(--border-focus); background: var(--bg); outline: none; }
+.field:hover { border-color: var(--border-hover); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

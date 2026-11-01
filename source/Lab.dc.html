@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>طلبات المعمل</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+.btn{transition:filter .15s ease}
+.btn:hover{filter:brightness(.95)}
+.btn:focus-visible{outline:2px solid #2563EB;outline-offset:2px}
+</style>
+</helmet>
+<div dir="rtl" style="display:flex;flex-wrap:wrap;min-height:100vh;background:#FFFFFF">
+<div style="flex:0 0 232px;display:flex"><dc-import name="Sidebar" active="lab" hint-size="232px,900px"></dc-import></div>
+<div dir="rtl" style="flex:999 1 560px;min-width:0;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;background:#FFFFFF;min-height:100vh">
+<div style="padding:24px 28px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:20px;font-weight:600">طلبات المعمل</h1><p style="margin:0;font-size:13px;color:#616161">التيجان والجسور والتركيبات المرسلة للمعمل</p></div>
+    <div style="margin-inline-start:auto;display:flex;gap:8px">
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">كل المعامل<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="btn" type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>طلب جديد</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:14px;overflow-x:auto;align-items:start">
+    <sc-for list="{{cols}}" as="col" hint-placeholder-count="4">
+      <section aria-label="{{col.l}}" style="background:#F7F7F8;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:520px">
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 4px 2px">
+          <span style="{{col.dot}}"></span>
+          <h2 style="margin:0;font-size:13px;font-weight:600;flex:1">{{col.l}}</h2>
+          <span style="font-size:12px;font-weight:600;color:#3F3F3F;background:#FFFFFF;border:1px solid #E3E3E3;border-radius:6px;padding:0 6px">{{col.count}}</span>
+        </div>
+        <sc-for list="{{col.cards}}" as="c" hint-placeholder-count="2">
+          <article style="background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <span style="width:32px;height:32px;border-radius:8px;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none">{{c.tooth}}</span>
+              <span style="display:flex;flex-direction:column;flex:1;min-width:0"><span style="font-size:13px;font-weight:600">{{c.work}}</span><span style="font-size:12px;color:#616161">{{c.patient}} · {{c.doc}}</span></span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:#F1F1F2;color:#3F3F3F;font-size:11px;font-weight:500">{{c.shade}}</span>
+              <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:#F1F1F2;color:#3F3F3F;font-size:11px;font-weight:500">{{c.lab}}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid #F1F1F2">
+              <span style="{{c.dueStyle}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>{{c.due}}</span>
+              <sc-if value="{{c.canMove}}" hint-placeholder-val="{{true}}">
+                <button class="btn" type="button" onClick="{{c.move}}" style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 8px;border:1px solid #E3E3E3;border-radius:7px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer">{{c.nextL}}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+              </sc-if>
+            </div>
+          </article>
+        </sc-for>
+      </section>
+    </sc-for>
+  </div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this, s = this.state || {};
+    var mv = s.mv || {};
+    var COLS = [
+      { l: 'بانتظار الإرسال', d: '#8A8A8A', next: 'أُرسل' },
+      { l: 'في المعمل', d: '#2563EB', next: 'وصل' },
+      { l: 'وصل للعيادة', d: '#D98E04', next: 'رُكّب' },
+      { l: 'رُكّب', d: '#15803D', next: '' }
+    ];
+    var K = [
+      { id: 1, st: 0, tooth: '36', work: 'تاج زيركون', patient: 'مريم أحمد', doc: 'د. أحمد', shade: 'اللون A2', lab: '[اسم المعمل]', due: 'الطبعة بعد علاج العصب', late: false },
+      { id: 2, st: 1, tooth: '26', work: 'تاج زيركون', patient: 'إبراهيم سالم', doc: 'د. أحمد', shade: 'اللون A3', lab: '[اسم المعمل]', due: 'متوقع 6 نوفمبر', late: false },
+      { id: 3, st: 1, tooth: '11–21', work: 'قشور خزفية × 2', patient: 'ليلى أحمد', doc: 'د. سارة', shade: 'اللون B1', lab: '[اسم المعمل]', due: 'متأخر 3 أيام', late: true },
+      { id: 4, st: 1, tooth: 'كامل', work: 'طقم جزئي متحرك', patient: 'أحمد ولد محمد', doc: 'د. يوسف', shade: 'لون اللثة', lab: '[اسم المعمل]', due: 'متوقع 10 نوفمبر', late: false },
+      { id: 5, st: 2, tooth: '46', work: 'تاج معدني خزفي', patient: 'سالم محمد', doc: 'د. أحمد', shade: 'اللون A3.5', lab: '[اسم المعمل]', due: 'موعد التركيب 2 نوفمبر', late: false },
+      { id: 6, st: 3, tooth: '14', work: 'تاج زيركون', patient: 'فاطمة محمد', doc: 'د. سارة', shade: 'اللون A2', lab: '[اسم المعمل]', due: 'رُكّب 26 أكتوبر', late: false }
+    ];
+    var cols = COLS.map(function (c, ci) {
+      var cards = K.filter(function (k) { return (mv[k.id] !== undefined ? mv[k.id] : k.st) === ci; }).map(function (k) {
+        var st = mv[k.id] !== undefined ? mv[k.id] : k.st;
+        return Object.assign({}, k, {
+          canMove: ci < 3, nextL: COLS[ci].next,
+          move: function () { var n = Object.assign({}, mv); n[k.id] = st + 1; self.setState({ mv: n }); },
+          dueStyle: 'display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:' + (k.late ? '600' : '500') + ';color:' + (k.late ? '#A31616' : '#616161')
+        });
+      });
+      return { l: c.l, count: String(cards.length), cards: cards, dot: 'width:8px;height:8px;border-radius:50%;background:' + c.d };
+    });
+    return { cols: cols };
+  }
+}
+</script>
+</body>
+</html>

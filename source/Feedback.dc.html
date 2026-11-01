@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>النوافذ والإشعارات والحالات</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.spin{animation:spin .8s linear infinite}
+.sk{animation:pulse 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.spin,.sk{animation:none}}
+</style>
+</helmet>
+<div dir="rtl" style="width:1100px;height:940px;box-sizing:border-box;padding:40px;background:#FFFFFF;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:#1A1A1A;display:flex;flex-direction:column;gap:22px">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h1 style="margin:0;font-size:20px;font-weight:600">النوافذ والإشعارات والحالات</h1>
+    <p style="margin:0;font-size:13px;color:#616161">نوافذ التأكيد، إشعارات سريعة، التحميل، الصفحات الفارغة والأخطاء</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px">
+    <!-- Danger dialog -->
+    <div style="background:#F4F4F5;border-radius:12px;padding:22px 18px;display:flex;align-items:center;justify-content:center">
+      <div role="alertdialog" aria-labelledby="d1t" aria-describedby="d1d" style="width:100%;background:#FFFFFF;border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.12);padding:18px;display:flex;flex-direction:column;gap:12px">
+        <span style="width:38px;height:38px;border-radius:10px;background:#FDDEDE;color:#A31616;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h2 id="d1t" style="margin:0;font-size:15px;font-weight:600">حذف الفاتورة INV-2187؟</h2>
+          <p id="d1d" style="margin:0;font-size:13px;color:#4A4A4A;line-height:1.6">ستُحذف الفاتورة والدفعات المرتبطة بها نهائياً، ولا يمكن التراجع.</p>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#4A4A4A">اكتب «حذف» للتأكيد
+          <input type="text" style="height:32px;padding:0 10px;border:1px solid #E3E3E3;border-radius:8px;font-family:inherit;font-size:13px;outline:none">
+        </label>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button type="button" style="height:32px;padding:0 14px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">إلغاء</button>
+          <button type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:1px solid #DC2626;border-radius:8px;background:#DC2626;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>حذف نهائي</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success/confirm dialog -->
+    <div style="background:#F4F4F5;border-radius:12px;padding:22px 18px;display:flex;align-items:center;justify-content:center">
+      <div role="dialog" aria-labelledby="d2t" style="width:100%;background:#FFFFFF;border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.12);padding:18px;display:flex;flex-direction:column;gap:12px">
+        <span style="width:38px;height:38px;border-radius:10px;background:#DCF5E6;color:#0F6B32;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h2 id="d2t" style="margin:0;font-size:15px;font-weight:600">إنهاء جلسة فاطمة محمد</h2>
+          <p style="margin:0;font-size:13px;color:#4A4A4A;line-height:1.6">ستُنشأ فاتورة بقيمة 26,600 أوقية وتُرسل للمريضة على واتساب.</p>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" checked="{{true}}" style="width:15px;height:15px;margin:0;accent-color:#2563EB">حجز موعد المتابعة بعد أسبوعين</label>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button type="button" style="height:32px;padding:0 14px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer">رجوع</button>
+          <button type="button" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:1px solid #15803D;border-radius:8px;background:#15803D;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>إنهاء الجلسة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toasts -->
+    <div style="display:flex;flex-direction:column;gap:10px;justify-content:center">
+      <span style="font-size:12px;font-weight:600;color:#616161">إشعارات سريعة</span>
+      <div role="status" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.06)">
+        <span style="width:26px;height:26px;border-radius:7px;background:#DCF5E6;color:#0F6B32;display:flex;align-items:center;justify-content:center;flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span style="font-size:13px;font-weight:500;flex:1">تم حفظ الدفعة · 10,000 أوقية</span>
+        <button type="button" style="height:26px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#2563EB;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">تراجع</button>
+      </div>
+      <div role="status" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.06)">
+        <span style="width:26px;height:26px;border-radius:7px;background:#DCE7FE;color:#1A44B8;display:flex;align-items:center;justify-content:center;flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span>
+        <span style="font-size:13px;font-weight:500;flex:1">أُرسل التذكير إلى 5 مرضى</span>
+      </div>
+      <div role="status" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.06)">
+        <span style="width:26px;height:26px;border-radius:7px;background:#FDEBC0;color:#734600;display:flex;align-items:center;justify-content:center;flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="10"/></svg></span>
+        <span style="font-size:13px;font-weight:500;flex:1">رسالتان لم تصلا بعد</span>
+      </div>
+      <div role="alert" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#FFFFFF;border:1px solid #EBEBEB;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.06)">
+        <span style="width:26px;height:26px;border-radius:7px;background:#FDDEDE;color:#A31616;display:flex;align-items:center;justify-content:center;flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+        <span style="font-size:13px;font-weight:500;flex:1">تعذّر حفظ الموعد</span>
+        <button type="button" style="height:26px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#A31616;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">إعادة المحاولة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Banners -->
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #F2D58C;border-radius:10px;background:#FFF8E6">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#734600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></svg>
+      <span style="font-size:13px;color:#5E3A00;flex:1"><b style="font-weight:600">اشتراك واتساب ينتهي خلال 5 أيام.</b> جدّد لتستمر التذكيرات.</span>
+      <button type="button" style="height:28px;padding:0 10px;border:1px solid #F5A524;border-radius:7px;background:#F5A524;color:#2B1D00;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">تجديد</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #B9CEF8;border-radius:10px;background:#F4F7FF">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A44B8" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <span style="font-size:13px;color:#173A9E;flex:1">تم تحديث النظام: عرض اليوم في التقويم أصبح متاحاً.</span>
+      <button type="button" aria-label="إغلاق" style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#1A44B8;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+  </div>
+
+  <!-- Loading / empty / error -->
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;flex:1">
+    <section aria-label="جارٍ التحميل" aria-busy="true" style="border:1px solid #EBEBEB;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-size:12px;font-weight:600;color:#616161">التحميل</span>
+      <div class="sk" style="display:flex;align-items:center;gap:10px">
+        <span style="width:36px;height:36px;border-radius:50%;background:#EDEDEE"></span>
+        <span style="display:flex;flex-direction:column;gap:6px;flex:1"><span style="height:10px;width:60%;border-radius:4px;background:#EDEDEE"></span><span style="height:8px;width:40%;border-radius:4px;background:#F1F1F2"></span></span>
+      </div>
+      <div class="sk" style="display:flex;flex-direction:column;gap:8px">
+        <span style="height:10px;border-radius:4px;background:#F1F1F2"></span>
+        <span style="height:10px;width:85%;border-radius:4px;background:#F1F1F2"></span>
+        <span style="height:10px;width:70%;border-radius:4px;background:#F1F1F2"></span>
+      </div>
+      <div style="margin-top:auto;display:flex;gap:8px">
+        <button type="button" disabled="{{true}}" style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:13px;font-weight:500;opacity:.8;cursor:progress">
+          <svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>جارٍ الحفظ…</button>
+      </div>
+    </section>
+
+    <section style="border:1px solid #EBEBEB;border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center">
+      <span style="width:42px;height:42px;border-radius:12px;background:#F1F1F2;color:#3F3F3F;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M8 11h6"/></svg></span>
+      <span style="font-size:14px;font-weight:600">لا نتائج لـ «محمد سيد»</span>
+      <span style="font-size:12px;color:#616161;line-height:1.6">جرّب البحث برقم الهاتف أو رقم الملف</span>
+      <div style="display:flex;gap:8px">
+        <button type="button" style="height:30px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer">مسح البحث</button>
+        <button type="button" style="display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;border:1px solid #2563EB;border-radius:8px;background:#2563EB;color:#FFFFFF;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>إضافة كمريض جديد</button>
+      </div>
+    </section>
+
+    <section style="border:1px solid #EBEBEB;border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center">
+      <span style="width:42px;height:42px;border-radius:12px;background:#FDDEDE;color:#A31616;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h.01M8.5 16.43a5 5 0 0 1 7 0M5 12.86a10 10 0 0 1 5.17-2.69M19 12.86a10 10 0 0 0-2.01-1.53M2 8.82a15 15 0 0 1 4.18-2.65M22 8.82a15 15 0 0 0-11.29-3.76M2 2l20 20"/></svg></span>
+      <span style="font-size:14px;font-weight:600">انقطع الاتصال بالخادم</span>
+      <span style="font-size:12px;color:#616161;line-height:1.6">تغييراتك محفوظة على هذا الجهاز، وستُرسل عند عودة الاتصال.</span>
+      <button type="button" style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:1px solid #E3E3E3;border-radius:8px;background:#FFFFFF;color:#303030;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>إعادة المحاولة</button>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
