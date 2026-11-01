@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import { hashPassword, verifyPassword } from './password';
 import { Prisma } from '@prisma/client';
 import { employeeRouter } from './employees';
+import { addDefaultPermissions, permissionKeys, rolePermissionsRouter } from './role-permissions';
 import { accountRouter } from './account';
 
 export const prisma = new PrismaClient();
@@ -33,7 +34,7 @@ app.post('/api/auth/platform/login', loginLimit, async (req, res) => {
 async function clinicIdentity(id:string) {
   const user = await prisma.user.findUnique({ where:{id}, include:{ clinic:true, userRoles:{ include:{ role:{ include:{ permissions:true } } } } } });
   if (!user) return null;
-  return { user, identity:{ kind:'clinic' as const, username:user.username, name:user.name, clinic:{ id:user.clinic.id, name:user.clinic.name, code:user.clinic.code }, roles:user.userRoles.map(ur=>ur.role.key).sort(), permissions:[...new Set(user.userRoles.flatMap(ur=>ur.role.permissions.map(p=>p.permissionKey)))].sort() } };
+  return { user, identity:{ kind:'clinic' as const, username:user.username, name:user.name, clinic:{ id:user.clinic.id, name:user.clinic.name, code:user.clinic.code }, roles:user.userRoles.map(ur=>ur.role.key).sort(), permissions:user.userRoles.some(ur=>ur.role.key==='admin')?[...permissionKeys]:[...new Set(user.userRoles.flatMap(ur=>ur.role.permissions.map(p=>p.permissionKey)))].sort() } };
 }
 app.post('/api/auth/clinic/login', loginLimit, async (req, res) => {
   const { code, username, password } = req.body || {};
@@ -109,6 +110,7 @@ app.post('/api/clinics', async (req, res, next) => {
       const clinic = await tx.clinic.create({ data: { name: name.trim(), code }, select: { id: true, name: true, code: true } });
       const admin = await tx.role.create({ data: { clinicId: clinic.id, key: 'admin' } });
       await tx.role.createMany({ data: [{ clinicId: clinic.id, key: 'dentist' }, { clinicId: clinic.id, key: 'receptionist' }] });
+      await addDefaultPermissions(tx, await tx.role.findMany({where:{clinicId:clinic.id},select:{id:true,key:true}}));
       const user = await tx.user.create({ data: { clinicId: clinic.id, name: managerName.trim(), username: managerUsername.trim(), passwordHash } });
       await tx.userRole.create({ data: { clinicId: clinic.id, roleId: admin.id, userId: user.id } });
       return clinic;
@@ -120,6 +122,7 @@ app.post('/api/clinics', async (req, res, next) => {
   }
 });
 
+app.use('/api/clinic/role-permissions', rolePermissionsRouter(prisma));
 app.use('/api/clinic', accountRouter(prisma));
 app.use('/api/clinic', employeeRouter(prisma));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));

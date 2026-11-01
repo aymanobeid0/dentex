@@ -31,6 +31,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('creating a clinic', () => {
     for (const c of clinics) {
       await prisma.userRole.deleteMany({ where: { clinicId: c.id } });
       await prisma.user.deleteMany({ where: { clinicId: c.id } });
+      await prisma.rolePermission.deleteMany({ where: { role: { clinicId: c.id } } });
       await prisma.role.deleteMany({ where: { clinicId: c.id } });
       await prisma.clinic.delete({ where: { id: c.id } });
     }
