@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model Clinic {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String
+  code String @unique @db.VarChar(4)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  users User[]
+  roles Role[]
+  @@map("clinics")
+}
+model PlatformAdmin {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username String @unique
+  email String @unique
+  passwordHash String @map("password_hash")
+  active Boolean @default(true)
+  credentialVersion Int @default(1) @map("credential_version")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  @@map("platform_admins")
+}
+model User {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  name String
+  username String
+  email String?
+  passwordHash String @map("password_hash")
+  active Boolean @default(true)
+  credentialVersion Int @default(1) @map("credential_version")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userRoles UserRole[]
+  @@unique([clinicId, username])
+  @@unique([clinicId, id])
+  @@map("users")
+}
+model Role {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  key String
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userRoles UserRole[]
+  permissions RolePermission[]
+  @@unique([clinicId, key])
+  @@unique([clinicId, id])
+  @@map("roles")
+}
+model UserRole {
+  clinicId String @map("clinic_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+  user User @relation(fields: [clinicId, userId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  role Role @relation(fields: [clinicId, roleId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+model Permission {
+  key String @id
+  roles RolePermission[]
+  @@map("permissions")
+}
+model RolePermission {
+  roleId String @map("role_id") @db.Uuid
+  permissionKey String @map("permission_key")
+  role Role @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permission Permission @relation(fields: [permissionKey], references: [key], onDelete: NoAction, onUpdate: NoAction)
+  @@id([roleId, permissionKey])
+  @@map("role_permissions")
+}
