@@ -3,7 +3,8 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
-import { verifyPassword } from './password';
+import { hashPassword, verifyPassword } from './password';
+import { Prisma } from '@prisma/client';
 
 export const prisma = new PrismaClient();
 export const app = express();
@@ -39,6 +40,28 @@ app.use('/api', async (req, res, next) => {
 });
 app.get('/api/auth/me', (_req, res) => res.json({ username: res.locals.account.username, kind: 'platform' }));
 app.get('/api/clinics', async (_req, res) => res.json(await prisma.clinic.findMany({ select: { id: true, name: true, code: true }, orderBy: { name: 'asc' } })));
+
+app.post('/api/clinics', async (req, res, next) => {
+  const { name, code, managerName, managerUsername, managerPassword } = req.body || {};
+  const validText = (value: unknown, max: number): value is string => typeof value === 'string' && value.trim().length > 0 && value.trim().length <= max;
+  if (!validText(name, 200) || typeof code !== 'string' || !/^[0-9]{4}$/.test(code) || !validText(managerName, 200) || !validText(managerUsername, 200) || typeof managerPassword !== 'string' || managerPassword.trim().length === 0 || managerPassword.length > 1024) return res.status(400).json({ error: 'invalid_input' });
+  try {
+    const passwordHash = await hashPassword(managerPassword);
+    const clinic = await prisma.$transaction(async tx => {
+      const clinic = await tx.clinic.create({ data: { name: name.trim(), code }, select: { id: true, name: true, code: true } });
+      const admin = await tx.role.create({ data: { clinicId: clinic.id, key: 'admin' } });
+      await tx.role.createMany({ data: [{ clinicId: clinic.id, key: 'dentist' }, { clinicId: clinic.id, key: 'receptionist' }] });
+      const user = await tx.user.create({ data: { clinicId: clinic.id, name: managerName.trim(), username: managerUsername.trim(), passwordHash } });
+      await tx.userRole.create({ data: { clinicId: clinic.id, roleId: admin.id, userId: user.id } });
+      return clinic;
+    });
+    return res.status(201).json(clinic);
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') return res.status(409).json({ error: 'duplicate_code' });
+    return next(err);
+  }
+});
+
 app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));
 if (process.env.NODE_ENV === 'production') app.use(express.static('dist'));
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => { console.error('Request failed'); res.status(500).json({ error: 'server_error' }); });
