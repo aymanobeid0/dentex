@@ -1,0 +1,55 @@
+import { describe,it,expect,beforeAll,afterAll } from 'vitest';
+import request from 'supertest';
+import { app,prisma } from '../server/app';
+import { hashPassword } from '../server/password';
+
+describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic role permissions',()=>{
+  const origin='http://localhost:5173', prefix=`roles-${crypto.randomUUID()}`;
+  let ids:string[]=[], codes:string[]=[], cookies:string[]=[], roles:{id:string;key:string;permissions:string[]}[][]=[];
+  beforeAll(async()=>{
+    if(!process.env.TEST_DATABASE_URL || new URL(process.env.TEST_DATABASE_URL).pathname!=='/dentex_test' || process.env.DATABASE_URL!==process.env.TEST_DATABASE_URL) throw Error('Refusing fixtures outside dentex_test');
+    process.env.JWT_SECRET='test-only-secret-with-at-least-32-characters'; process.env.APP_ORIGIN=origin;
+    const used=new Set((await prisma.clinic.findMany({select:{code:true}})).map(c=>c.code));
+    codes=Array.from({length:10000},(_,i)=>String((i+5000)%10000).padStart(4,'0')).filter(c=>!used.has(c)).slice(0,2);
+    await prisma.platformAdmin.create({data:{username:prefix,email:`${prefix}@example.test`,passwordHash:await hashPassword('test-password')}});
+    const plogin=await request(app).post('/api/auth/platform/login').set('Origin',origin).send({username:prefix,password:'test-password'});
+    const platformCookie=plogin.headers['set-cookie'][0];
+    for(let i=0;i<2;i++){
+      const created=await request(app).post('/api/clinics').set('Origin',origin).set('Cookie',platformCookie).send({name:`${prefix}-${i}`,code:codes[i],managerName:'Admin',managerUsername:prefix,managerPassword:'test-password'});
+      expect(created.status).toBe(201);ids.push(created.body.id);
+      const login=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:codes[i],username:prefix,password:'test-password'});cookies.push(login.headers['set-cookie'][0]);
+    }
+  });
+  afterAll(async()=>{for(const id of ids){await prisma.userRole.deleteMany({where:{clinicId:id}});await prisma.user.deleteMany({where:{clinicId:id}});await prisma.rolePermission.deleteMany({where:{role:{clinicId:id}}});await prisma.role.deleteMany({where:{clinicId:id}});await prisma.clinic.deleteMany({where:{id}})}await prisma.platformAdmin.deleteMany({where:{username:prefix}});await prisma.$disconnect()});
+  it('shows independent initial roles and financial read access for dentists',async()=>{
+    for(let i=0;i<2;i++){const r=await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[i]);expect(r.status).toBe(200);roles.push(r.body.roles);}
+    const dentist=roles[0].find(r=>r.key==='dentist')!;
+    expect(dentist.permissions).toContain('patient_financial.read');
+    expect(dentist.permissions).not.toContain('payments.write');
+    expect(roles[0].find(r=>r.key==='admin')!.permissions).toContain('employees.manage');
+  });
+  it('protects the admin role and scopes role updates to the authenticated clinic',async()=>{
+    const admin=roles[0].find(r=>r.key==='admin')!, foreign=roles[1].find(r=>r.key==='dentist')!;
+    expect((await request(app).put(`/api/clinic/role-permissions/${admin.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:[]})).status).toBe(403);
+    expect((await request(app).put(`/api/clinic/role-permissions/${foreign.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:[]})).status).toBe(404);
+    const invalid=await request(app).put(`/api/clinic/role-permissions/${roles[0].find(r=>r.key==='dentist')!.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:['unknown.permission']});expect(invalid.status).toBe(400);
+    const me=await request(app).get('/api/auth/me').set('Cookie',cookies[0]);expect(me.body.permissions).toContain('employees.manage');expect(me.body.permissions).toContain('payments.write');
+  });
+  it('unions roles and applies grant and removal on the next request only in the edited clinic',async()=>{
+    const dentist=roles[0].find(r=>r.key==='dentist')!, reception=roles[0].find(r=>r.key==='receptionist')!;
+    const created=await request(app).post('/api/clinic/employees').set('Origin',origin).set('Cookie',cookies[0]).send({name:'Combined',username:'combined',password:'test-password',roleIds:[dentist.id,reception.id]});expect(created.status).toBe(201);
+    const login=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:codes[0],username:'combined',password:'test-password'});
+    const employeeCookie=login.headers['set-cookie'][0];
+    let me=await request(app).get('/api/auth/me').set('Cookie',employeeCookie);
+    expect(me.body.permissions).toContain('patient_records.write');expect(me.body.permissions).toContain('communications.write');
+    expect((await request(app).get('/api/clinic/employees').set('Cookie',employeeCookie)).status).toBe(403);
+    expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:['employees.manage']})).status).toBe(200);
+    expect((await request(app).get('/api/clinic/employees').set('Cookie',employeeCookie)).status).toBe(200);
+    me=await request(app).get('/api/auth/me').set('Cookie',employeeCookie);expect(me.body.permissions).toContain('employees.manage');expect(me.body.permissions).toContain('communications.write');expect(me.body.permissions).not.toContain('patient_records.write');
+    const other=await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[1]);expect(other.body.roles.find((r:{key:string})=>r.key==='dentist').permissions).toContain('patient_records.write');
+    expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:[]})).status).toBe(200);
+    expect((await request(app).get('/api/clinic/employees').set('Cookie',employeeCookie)).status).toBe(403);
+    expect((await request(app).get('/api/clinic/role-permissions').set('Cookie',employeeCookie)).status).toBe(403);
+  });
+
+});
