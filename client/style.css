@@ -4,3 +4,4 @@
 .login-switch{display:block;margin:4px auto 0;border:0;background:transparent;color:var(--text-3);font-size:12px;padding:8px;text-decoration:underline;text-underline-offset:3px}.clinic-code{text-align:left;unicode-bidi:isolate}.account-card span{font-size:12px;color:var(--text-muted)}.account-card p{margin:5px 0 18px}.account-card div:last-child p{margin-bottom:0}
 .employee-heading{display:flex;align-items:start;justify-content:space-between;gap:16px}.role-options{padding:0;margin:0 0 20px;border:0}.role-options legend{font-weight:500;margin-bottom:10px}.role-options label{display:flex;align-items:center;gap:8px;min-height:32px}.role-options input{accent-color:var(--primary)}@media(max-width:760px){.employee-heading{align-items:center;flex-wrap:wrap}.role-options label{min-height:44px}}
 .role-options input:focus-visible{outline:1px solid var(--border-focus);outline-offset:2px}
+.account-password{margin-top:16px}

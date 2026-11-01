@@ -73,5 +73,35 @@ export function employeeRouter(prisma:PrismaClient) {
       return res.json(expose(user));
     } catch(err){return respondError(err,res,next)}
   });
+  router.patch('/employees/:id/status',async(req,res,next)=>{
+    if(!uuid(req.params.id)) return res.status(404).json({error:'not_found'});
+    if(typeof req.body?.active!=='boolean') return res.status(400).json({error:'invalid_input'});
+    try {
+      const user=await locked(res,async(tx,clinicId)=>{
+        const current=await tx.user.findFirst({where:{id:req.params.id,clinicId},include:{userRoles:{include:{role:true}}}});
+        if(!current) throw new EmployeeError(404,'not_found');
+        if(current.active && !req.body.active && current.userRoles.some(ur=>ur.role.key==='admin')) {
+          const count=await tx.user.count({where:{clinicId,active:true,userRoles:{some:{role:{key:'admin'}}}}});
+          if(count<=1) throw new EmployeeError(409,'last_admin');
+        }
+        return tx.user.update({where:{id:current.id},data:current.active===req.body.active?{}:{active:req.body.active,credentialVersion:{increment:1}},select:selectEmployee});
+      });
+      return res.json(expose(user));
+    } catch(err){return respondError(err,res,next)}
+  });
+  router.post('/employees/:id/reset-password',async(req,res,next)=>{
+    if(!uuid(req.params.id)) return res.status(404).json({error:'not_found'});
+    const password=req.body?.password;
+    if(typeof password!=='string'||!password.trim()||password.length>1024) return res.status(400).json({error:'invalid_input'});
+    try {
+      const passwordHash=await hashPassword(password);
+      await locked(res,async(tx,clinicId)=>{
+        const current=await tx.user.findFirst({where:{id:req.params.id,clinicId},select:{id:true}});
+        if(!current) throw new EmployeeError(404,'not_found');
+        await tx.user.update({where:{id:current.id},data:{passwordHash,credentialVersion:{increment:1}}});
+      });
+      return res.status(204).end();
+    } catch(err){return respondError(err,res,next)}
+  });
   return router;
 }
