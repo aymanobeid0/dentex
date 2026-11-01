@@ -25,20 +25,47 @@ app.post('/api/auth/platform/login', loginLimit, async (req, res) => {
   const account = await prisma.platformAdmin.findUnique({ where: { username: username.trim() } });
   if (!account?.active || !(await verifyPassword(password, account.passwordHash))) return res.status(401).json({ error: 'invalid_credentials' });
   const token = jwt.sign({ kind: 'platform', version: account.credentialVersion }, secret(), { subject: account.id, expiresIn: '24h', algorithm: 'HS256' });
-  res.cookie('dentex_session', token, cookieOptions).json({ username: account.username });
+  res.cookie('dentex_session', token, cookieOptions).json({ username: account.username, kind: 'platform' });
+});
+
+async function clinicIdentity(id:string) {
+  const user = await prisma.user.findUnique({ where:{id}, include:{ clinic:true, userRoles:{ include:{ role:{ include:{ permissions:true } } } } } });
+  if (!user) return null;
+  return { user, identity:{ kind:'clinic' as const, username:user.username, name:user.name, clinic:{ id:user.clinic.id, name:user.clinic.name, code:user.clinic.code }, roles:user.userRoles.map(ur=>ur.role.key).sort(), permissions:[...new Set(user.userRoles.flatMap(ur=>ur.role.permissions.map(p=>p.permissionKey)))].sort() } };
+}
+app.post('/api/auth/clinic/login', loginLimit, async (req, res) => {
+  const { code, username, password } = req.body || {};
+  if (typeof code !== 'string' || !/^[0-9]{4}$/.test(code) || typeof username !== 'string' || username.length > 200 || typeof password !== 'string' || password.length > 1024) return res.status(400).json({error:'invalid_input'});
+  const user = await prisma.user.findFirst({where:{username:username.trim(),clinic:{code}}});
+  const dummyHash = `scrypt$32768$8$1$${'0'.repeat(32)}$${'0'.repeat(128)}`;
+  const passwordValid = await verifyPassword(password, user?.passwordHash ?? dummyHash);
+  if (!user?.active || !passwordValid) return res.status(401).json({error:'invalid_credentials'});
+  const current = await clinicIdentity(user.id);
+  if (!current?.user.active || current.user.credentialVersion !== user.credentialVersion) return res.status(401).json({error:'invalid_credentials'});
+  const token = jwt.sign({kind:'clinic',version:current.user.credentialVersion}, secret(), {subject:user.id, expiresIn:'24h', algorithm:'HS256'});
+  return res.cookie('dentex_session', token, cookieOptions).json(current.identity);
 });
 app.post('/api/auth/logout', (_req, res) => res.clearCookie('dentex_session', cookieOptions).status(204).end());
 app.use('/api', async (req, res, next) => {
   try {
     const payload = jwt.verify(req.cookies.dentex_session, secret(), { algorithms: ['HS256'] });
-    if (typeof payload === 'string' || payload.kind !== 'platform' || typeof payload.sub !== 'string' || typeof payload.version !== 'number') return res.status(401).json({ error: 'unauthorized' });
-    const account = await prisma.platformAdmin.findUnique({ where: { id: payload.sub } });
-    if (!account?.active || account.credentialVersion !== payload.version) return res.status(401).json({ error: 'unauthorized' });
-    res.locals.account = account;
+    if (typeof payload === 'string' || typeof payload.sub !== 'string' || typeof payload.version !== 'number') return res.status(401).json({error:'unauthorized'});
+    if (payload.kind === 'platform') {
+      const account = await prisma.platformAdmin.findUnique({where:{id:payload.sub}});
+      if (!account?.active || account.credentialVersion !== payload.version) return res.status(401).json({error:'unauthorized'});
+      res.locals.identity = {kind:'platform',username:account.username};
+    } else if (payload.kind === 'clinic') {
+      const current = await clinicIdentity(payload.sub);
+      if (!current?.user.active || current.user.credentialVersion !== payload.version) return res.status(401).json({error:'unauthorized'});
+      res.locals.identity = current.identity;
+      res.locals.clinicId = current.user.clinicId;
+      res.locals.userId = current.user.id;
+    } else return res.status(401).json({error:'unauthorized'});
     next();
-  } catch { return res.status(401).json({ error: 'unauthorized' }); }
+  } catch { return res.status(401).json({error:'unauthorized'}); }
 });
-app.get('/api/auth/me', (_req, res) => res.json({ username: res.locals.account.username, kind: 'platform' }));
+app.get('/api/auth/me', (_req, res) => res.json(res.locals.identity));
+app.use('/api/clinics', (_req, res, next) => res.locals.identity.kind === 'platform' ? next() : res.status(401).json({error:'unauthorized'}));
 app.get('/api/clinics', async (_req, res) => res.json(await prisma.clinic.findMany({ select: { id: true, name: true, code: true }, orderBy: { name: 'asc' } })));
 
 app.post('/api/clinics', async (req, res, next) => {
