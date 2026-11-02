@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../generated/prisma/client';
 import { hashPassword, verifyPassword } from './password';
 
 export function accountRouter(prisma:PrismaClient) {

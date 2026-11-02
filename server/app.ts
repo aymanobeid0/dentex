@@ -2,15 +2,15 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from './database';
 import { hashPassword, verifyPassword } from './password';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import { employeeRouter } from './employees';
 import { addDefaultPermissions, permissionKeys, rolePermissionsRouter } from './role-permissions';
 import { accountRouter } from './account';
 import { configureTrustedProxies } from './proxy';
 
-export const prisma = new PrismaClient();
+export const prisma = createPrismaClient();
 export const app = express();
 configureTrustedProxies(app, process.env.TRUST_PROXY);
 app.disable('x-powered-by');

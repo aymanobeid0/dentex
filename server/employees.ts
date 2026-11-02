@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Prisma, type PrismaClient } from '@prisma/client';
+import { Prisma, type PrismaClient } from '../generated/prisma/client';
 import { hashPassword } from './password';
 
 const selectEmployee = { id:true, name:true, username:true, active:true, userRoles:{select:{role:{select:{id:true,key:true}}}} } as const;
