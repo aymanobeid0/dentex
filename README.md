@@ -30,4 +30,5 @@ Prisma 7 uses a PostgreSQL driver adapter and `prisma.config.ts` for CLI connect
 
 Run `npm run dev`, then open `http://127.0.0.1:5173/`. Vite forwards `/api` to the API at `127.0.0.1:3000`. The development processes must remain running while previewing. Existing local accounts and database setup are documented in `docs/development-database.md`; do not recreate them.
 
-The implementation is on the local `integration/accounts` branch. The remote repository is awaiting the owner's URL; no push has been performed. After each merged pull request, pull the changes into the corresponding local branch, preserving any local work. See `.scratch/accounts/handoff.md` for verification results and outstanding manual checks.
+The implementation is on the local `integration/accounts` branch. The repository is https://github.com/aymanobeid0/dentex; the initial implementation has been pushed to main and integration/accounts. After each merged pull request, pull the changes into the corresponding local branch, preserving any local work. See `.scratch/accounts/handoff.md` for verification results and outstanding manual checks.
+
