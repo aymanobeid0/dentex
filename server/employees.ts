@@ -63,7 +63,7 @@ export function employeeRouter(prisma:PrismaClient) {
         if(!current) throw new EmployeeError(404,'not_found');
         const roles=await tx.role.findMany({where:{clinicId,id:{in:roleIds}}});
         if(roles.length!==roleIds.length) throw new EmployeeError(400,'invalid_roles');
-        if(!actorIsAdmin && (current.userRoles.some(ur=>ur.role.key==='admin') !== roles.some(role=>role.key==='admin'))) throw new EmployeeError(403,'forbidden');
+        if(!actorIsAdmin && (current.userRoles.some(ur=>ur.role.key==='admin') || roles.some(role=>role.key==='admin'))) throw new EmployeeError(403,'forbidden');
         if(current.active && current.userRoles.some(ur=>ur.role.key==='admin') && !roles.some(r=>r.key==='admin')) {
           const count=await tx.user.count({where:{clinicId,active:true,userRoles:{some:{role:{key:'admin'}}}}});
           if(count<=1) throw new EmployeeError(409,'last_admin');
