@@ -25,3 +25,9 @@ Prisma 7 uses a PostgreSQL driver adapter and `prisma.config.ts` for CLI connect
 ## Tests
 
 `npm test` runs the non-database tests; database integration tests require an explicitly configured `TEST_DATABASE_URL` pointing to an isolated database named `dentex_test`. Create and initialize that database separately with `database/bootstrap.sql`. `node scripts/test-local.mjs <path-to-local-env>` derives only the local host credentials and changes the database name to `dentex_test`; it refuses remote hosts. Tests create and remove their own fictional fixtures and do not touch `dentex_dev`.
+
+## Local preview and repository handoff
+
+Run `npm run dev`, then open `http://127.0.0.1:5173/`. Vite forwards `/api` to the API at `127.0.0.1:3000`. The development processes must remain running while previewing. Existing local accounts and database setup are documented in `docs/development-database.md`; do not recreate them.
+
+The implementation is on the local `integration/accounts` branch. The remote repository is awaiting the owner's URL; no push has been performed. After each merged pull request, pull the changes into the corresponding local branch, preserving any local work. See `.scratch/accounts/handoff.md` for verification results and outstanding manual checks.
