@@ -52,4 +52,17 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic role permissions',()=>{
     expect((await request(app).get('/api/clinic/role-permissions').set('Cookie',employeeCookie)).status).toBe(403);
   });
 
+  it('does not allow delegated employee managers to obtain or control administrator access',async()=>{
+    const dentist=roles[0].find(r=>r.key==='dentist')!, admin=roles[0].find(r=>r.key==='admin')!;
+    const grant=await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:['employees.manage']});expect(grant.status).toBe(200);
+    const created=await request(app).post('/api/clinic/employees').set('Origin',origin).set('Cookie',cookies[0]).send({name:'Delegate',username:'delegate',password:'test-password',roleIds:[dentist.id]});expect(created.status).toBe(201);
+    const login=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:codes[0],username:'delegate',password:'test-password'});const delegate=login.headers['set-cookie'][0];
+    const escalate=await request(app).put(`/api/clinic/employees/${created.body.id}`).set('Origin',origin).set('Cookie',delegate).send({name:'Delegate',username:'delegate',roleIds:[admin.id]});expect(escalate.status).toBe(403);
+    const createAdmin=await request(app).post('/api/clinic/employees').set('Origin',origin).set('Cookie',delegate).send({name:'New Admin',username:'new-admin',password:'test-password',roleIds:[admin.id]});expect(createAdmin.status).toBe(403);
+    const list=await request(app).get('/api/clinic/employees').set('Cookie',delegate);const manager=list.body.find((e:{roles:{key:string}[]})=>e.roles.some(r=>r.key==='admin'));
+    const remove=await request(app).put(`/api/clinic/employees/${manager.id}`).set('Origin',origin).set('Cookie',delegate).send({name:manager.name,username:manager.username,roleIds:[dentist.id]});expect(remove.status).toBe(403);
+    const reset=await request(app).post(`/api/clinic/employees/${manager.id}/reset-password`).set('Origin',origin).set('Cookie',delegate).send({password:'test-password'});expect(reset.status).toBe(403);
+    const disable=await request(app).patch(`/api/clinic/employees/${manager.id}/status`).set('Origin',origin).set('Cookie',delegate).send({active:false});expect(disable.status).toBe(403);
+  });
+
 });

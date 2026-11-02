@@ -23,13 +23,13 @@ export function employeeRouter(prisma:PrismaClient) {
     const user=await prisma.user.findFirst({where:{id:req.params.id,clinicId:res.locals.clinicId},select:selectEmployee});
     return user ? res.json(expose(user)) : res.status(404).json({error:'not_found'});
   });
-  async function locked<T>(res:import('express').Response, fn:(tx:Prisma.TransactionClient, clinicId:string)=>Promise<T>):Promise<T> {
+  async function locked<T>(res:import('express').Response, fn:(tx:Prisma.TransactionClient, clinicId:string, actorIsAdmin:boolean)=>Promise<T>):Promise<T> {
     const clinicId:string=res.locals.clinicId, userId:string=res.locals.userId, version:number=res.locals.credentialVersion;
     return prisma.$transaction(async tx=>{
       await tx.$queryRaw`SELECT id FROM clinics WHERE id = ${clinicId}::uuid FOR UPDATE`;
       const actor=await tx.user.findFirst({where:{id:userId,clinicId,active:true,credentialVersion:version},include:{userRoles:{include:{role:{include:{permissions:true}}}}}});
       if(!actor || !actor.userRoles.some(ur=>ur.role.key==='admin'||ur.role.permissions.some(p=>p.permissionKey==='employees.manage'))) throw new EmployeeError(403,'forbidden');
-      return fn(tx,clinicId);
+      return fn(tx,clinicId,actor.userRoles.some(ur=>ur.role.key==='admin'));
     });
   }
   const respondError=(err:unknown,res:import('express').Response,next:import('express').NextFunction)=>{
@@ -42,8 +42,10 @@ export function employeeRouter(prisma:PrismaClient) {
     if(!validText(name,200)||!validText(username,200)||!validText(password,1024)||!validRoles(roleIds)) return res.status(400).json({error:'invalid_input'});
     try {
       const passwordHash=await hashPassword(password);
-      const user=await locked(res,async(tx,clinicId)=>{
-        if(await tx.role.count({where:{clinicId,id:{in:roleIds}}})!==roleIds.length) throw new EmployeeError(400,'invalid_roles');
+      const user=await locked(res,async(tx,clinicId,actorIsAdmin)=>{
+        const selectedRoles=await tx.role.findMany({where:{clinicId,id:{in:roleIds}}});
+        if(selectedRoles.length!==roleIds.length) throw new EmployeeError(400,'invalid_roles');
+        if(!actorIsAdmin && selectedRoles.some(role=>role.key==='admin')) throw new EmployeeError(403,'forbidden');
         const user=await tx.user.create({data:{clinicId,name:name.trim(),username:username.trim(),passwordHash}});
         await tx.userRole.createMany({data:roleIds.map(roleId=>({clinicId,userId:user.id,roleId}))});
         return tx.user.findUniqueOrThrow({where:{id:user.id},select:selectEmployee});
@@ -56,11 +58,12 @@ export function employeeRouter(prisma:PrismaClient) {
     if(!uuid(req.params.id)) return res.status(404).json({error:'not_found'});
     if(!validText(name,200)||!validText(username,200)||!validRoles(roleIds)) return res.status(400).json({error:'invalid_input'});
     try {
-      const user=await locked(res,async(tx,clinicId)=>{
+      const user=await locked(res,async(tx,clinicId,actorIsAdmin)=>{
         const current=await tx.user.findFirst({where:{id:req.params.id,clinicId},include:{userRoles:{include:{role:true}}}});
         if(!current) throw new EmployeeError(404,'not_found');
         const roles=await tx.role.findMany({where:{clinicId,id:{in:roleIds}}});
         if(roles.length!==roleIds.length) throw new EmployeeError(400,'invalid_roles');
+        if(!actorIsAdmin && (current.userRoles.some(ur=>ur.role.key==='admin') !== roles.some(role=>role.key==='admin'))) throw new EmployeeError(403,'forbidden');
         if(current.active && current.userRoles.some(ur=>ur.role.key==='admin') && !roles.some(r=>r.key==='admin')) {
           const count=await tx.user.count({where:{clinicId,active:true,userRoles:{some:{role:{key:'admin'}}}}});
           if(count<=1) throw new EmployeeError(409,'last_admin');
@@ -77,9 +80,10 @@ export function employeeRouter(prisma:PrismaClient) {
     if(!uuid(req.params.id)) return res.status(404).json({error:'not_found'});
     if(typeof req.body?.active!=='boolean') return res.status(400).json({error:'invalid_input'});
     try {
-      const user=await locked(res,async(tx,clinicId)=>{
+      const user=await locked(res,async(tx,clinicId,actorIsAdmin)=>{
         const current=await tx.user.findFirst({where:{id:req.params.id,clinicId},include:{userRoles:{include:{role:true}}}});
         if(!current) throw new EmployeeError(404,'not_found');
+        if(!actorIsAdmin && current.userRoles.some(ur=>ur.role.key==='admin')) throw new EmployeeError(403,'forbidden');
         if(current.active && !req.body.active && current.userRoles.some(ur=>ur.role.key==='admin')) {
           const count=await tx.user.count({where:{clinicId,active:true,userRoles:{some:{role:{key:'admin'}}}}});
           if(count<=1) throw new EmployeeError(409,'last_admin');
@@ -95,9 +99,10 @@ export function employeeRouter(prisma:PrismaClient) {
     if(typeof password!=='string'||!password.trim()||password.length>1024) return res.status(400).json({error:'invalid_input'});
     try {
       const passwordHash=await hashPassword(password);
-      await locked(res,async(tx,clinicId)=>{
-        const current=await tx.user.findFirst({where:{id:req.params.id,clinicId},select:{id:true}});
+      await locked(res,async(tx,clinicId,actorIsAdmin)=>{
+        const current=await tx.user.findFirst({where:{id:req.params.id,clinicId},include:{userRoles:{include:{role:true}}}});
         if(!current) throw new EmployeeError(404,'not_found');
+        if(!actorIsAdmin && current.userRoles.some(ur=>ur.role.key==='admin')) throw new EmployeeError(403,'forbidden');
         await tx.user.update({where:{id:current.id},data:{passwordHash,credentialVersion:{increment:1}}});
       });
       return res.status(204).end();

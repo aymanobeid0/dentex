@@ -8,9 +8,11 @@ import { Prisma } from '@prisma/client';
 import { employeeRouter } from './employees';
 import { addDefaultPermissions, permissionKeys, rolePermissionsRouter } from './role-permissions';
 import { accountRouter } from './account';
+import { configureTrustedProxies } from './proxy';
 
 export const prisma = new PrismaClient();
 export const app = express();
+configureTrustedProxies(app, process.env.TRUST_PROXY);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '16kb' }));
 app.use(cookieParser());
