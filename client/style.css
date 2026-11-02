@@ -8,3 +8,39 @@
 .account-password{margin-top:16px}
 
 @media(max-width:1194px){.language,.login-switch{min-height:44px}.permission-grid label,.role-options label{min-height:44px}}
+
+/* Readability and separated navigation targets, approved in the visual review. */
+.shell { font-size: 15px; line-height: 1.65; }
+.sidebar nav { display: flex; flex-direction: column; gap: 6px; }
+.nav-item { min-height: 44px; font-size: 15px; line-height: 1.5; }
+.shell .language, .shell .action { font-size: 14px; }
+.shell th, .shell .account-card span, .shell .field-error,
+.shell .error, .shell .success { font-size: 14px; }
+.shell .content h1 { font-size: 24px; line-height: 1.5; }
+.shell .clinic-form h2 { font-size: 18px; }
+.shell .input-shell input { font-size: 15px; }
+@media (max-width: 760px) {
+  .shell { flex-direction: column; }
+  .shell .sidebar { position: static; width: 100%; border-inline-end: 0; border-bottom: 1px solid var(--border); box-shadow: none; }
+  .sidebar-head { padding-bottom: 16px; }
+  .navbar { flex-wrap: wrap; }
+  .navbar-title { min-width: 0; }
+  .navbar > div { flex-wrap: wrap; }
+  .permission-grid { grid-template-columns: 1fr; }
+  .shell .input-shell input { font-size: 16px; }
+}
+
+/* Approximately 10% shorter buttons; keep the approved text sizes. */
+.shell .nav-item { min-height: 40px; padding-block: 8px; }
+.shell .language { min-height: 29px; }
+.shell .action { min-height: 36px; padding-block: 6px; }
+@media (max-width: 1194px) {
+  .shell .language, .shell .action { min-height: 40px; }
+}
+@media (max-width: 760px) {
+  .shell .icon { min-height: 40px; }
+}
+@media (pointer: coarse) {
+  .shell button { position: relative; }
+  .shell button::after { content: ''; position: absolute; inset-inline: 0; inset-block-start: 50%; height: max(100%, 44px); transform: translateY(-50%); }
+}
