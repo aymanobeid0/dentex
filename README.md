@@ -32,7 +32,7 @@ Without `TEST_DATABASE_URL`, `npm test` skips database integration tests. For th
 
 Run `npm run check:architecture` to check server boundaries with ESLint and dependency-cruiser. Completion requires this check, `npm run build`, and the full database-backed test run; a passing run with integration tests skipped is insufficient. The architectural rules are in [docs/architecture.md](docs/architecture.md).
 
-The local workflow definition in `.github/workflows/ci.yml` runs those checks on pull requests, pushes to `main`, and manual dispatch. It reuses npm download cache, cancels superseded runs, and runs architecture checks alongside the build before executing the full suite. It initializes a fresh PostgreSQL `dentex_test` with migrations and rejects failed, skipped, or todo tests. It does not deploy or build container images. The workflow becomes active on GitHub after it is committed and pushed; adding its file locally does not enable branch protection.
+The workflow definition in `.github/workflows/ci.yml` runs those checks on pull requests, pushes to `main`, and manual dispatch. It reuses npm download cache, cancels superseded runs, and runs architecture checks alongside the build before executing the full suite. It initializes a fresh PostgreSQL `dentex_test` with migrations and rejects failed, skipped, or todo tests. It does not deploy or build container images. Check the pull request's GitHub Checks for the actual run result; the workflow does not enable branch protection.
 
 ## Local preview and repository handoff
 
