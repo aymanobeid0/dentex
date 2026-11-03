@@ -1,0 +1,21 @@
+# Only application build inputs enter the context; secrets and local artifacts stay out.
+**
+!package.json
+!package-lock.json
+!tsconfig.json
+!vite.config.ts
+!prisma.config.ts
+!index.html
+!design-tokens.css
+!client/
+!client/**
+!server/
+!server/**
+!prisma/
+!prisma/**
+!public/
+!public/**
+!scripts/
+!scripts/platform-admin.ts
+**/.env*
+**/*.log

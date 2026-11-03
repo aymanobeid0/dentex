@@ -1,12 +1,10 @@
+import { translations, type Lang } from './locales';
 import { useState, type FormEvent } from 'react';
 import { KeyRound, Save, X } from 'lucide-react';
 
-const copy={
-  ar:{title:'تغيير كلمة المرور',current:'كلمة المرور الحالية',next:'كلمة المرور الجديدة',save:'تغيير كلمة المرور',cancel:'إلغاء',required:'أدخل كلمتي المرور.',incorrect:'كلمة المرور الحالية غير صحيحة.',error:'تعذر تغيير كلمة المرور. حاول مجددًا.'},
-  fr:{title:'Changer le mot de passe',current:'Mot de passe actuel',next:'Nouveau mot de passe',save:'Changer le mot de passe',cancel:'Annuler',required:'Saisissez les deux mots de passe.',incorrect:'Le mot de passe actuel est incorrect.',error:'Impossible de changer le mot de passe. Réessayez.'}
-};
-export function AccountPassword({lang,onExpired,onChanged}:{lang:'ar'|'fr';onExpired:()=>void;onChanged:()=>void}) {
-  const t=copy[lang]; const [open,setOpen]=useState(false),[current,setCurrent]=useState(''),[next,setNext]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState<keyof typeof t|null>(null);
+
+export function AccountPassword({lang,onExpired,onChanged}:{lang:Lang;onExpired:()=>void;onChanged:()=>void}) {
+  const t=translations[lang].accountPassword; const [open,setOpen]=useState(false),[current,setCurrent]=useState(''),[next,setNext]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState<keyof typeof t|null>(null);
   async function submit(e:FormEvent){
     e.preventDefault(); setError(null);
     if(!current||!next.trim()){setError('required');return;} setBusy(true);
