@@ -1,14 +1,12 @@
+import { translations, type Lang } from './locales';
 import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowLeft, KeyRound, Save, X } from 'lucide-react';
 
 type Clinic={id:string;name:string;code:string};
 type Admin={id:string;name:string;username:string;active:boolean};
-const messages={
-  ar:{title:'مديرو العيادة',back:'العودة إلى العيادات',code:'رمز العيادة',name:'الاسم',username:'اسم المستخدم',status:'الحالة',active:'نشط',inactive:'غير نشط',reset:'إعادة تعيين كلمة المرور',password:'كلمة المرور الجديدة',save:'حفظ',cancel:'إلغاء',loading:'جارٍ التحميل…',empty:'لا يوجد مديرون لهذه العيادة.',error:'تعذر إكمال الطلب. حاول مجددًا.',notFound:'تعذر العثور على المدير أو العيادة. حدّث القائمة.',required:'أدخل كلمة المرور الجديدة.',saved:'تمت إعادة تعيين كلمة المرور.',retry:'إعادة المحاولة'},
-  fr:{title:'Responsables du cabinet',back:'Retour aux cabinets',code:'Code du cabinet',name:'Nom',username:'Nom d’utilisateur',status:'Statut',active:'Actif',inactive:'Inactif',reset:'Réinitialiser le mot de passe',password:'Nouveau mot de passe',save:'Enregistrer',cancel:'Annuler',loading:'Chargement…',empty:'Aucun responsable pour ce cabinet.',error:'Impossible de traiter la demande. Réessayez.',notFound:'Responsable ou cabinet introuvable. Actualisez la liste.',required:'Saisissez le nouveau mot de passe.',saved:'Le mot de passe a été réinitialisé.',retry:'Réessayer'}
-};
-export function ClinicAdmins({clinic,lang,onBack,onExpired}:{clinic:Clinic;lang:'ar'|'fr';onBack:()=>void;onExpired:()=>void}){
-  const t=messages[lang];const [admins,setAdmins]=useState<Admin[]|null>(null),[loadingError,setLoadingError]=useState(false),[selected,setSelected]=useState<Admin|null>(null),[password,setPassword]=useState(''),[error,setError]=useState<'required'|'error'|'notFound'|null>(null),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false);
+
+export function ClinicAdmins({clinic,lang,onBack,onExpired}:{clinic:Clinic;lang:Lang;onBack:()=>void;onExpired:()=>void}){
+  const t=translations[lang].clinicAdmins;const [admins,setAdmins]=useState<Admin[]|null>(null),[loadingError,setLoadingError]=useState(false),[selected,setSelected]=useState<Admin|null>(null),[password,setPassword]=useState(''),[error,setError]=useState<'required'|'error'|'notFound'|null>(null),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false);
   async function load(){setLoadingError(false);setAdmins(null);try{const r=await fetch(`/api/clinics/${clinic.id}/admins`);if(r.status===401){onExpired();return}if(!r.ok)throw Error();setAdmins(await r.json())}catch{setLoadingError(true)}}
   useEffect(()=>{void load()},[clinic.id]);
   async function reset(e:FormEvent){e.preventDefault();setError(null);if(!password.trim()){setError('required');return}if(!selected)return;setBusy(true);try{const r=await fetch(`/api/clinics/${clinic.id}/admins/${selected.id}/reset-password`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});if(r.status===401){onExpired();return}if(!r.ok){setError(r.status===404?'notFound':'error');return}setSelected(null);setPassword('');setSaved(true);await load()}catch{setError('error')}finally{setBusy(false)}}

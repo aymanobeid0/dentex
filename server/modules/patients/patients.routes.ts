@@ -1,0 +1,16 @@
+import { Router, type RequestHandler } from 'express';
+import { AuthorizationError } from '../../shared/errors';
+import type { createPatientsController } from './patients.controller';
+function requirePermission(permission: 'patients.read' | 'patients.write'): RequestHandler {
+  return (_req, res, next) => {
+    const identity = res.locals.identity;
+    if (identity.kind !== 'clinic' || !(identity.roles.includes('admin') || identity.permissions.includes(permission))) throw new AuthorizationError();
+    next();
+  };
+}
+export function patientsRouter(controller: ReturnType<typeof createPatientsController>) {
+  const router = Router();
+  router.post('/', requirePermission('patients.write'), controller.register);
+  router.get('/:id', requirePermission('patients.read'), controller.get);
+  return router;
+}

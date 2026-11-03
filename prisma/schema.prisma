@@ -14,7 +14,24 @@ model Clinic {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   users User[]
   roles Role[]
+  patients Patient[]
   @@map("clinics")
+}
+model Patient {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  fileNumber BigInt @default(autoincrement()) @map("file_number")
+  name String @db.VarChar(200)
+  phone String @db.VarChar(12)
+  gender String @db.VarChar(6)
+  isChild Boolean @default(false) @map("is_child")
+  birthDate DateTime? @map("birth_date") @db.Date
+  address String? @db.VarChar(500)
+  administrativeNote String? @map("administrative_note") @db.VarChar(2000)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  @@unique([clinicId, fileNumber])
+  @@map("patients")
 }
 model PlatformAdmin {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

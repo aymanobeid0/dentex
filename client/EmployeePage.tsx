@@ -1,24 +1,18 @@
+import { translations, type Lang } from './locales';
 import { useEffect, useState, type FormEvent } from 'react';
 import { KeyRound, Pencil, Plus, Save, UserCheck, UserX, X } from 'lucide-react';
 
 type Role={id:string;key:string};
 type Employee={id:string;name:string;username:string;active:boolean;roles:Role[]};
 type Draft={name:string;username:string;password:string;roleIds:string[]};
-type Lang='ar'|'fr';
-const messages={
-  ar:{title:'الموظفون',add:'إضافة موظف',edit:'تعديل الموظف',name:'الاسم',username:'اسم المستخدم',password:'كلمة المرور',roles:'الأدوار',status:'الحالة',active:'نشط',inactive:'غير نشط',save:'حفظ',cancel:'إلغاء',loading:'جارٍ التحميل…',empty:'لا يوجد موظفون بعد.',error:'تعذر الاتصال بالخادم. حاول مجددًا.',retry:'إعادة المحاولة',required:'أكمل الحقول واختر دورًا واحدًا على الأقل.',duplicate:'اسم المستخدم مستخدم داخل العيادة.',lastAdmin:'يجب بقاء مدير نشط واحد على الأقل.',forbidden:'لا تملك صلاحية إدارة الموظفين.',invalidRoles:'تعذر استخدام الأدوار المختارة. أعد المحاولة.',saved:'تم حفظ بيانات الموظف.',admin:'مدير',dentist:'طبيب أسنان',receptionist:'استقبال'},
-  fr:{title:'Personnel',add:'Ajouter un membre',edit:'Modifier le membre',name:'Nom',username:'Nom d’utilisateur',password:'Mot de passe',roles:'Rôles',status:'Statut',active:'Actif',inactive:'Inactif',save:'Enregistrer',cancel:'Annuler',loading:'Chargement…',empty:'Aucun membre pour le moment.',error:'Connexion au serveur impossible. Réessayez.',retry:'Réessayer',required:'Renseignez les champs et choisissez au moins un rôle.',duplicate:'Ce nom d’utilisateur est déjà utilisé dans le cabinet.',lastAdmin:'Le cabinet doit conserver au moins un responsable actif.',forbidden:'Vous ne pouvez pas gérer le personnel.',invalidRoles:'Les rôles choisis ne sont plus disponibles. Réessayez.',saved:'Les données ont été enregistrées.',admin:'Responsable',dentist:'Dentiste',receptionist:'Accueil'}
-};
+
 const blank=():Draft=>({name:'',username:'',password:'',roleIds:[]});
-const lifecycle={
-  ar:{disable:'تعطيل',enable:'إعادة تفعيل',reset:'إعادة تعيين كلمة المرور',newPassword:'كلمة المرور الجديدة',confirmDisable:'تأكيد تعطيل الحساب؟',confirmEnable:'تأكيد إعادة تفعيل الحساب؟',confirm:'تأكيد',statusSaved:'تم تحديث حالة الحساب.',resetSaved:'تمت إعادة تعيين كلمة المرور.',required:'أدخل كلمة المرور الجديدة.'},
-  fr:{disable:'Désactiver',enable:'Réactiver',reset:'Réinitialiser le mot de passe',newPassword:'Nouveau mot de passe',confirmDisable:'Confirmer la désactivation du compte ?',confirmEnable:'Confirmer la réactivation du compte ?',confirm:'Confirmer',statusSaved:'Le statut du compte a été mis à jour.',resetSaved:'Le mot de passe a été réinitialisé.',required:'Saisissez le nouveau mot de passe.'}
-};
+
 export function EmployeePage({lang,onExpired,onIdentityChanged,canManageAdmins}:{lang:Lang;onExpired:()=>void;onIdentityChanged:()=>Promise<void>;canManageAdmins:boolean}) {
-  const t=messages[lang];
+  const t=translations[lang].employees;
   const [list,setList]=useState<Employee[]|null>(null), [roles,setRoles]=useState<Role[]>([]), [loadError,setLoadError]=useState(false);
   const [editing,setEditing]=useState<Employee|null|undefined>(undefined), [draft,setDraft]=useState<Draft>(blank), [error,setError]=useState<keyof typeof t|null>(null), [saved,setSaved]=useState(false), [busy,setBusy]=useState(false);
-  const l=lifecycle[lang];
+  const l=translations[lang].employeeLifecycle;
   const [action,setAction]=useState<{kind:'status'|'reset';employee:Employee}|null>(null), [newPassword,setNewPassword]=useState(''), [actionError,setActionError]=useState<keyof typeof t|'requiredPassword'|null>(null), [notice,setNotice]=useState<'statusSaved'|'resetSaved'|null>(null);
   const roleName=(role:Role)=>t[role.key as 'admin'|'dentist'|'receptionist']??role.key;
   async function load(){
@@ -64,6 +58,6 @@ export function EmployeePage({lang,onExpired,onIdentityChanged,canManageAdmins}:
       <fieldset className="role-options"><legend>{t.roles}</legend>{roles.map(role=><label key={role.id}><input type="checkbox" disabled={!canManageAdmins&&role.key==='admin'} checked={draft.roleIds.includes(role.id)} onChange={e=>setDraft({...draft,roleIds:e.target.checked?[...draft.roleIds,role.id]:draft.roleIds.filter(id=>id!==role.id)})}/>{roleName(role)}</label>)}</fieldset>
       {error&&<p className="error" role="alert">{t[error]}</p>}
       <div className="form-actions"><button className="primary action" disabled={busy}><Save size={16} aria-hidden="true"/>{t.save}</button><button type="button" className="language" disabled={busy} onClick={()=>{setEditing(undefined);setDraft(blank());setError(null)}}><X size={16} aria-hidden="true"/>{t.cancel}</button></div>
-    </form></section>:<><p className="success" role="status">{notice?l[notice]:saved?t.saved:''}</p><section className="card">{loadError?<div role="alert">{t.error} <button className="language" onClick={load}>{t.retry}</button></div>:list===null?<p role="status">{t.loading}</p>:!list.length?<p>{t.empty}</p>:<div className="table-scroll"><table><thead><tr><th>{t.name}</th><th>{t.username}</th><th>{t.roles}</th><th>{t.status}</th><th></th></tr></thead><tbody>{list.map(employee=><tr key={employee.id}><td>{employee.name}</td><td><bdi>{employee.username}</bdi></td><td>{employee.roles.map(roleName).join(lang==='ar'?'، ':', ')}</td><td>{employee.active?t.active:t.inactive}</td><td><div className="form-actions"><button className="language" onClick={()=>{setNotice(null);open(employee)}}><Pencil size={15} aria-hidden="true"/>{t.edit}</button>{(canManageAdmins||!employee.roles.some(role=>role.key==='admin'))&&<><button className="language" onClick={()=>{setNotice(null);setAction({kind:'status',employee})}}>{employee.active?<UserX size={15} aria-hidden="true"/>:<UserCheck size={15} aria-hidden="true"/>}{employee.active?l.disable:l.enable}</button><button className="language" onClick={()=>{setNotice(null);setAction({kind:'reset',employee})}}><KeyRound size={15} aria-hidden="true"/>{l.reset}</button></>}</div></td></tr>)}</tbody></table></div>}</section></>}
+    </form></section>:<><p className="success" role="status">{notice?l[notice]:saved?t.saved:''}</p><section className="card">{loadError?<div role="alert">{t.error} <button className="language" onClick={load}>{t.retry}</button></div>:list===null?<p role="status">{t.loading}</p>:!list.length?<p>{t.empty}</p>:<div className="table-scroll"><table><thead><tr><th>{t.name}</th><th>{t.username}</th><th>{t.roles}</th><th>{t.status}</th><th></th></tr></thead><tbody>{list.map(employee=><tr key={employee.id}><td>{employee.name}</td><td><bdi>{employee.username}</bdi></td><td>{employee.roles.map(roleName).join(t.roleSeparator)}</td><td>{employee.active?t.active:t.inactive}</td><td><div className="form-actions"><button className="language" onClick={()=>{setNotice(null);open(employee)}}><Pencil size={15} aria-hidden="true"/>{t.edit}</button>{(canManageAdmins||!employee.roles.some(role=>role.key==='admin'))&&<><button className="language" onClick={()=>{setNotice(null);setAction({kind:'status',employee})}}>{employee.active?<UserX size={15} aria-hidden="true"/>:<UserCheck size={15} aria-hidden="true"/>}{employee.active?l.disable:l.enable}</button><button className="language" onClick={()=>{setNotice(null);setAction({kind:'reset',employee})}}><KeyRound size={15} aria-hidden="true"/>{l.reset}</button></>}</div></td></tr>)}</tbody></table></div>}</section></>}
   </>;
 }
