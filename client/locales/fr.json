@@ -196,6 +196,20 @@
     "requiredField": "Ce champ est obligatoire.",
     "invalidPhone": "Saisissez huit chiffres mauritaniens, seuls ou avec +222 ou 00222.",
     "invalidDate": "Saisissez une date valide non future.",
-    "origin": "Origine de la demande non autorisée. Vérifiez l’adresse du service."
+    "origin": "Origine de la demande non autorisée. Vérifiez l’adresse du service.",
+    "searchLabel": "Rechercher par nom, téléphone ou numéro de dossier",
+    "search": "Rechercher",
+    "clearSearch": "Effacer la recherche",
+    "listLoading": "Chargement des patients…",
+    "noPatients": "Aucun patient enregistré pour le moment.",
+    "noResults": "Aucun résultat pour cette recherche.",
+    "emptyPage": "Aucun patient sur cette page.",
+    "openFile": "Voir le dossier",
+    "pages": "Pages des patients",
+    "page": "Page",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "backToList": "Retour à la liste",
+    "invalidSearch": "Vérifiez la recherche et le numéro de page."
   }
 }

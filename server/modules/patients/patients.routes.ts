@@ -11,6 +11,7 @@ function requirePermission(permission: 'patients.read' | 'patients.write'): Requ
 export function patientsRouter(controller: ReturnType<typeof createPatientsController>) {
   const router = Router();
   router.post('/', requirePermission('patients.write'), controller.register);
+  router.get('/', requirePermission('patients.read'), controller.list);
   router.get('/:id', requirePermission('patients.read'), controller.get);
   return router;
 }

@@ -6,6 +6,7 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.location.hash = ''; }
 it.each(['ar', 'fr'] as const)('registers with write permission alone without fetching patient details (%s)', async lang => {
   const fetcher = vi.fn().mockResolvedValue({ ok: true, status: 201, json: async () => ({ id: 'patient-id', fileNumber: '1042' }) });
   vi.stubGlobal('fetch', fetcher);
+  window.location.hash = 'patients/new';
   render(<PatientPage lang={lang} canRead={false} canWrite onExpired={() => {}} />);
   fireEvent.change(screen.getByRole('textbox', { name: lang === 'ar' ? 'الاسم الكامل' : 'Nom complet' }), { target: { value: 'مريم أحمد' } });
   fireEvent.change(screen.getByRole('textbox', { name: lang === 'ar' ? 'الهاتف' : 'Téléphone' }), { target: { value: '46108834' } });
@@ -28,6 +29,7 @@ it('prevents duplicate submissions and preserves entered fields after a conflict
   let finish!: (value: object) => void;
   const fetcher = vi.fn().mockImplementation(() => new Promise(resolve => { finish = resolve; }));
   vi.stubGlobal('fetch', fetcher);
+  window.location.hash = 'patients/new';
   render(<PatientPage lang="fr" canRead canWrite onExpired={() => {}} />);
   const name = screen.getByRole('textbox', { name: 'Nom complet' }), phone = screen.getByRole('textbox', { name: 'Téléphone' });
   fireEvent.change(name, { target: { value: 'Patient' } }); fireEvent.change(phone, { target: { value: '46108834' } });
@@ -53,6 +55,7 @@ it.each([401, 403, 404, 500])('handles detail errors without exposing stale data
 });
 it.each(['ar', 'fr'] as const)('shows localized field validation and focuses the first invalid field (%s)', lang => {
   const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
+  window.location.hash = 'patients/new';
   render(<PatientPage lang={lang} canRead canWrite onExpired={() => {}} />);
   fireEvent.click(screen.getByRole('button', { name: lang === 'ar' ? 'تسجيل المريض' : 'Enregistrer le patient' }));
   const name = screen.getByRole('textbox', { name: lang === 'ar' ? 'الاسم الكامل' : 'Nom complet' });
