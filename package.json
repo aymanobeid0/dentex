@@ -12,7 +12,8 @@
     "admin": "tsx scripts/platform-admin.ts",
     "start": "node dist-server/server/index.js",
     "admin:production": "node dist-server/scripts/platform-admin.js",
-    "check:architecture": "eslint server && depcruise server --config .dependency-cruiser.cjs"
+    "check:architecture": "eslint server && depcruise server --config .dependency-cruiser.cjs",
+    "check:frontend-architecture": "depcruise client --config .dependency-cruiser.frontend.cjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
@@ -55,6 +56,7 @@
     "esbuild": "^0.28.2",
     "eslint": "^10.14.0",
     "jsdom": "^29.1.1",
+    "prettier": "^3.9.10",
     "prisma": "^7.10.1",
     "supertest": "^7.1.4",
     "tsx": "^4.20.5",

@@ -1,0 +1,103 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 40px;
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.login-body {
+  width: 100%;
+  max-width: 360px;
+  margin: auto;
+  padding: 44px 0;
+}
+.login h1 {
+  font-size: 24px;
+  line-height: 1.35;
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+.lead {
+  margin: 0 0 28px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.login footer {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.visual {
+  background: var(--bg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+}
+.visual > div {
+  max-width: 400px;
+}
+.visual h2 {
+  font-size: 30px;
+  line-height: 1.45;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+.visual p {
+  color: var(--text-muted);
+  line-height: 1.9;
+}
+.visual-card {
+  margin-top: 30px;
+  padding: 24px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.visual-card strong {
+  margin-inline-start: 10px;
+}
+@media (max-width: 760px) {
+  .login-page {
+    display: block;
+  }
+  .login {
+    padding: 24px;
+  }
+  .visual {
+    display: none;
+  }
+  .login-body {
+    padding: 56px 0;
+  }
+}
+.login-switch {
+  display: block;
+  margin: 4px auto 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12px;
+  padding: 8px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.clinic-code {
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+@media (max-width: 1194px) {
+  .login-switch {
+    min-height: 44px;
+  }
+}

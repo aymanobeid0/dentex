@@ -1,0 +1,19 @@
+.account-card span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.account-card p {
+  margin: 5px 0 18px;
+}
+.account-card div:last-child p {
+  margin-bottom: 0;
+}
+.account-password {
+  margin-top: 16px;
+}
+.shell .account-card span {
+  font-size: 14px;
+}
+.account-password button[hidden] {
+  display: none;
+}
