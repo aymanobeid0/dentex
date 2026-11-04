@@ -14,12 +14,20 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
     const used = new Set((await prisma.clinic.findMany({ select: { code: true } })).map(c => c.code));
     const codes = Array.from({ length: 10000 }, (_, i) => String(i).padStart(4, '0')).filter(c => !used.has(c));
     const passwordHash = await hashPassword('test-password');
+    let codeIndex = 0;
+    async function fixtureClinic() {
+      while (codeIndex < codes.length) {
+        try { return await prisma.clinic.create({ data: { name: prefix, code: codes[codeIndex++] } }); }
+        catch (error) { if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'P2002') throw error; }
+      }
+      throw Error('No free clinic code for test fixture');
+    }
     for (let i = 0; i < 2; i++) {
-      const clinic = await prisma.clinic.create({ data: { name: prefix, code: codes[i] } }); clinics.push(clinic.id);
+      const clinic = await fixtureClinic(); clinics.push(clinic.id);
       const role = await prisma.role.create({ data: { clinicId: clinic.id, key: 'admin' } });
       const user = await prisma.user.create({ data: { clinicId: clinic.id, name: 'Admin', username: prefix, passwordHash } });
       await prisma.userRole.create({ data: { clinicId: clinic.id, userId: user.id, roleId: role.id } });
-      const login = await request(app).post('/api/auth/clinic/login').set('Origin', origin).send({ code: codes[i], username: prefix, password: 'test-password' });
+      const login = await request(app).post('/api/auth/clinic/login').set('Origin', origin).send({ code: clinic.code, username: prefix, password: 'test-password' });
       cookies.push(login.headers['set-cookie'][0]);
     }
     for (const permission of ['patients.read', 'patients.write']) await prisma.permission.upsert({ where: { key: permission }, create: { key: permission }, update: {} });
@@ -48,6 +56,56 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
     await prisma.$disconnect();
   });
   const create = (input: object, cookie = cookies[0]) => request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', cookie).send(input);
+  it('lists only its clinic with summary fields and opens a listed file', async () => {
+    const saved = await create({ name: 'Listed patient', phone: '60112233', gender: 'male' });
+    await create({ name: 'Other clinic', phone: '60112233', gender: 'male' }, cookies[1]);
+    const result = await request(app).get('/api/clinic/patients').set('Cookie', reader);
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual({ items: [{ ...saved.body, name: 'Listed patient', phone: '+22260112233', isChild: false }], page: 1, hasNext: false });
+    expect((await request(app).get(`/api/clinic/patients/${result.body.items[0].id}`).set('Cookie', reader)).body.name).toBe('Listed patient');
+  });
+  it('searches duplicate names, shared phones in registration formats, and complete file numbers', async () => {
+    const first = await create({ name: 'Search Marie', phone: '62112233', gender: 'female' });
+    const second = await create({ name: 'Search Marie', phone: '62112233', gender: 'female', isChild: true });
+    await create({ name: 'Search Marie', phone: '62112233', gender: 'female' }, cookies[1]);
+    const search = async (q: string) => (await request(app).get('/api/clinic/patients').query({ q }).set('Cookie', reader)).body;
+    const expected = [second.body.id, first.body.id];
+    for (const q of ['marIE', '62112233', '+222 62-11-22-33', '٠٠٢٢٢ ٦٢١١٢٢٣٣', '۶۲۱۱۲۲۳۳']) {
+      const result = await search(q);
+      expect(result.items.map((p: { id: string }) => p.id)).toEqual(expected);
+      expect(result.items.map((p: { isChild: boolean }) => p.isChild)).toEqual([true, false]);
+    }
+    expect((await search(first.body.fileNumber)).items.map((p: { id: string }) => p.id)).toEqual([first.body.id]);
+    expect((await search('not found')).items).toEqual([]);
+    expect((await search('%')).items).toEqual([]);
+    expect((await search('_')).items).toEqual([]);
+    expect((await search('999999999999999999999999999999999999')).items).toEqual([]);
+  });
+  it('paginates a shared phone without omitting participants or repeating rows', async () => {
+    const ids: string[] = [];
+    for (let index = 0; index < 27; index++) {
+      const saved = await create({ name: `Paged child ${index}`, phone: '63112233', gender: 'male', isChild: true });
+      expect(saved.status).toBe(201); ids.unshift(saved.body.id);
+    }
+    const list = async (page: number) => (await request(app).get('/api/clinic/patients').query({ q: '63112233', page }).set('Cookie', reader)).body;
+    const first = await list(1), second = await list(2), empty = await list(3);
+    expect(first.items).toHaveLength(25); expect(first.hasNext).toBe(true);
+    expect(second.items).toHaveLength(2); expect(second.hasNext).toBe(false);
+    expect([...first.items, ...second.items].map(p => p.id)).toEqual(ids);
+    expect(empty).toEqual({ items: [], page: 3, hasNext: false });
+  });
+  it.each(['page=0', 'page=-1', 'page=1.5', 'page=1000001', 'q=a&q=b', 'page=1&page=2', 'clinicId=other', 'q=' + 'x'.repeat(201)])('rejects invalid list queries: %s', async query => {
+    const result = await request(app).get(`/api/clinic/patients?${query}`).set('Cookie', reader);
+    expect(result.status).toBe(400); expect(result.body).toEqual({ error: 'invalid_input' });
+  });
+  it('protects lists from write-only accounts, program administrators and revoked read access', async () => {
+    for (const cookie of [writer, neither, platform]) expect((await request(app).get('/api/clinic/patients').set('Cookie', cookie)).status).toBe(403);
+    expect((await request(app).get('/api/clinic/patients')).status).toBe(401);
+    const role = await prisma.role.findUniqueOrThrow({ where: { clinicId_key: { clinicId: clinics[0], key: 'dentist' } } });
+    await prisma.rolePermission.deleteMany({ where: { roleId: role.id } });
+    try { expect((await request(app).get('/api/clinic/patients?q=Marie').set('Cookie', reader)).status).toBe(403); }
+    finally { await prisma.rolePermission.create({ data: { roleId: role.id, permissionKey: 'patients.read' } }); }
+  });
   it('registers a patient and retrieves the saved basic file only within its clinic', async () => {
     const result = await create({ name: '  مريم أحمد  ', phone: '٠٠٢٢٢ ٤٦-١٠-٨٨-٣٤', gender: 'female', birthDate: '2000-02-29', address: ' نواكشوط ', administrativeNote: ' اتصال مساءً ' });
     expect(result.status).toBe(201);

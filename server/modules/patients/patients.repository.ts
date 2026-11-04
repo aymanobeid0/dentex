@@ -4,6 +4,18 @@ import { PatientsError } from './patients.errors';
 
 export function createPatientsRepository(database: Prisma.TransactionClient): PatientsRepository {
   return {
+    async list(clinicId, input) {
+      const matches: Prisma.PatientWhereInput[] = [{ name: { contains: input.q.replace(/[\\%_]/g, character => `\\${character}`), mode: 'insensitive' } }];
+      if (input.normalizedPhone) matches.push({ phone: input.normalizedPhone });
+      if (input.fileNumber !== null) matches.push({ fileNumber: BigInt(input.fileNumber) });
+      const rows = await database.patient.findMany({
+        where: { clinicId, ...(input.q ? { OR: matches } : {}) },
+        orderBy: [{ createdAt: 'desc' }, { fileNumber: 'desc' }],
+        skip: (input.page - 1) * 25, take: 26,
+        select: { id: true, fileNumber: true, name: true, phone: true, isChild: true },
+      });
+      return { items: rows.slice(0, 25).map(row => ({ ...row, fileNumber: row.fileNumber.toString() })), page: input.page, hasNext: rows.length > 25 };
+    },
     async insert(clinicId, input) {
       try {
         const patient = await database.patient.create({ data: { ...input, clinicId, birthDate: input.birthDate ? new Date(`${input.birthDate}T00:00:00.000Z`) : null }, select: { id: true, fileNumber: true } });

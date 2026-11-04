@@ -2,11 +2,14 @@ import type { ClinicActor, ClinicMutation } from '../../shared/actor';
 import { AuthorizationError } from '../../shared/errors';
 import type { TransactionManager } from '../../shared/transaction-manager';
 import type { PatientsRepository, PatientsScope } from './patients.dto';
-import type { RegisterPatientInput } from './patients.schemas';
+import type { ListPatientsInput, RegisterPatientInput } from './patients.schemas';
 import { PatientsError } from './patients.errors';
 
 export function createPatientsService(repository: PatientsRepository, transactions: TransactionManager<PatientsScope, ClinicMutation>) {
   return {
+    list(clinicId: string, input: ListPatientsInput) {
+      return repository.list(clinicId, input);
+    },
     register(actor: ClinicActor, input: RegisterPatientInput) {
       return transactions.run(async scope => {
         const fresh = scope.actor;

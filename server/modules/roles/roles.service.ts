@@ -6,7 +6,7 @@ import { permissionKeys, type PermissionsInput } from './roles.schemas';
 import { RolesError } from './roles.errors';
 
 const defaults = {
-  dentist: ['patients.read','patient_records.read','patient_records.write','dental_chart.read','dental_chart.write','appointments.read','appointments.write','prescriptions.read','prescriptions.write','invoices.read','payments.read','patient_financial.read'],
+  dentist: ['patients.read','patients.write','patient_records.read','patient_records.write','dental_chart.read','dental_chart.write','appointments.read','appointments.write','prescriptions.read','prescriptions.write','invoices.read','payments.read','patient_financial.read'],
   receptionist: ['patients.read','patients.write','communications.read','communications.write','appointments.read','appointments.write','invoices.read','invoices.write','payments.read','payments.write','patient_financial.read'],
 };
 

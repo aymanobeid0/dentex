@@ -20,13 +20,36 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic role permissions',()=>{
       const login=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:codes[i],username:prefix,password:'test-password'});cookies.push(login.headers['set-cookie'][0]);
     }
   });
-  afterAll(async()=>{for(const id of ids){await prisma.userRole.deleteMany({where:{clinicId:id}});await prisma.user.deleteMany({where:{clinicId:id}});await prisma.rolePermission.deleteMany({where:{role:{clinicId:id}}});await prisma.role.deleteMany({where:{clinicId:id}});await prisma.clinic.deleteMany({where:{id}})}await prisma.platformAdmin.deleteMany({where:{username:prefix}});await prisma.$disconnect()});
+  afterAll(async()=>{for(const id of ids){await prisma.patient.deleteMany({where:{clinicId:id}});await prisma.userRole.deleteMany({where:{clinicId:id}});await prisma.user.deleteMany({where:{clinicId:id}});await prisma.rolePermission.deleteMany({where:{role:{clinicId:id}}});await prisma.role.deleteMany({where:{clinicId:id}});await prisma.clinic.deleteMany({where:{id}})}await prisma.platformAdmin.deleteMany({where:{username:prefix}});await prisma.$disconnect()});
   it('shows independent initial roles and financial read access for dentists',async()=>{
     for(let i=0;i<2;i++){const r=await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[i]);expect(r.status).toBe(200);roles.push(r.body.roles);}
     const dentist=roles[0].find(r=>r.key==='dentist')!;
     expect(dentist.permissions).toContain('patient_financial.read');
     expect(dentist.permissions).not.toContain('payments.write');
     expect(roles[0].find(r=>r.key==='admin')!.permissions).toContain('employees.manage');
+  });
+  it('lets a default dentist register and read a patient while keeping the grant revocable and clinic-scoped', async () => {
+    const dentist = roles[0].find(role => role.key === 'dentist')!;
+    const created = await request(app).post('/api/clinic/employees').set('Origin', origin).set('Cookie', cookies[0]).send({ name: 'Default dentist', username: 'default-dentist', password: 'test-password', roleIds: [dentist.id] });
+    expect(created.status).toBe(201);
+    const login = await request(app).post('/api/auth/clinic/login').set('Origin', origin).send({ code: codes[0], username: 'default-dentist', password: 'test-password' });
+    expect(login.status).toBe(200);
+    const cookie = login.headers['set-cookie'][0];
+    const payload = { name: 'Dentist registered patient', phone: '71112233', gender: 'male' };
+    try {
+      const patient = await request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', cookie).send(payload);
+      expect(patient.status).toBe(201);
+      const file = await request(app).get(`/api/clinic/patients/${patient.body.id}`).set('Cookie', cookie);
+      expect(file.status).toBe(200); expect(file.body.name).toBe(payload.name);
+      expect((await request(app).get(`/api/clinic/patients/${patient.body.id}`).set('Cookie', cookies[1])).status).toBe(404);
+      const revoke = await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin', origin).set('Cookie', cookies[0]).send({ permissions: dentist.permissions.filter(key => key !== 'patients.write') });
+      expect(revoke.status).toBe(200);
+      expect((await request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', cookie).send({ ...payload, isChild: true })).status).toBe(403);
+      const other = await request(app).get('/api/clinic/role-permissions').set('Cookie', cookies[1]);
+      expect(other.body.roles.find((role: { key: string }) => role.key === 'dentist').permissions).toContain('patients.write');
+    } finally {
+      expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin', origin).set('Cookie', cookies[0]).send({ permissions: dentist.permissions })).status).toBe(200);
+    }
   });
   it('protects the admin role and scopes role updates to the authenticated clinic',async()=>{
     const admin=roles[0].find(r=>r.key==='admin')!, foreign=roles[1].find(r=>r.key==='dentist')!;

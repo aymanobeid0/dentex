@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-const phone = z.string().max(80).transform(value => value
+const normalizeDigits = (value: string) => value
   .replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x660))
-  .replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x6f0))
-  .replace(/[\s-]/g, ''))
+  .replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x6f0));
+const phone = z.string().max(80).transform(value => normalizeDigits(value).replace(/[\s-]/g, ''))
   .transform(value => value.startsWith('00222') ? `+222${value.slice(5)}` : /^\d{8}$/.test(value) ? `+222${value}` : value)
   .pipe(z.string().regex(/^\+222\d{8}$/));
 const optionalText = (max: number) => z.string().trim().max(max).nullable().optional().transform(value => value || null);
@@ -16,3 +16,13 @@ export const registerPatientSchema = z.strictObject({
   isChild: z.boolean().default(false), birthDate, address: optionalText(500), administrativeNote: optionalText(2000),
 });
 export type RegisterPatientInput = z.infer<typeof registerPatientSchema>;
+export const listPatientsSchema = z.strictObject({
+  q: z.string().trim().max(200).default(''),
+  page: z.string().regex(/^[1-9]\d*$/).transform(Number).pipe(z.number().int().max(1000000)).default(1),
+}).transform(input => {
+  const parsedPhone = phone.safeParse(input.q);
+  const digits = normalizeDigits(input.q);
+  const number = /^\d+$/.test(digits) ? BigInt(digits) : null;
+  return { ...input, normalizedPhone: parsedPhone.success ? parsedPhone.data : null, fileNumber: number !== null && number <= 9223372036854775807n ? number.toString() : null };
+});
+export type ListPatientsInput = z.infer<typeof listPatientsSchema>;

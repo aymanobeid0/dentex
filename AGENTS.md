@@ -14,6 +14,10 @@
 
 Before implementing or changing any screen, read `docs/ui-contract.md`, `DESIGN.md`, and the relevant screen reference. `login-preview.html` is the user-approved login visual baseline. Follow its refined neutral borders, Lucide icons, autofill treatment, and bilingual behavior. Implement screen content against the backend contract in `docs/ui-contract.md`; distinguish approved scope from proposals. Verify the complete UI-to-API flow and both languages before closing a ticket. Report blocked visual verification honestly.
 
+### UI primitives
+
+بقرار المستخدم في 2026-11-04، Radix Primitives معيار عام للمكونات القديمة والحالية والمستقبلية. قبل إضافة تفاعل أو تعديل مكوّن واجهة، اقرأ `docs/ui-primitives.md` واستخدم primitive المناسبة من خلال `client/ui`، مع الحفاظ على التصميم المعتمد. تبقى عناصر HTML الأصلية حين لا يوجد بديل في Primitives؛ تحقق فعليًا من لوحة المفاتيح واللغتين ولا تعتبر المكتبة وحدها إثباتًا للوصول.
+
 ### Issue tracker
 
 تُحفظ المهام محليًا. راجع `docs/agents/issue-tracker.md`.
