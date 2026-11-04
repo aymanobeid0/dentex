@@ -1,4 +1,4 @@
-import { readJson, type ApiRequest } from "../../shared/api/request";
+import { ApiError, readJson, type ApiRequest } from "../../shared/api/request";
 export type RegistrationInput = {
   name: string;
   phone: string;
@@ -8,15 +8,29 @@ export type RegistrationInput = {
   address: string;
   administrativeNote: string;
 };
-export const registerPatient = (
+export const registerPatient = async (
   request: ApiRequest,
   input: RegistrationInput,
-) =>
-  request("/api/clinic/patients", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
+) => {
+  const receipt = await readJson<{ id: string; fileNumber: string }>(
+    request,
+    "/api/clinic/patients",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    },
+  );
+  if (
+    !receipt ||
+    typeof receipt.id !== "string" ||
+    !receipt.id ||
+    typeof receipt.fileNumber !== "string" ||
+    !/^\d+$/.test(receipt.fileNumber)
+  )
+    throw new ApiError("uncertain");
+  return receipt;
+};
 
 import type { Patient, PatientSearchResult } from "./types";
 export const readPatient = (

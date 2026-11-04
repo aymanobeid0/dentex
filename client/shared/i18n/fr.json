@@ -162,6 +162,17 @@
     "error": "Impossible de changer le mot de passe. Réessayez."
   },
   "patients": {
+    "discardTitle": "Quitter l’inscription ?",
+    "discardHint": "Les informations non enregistrées seront perdues.",
+    "stay": "Rester",
+    "discard": "Ignorer et quitter",
+    "uncertain": "Impossible de confirmer l’enregistrement. La réponse a été perdue ; le patient peut déjà être enregistré.",
+    "reviewServer": "Vérifier sur le serveur",
+    "reviewHint": "Vérifiez les dossiers du numéro envoyé avant de réessayer manuellement. Aucun nouvel envoi automatique.",
+    "reviewDenied": "Demandez à une personne autorisée à lire les patients de vérifier le serveur avant une nouvelle inscription.",
+    "reviewFailed": "Vérification impossible. Retrouvez la connexion et vérifiez à nouveau avant de réessayer.",
+    "reviewFound": "Dossiers trouvés : examinez-les avant une nouvelle inscription. Un nouvel envoi peut créer un doublon, notamment pour un enfant.",
+    "reviewEmpty": "Aucun dossier trouvé pour le numéro envoyé. Vous pouvez réessayer manuellement ; cette vérification ne garantit pas l’absence de doublon.",
     "title": "Patients",
     "register": "Enregistrer le patient",
     "new": "Nouveau patient",

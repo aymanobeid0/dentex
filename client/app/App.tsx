@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "../../design-tokens.css";
 import { AccountPage } from "../features/account";
 import { LoginPage, Session, useIdentity, useLogout } from "../features/auth";
@@ -43,6 +43,19 @@ function SessionApp({
   const { busy, error, logout } = useLogout(expire);
   const [page, setPage] = useState<Page>("clinics");
   const [clinicBusy, setClinicBusy] = useState(false);
+  const patientNavigationGuard = useRef<((leave: () => void) => void) | null>(
+    null,
+  );
+  const registerPatientGuard = useCallback(
+    (guard: ((leave: () => void) => void) | null) => {
+      patientNavigationGuard.current = guard;
+    },
+    [],
+  );
+  const navigate = (leave: () => void) =>
+    patientNavigationGuard.current
+      ? patientNavigationGuard.current(leave)
+      : leave();
   const admin = account?.kind === "clinic" && account.roles.includes("admin");
   const canManageEmployees =
     account?.kind === "clinic" &&
@@ -118,13 +131,15 @@ function SessionApp({
     <AppShell
       lang={lang}
       page={page}
-      onNavigate={setPage}
+      onNavigate={(next) => {
+        if (next !== page) navigate(() => setPage(next));
+      }}
       kind={account.kind}
       canManageEmployees={canManageEmployees}
       isAdmin={admin}
       canAccessPatients={canReadPatients || canWritePatients}
       busy={busy || clinicBusy}
-      onLogout={logout}
+      onLogout={() => navigate(logout)}
     >
       {stale && (
         <p role="status" className="error">
@@ -153,6 +168,7 @@ function SessionApp({
           canRead={canReadPatients}
           canWrite={canWritePatients}
           onExpired={expire}
+          onNavigationGuardChange={registerPatientGuard}
         />
       ) : page === "employees" &&
         account.kind === "clinic" &&

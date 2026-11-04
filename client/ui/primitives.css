@@ -110,6 +110,43 @@
 .ui-tooltip-arrow {
   fill: var(--text-strong);
 }
+.draft-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--text) 35%, transparent);
+}
+.draft-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 101;
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.6 var(--font-sans);
+  box-shadow: var(--shadow-dialog);
+}
+.draft-dialog h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.draft-dialog p {
+  color: var(--text-3);
+}
+.draft-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 @media (pointer: coarse) {
   .choice-field,
   .choice-field > label,

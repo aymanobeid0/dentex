@@ -6,7 +6,7 @@ import type { usePatientsPage } from "../hooks/usePatientsPage";
 type Props = Pick<
   ReturnType<typeof usePatientsPage>,
   "lang" | "t" | "form" | "busy" | "fieldErrors" | "submit" | "changeField"
->;
+> & { saveBlocked?: boolean };
 export function PatientRegistrationForm({
   lang,
   t,
@@ -15,6 +15,7 @@ export function PatientRegistrationForm({
   fieldErrors,
   submit,
   changeField,
+  saveBlocked,
 }: Props) {
   const field = (key: "name" | "phone" | "birthDate" | "address") => (
     <Label className="field" htmlFor={`patient-${key}`}>
@@ -135,7 +136,7 @@ export function PatientRegistrationForm({
               }
             />
           </Label>
-          <button className="primary action" disabled={busy}>
+          <button className="primary action" disabled={busy || saveBlocked}>
             <Save size={16} aria-hidden />
             {t.register}
           </button>

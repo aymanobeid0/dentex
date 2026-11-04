@@ -1,11 +1,61 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { ApiError } from "../../shared/api/request";
 import { useApi } from "../../shared/api/RequestProvider";
 import { useQueryScope } from "../../shared/query/QueryScope";
 import { useReadAvailability } from "../../shared/query/useReadAvailability";
-import { readPatient } from "./api";
-import type { Patient } from "./types";
+import { readPatient, registerPatient, searchPatients } from "./api";
+import type { Patient, PatientSummary } from "./types";
+
+export function usePatientRegistration(canRead: boolean) {
+  const request = useApi(),
+    client = useQueryClient(),
+    scope = useQueryScope();
+  const [reviewInput, setReviewInput] = useState({ phone: "", attempt: 0 });
+  useEffect(() => {
+    if (!canRead) {
+      // Revocation retires completed reviews and cancels pending reads. A later
+      // grant requires another explicit server review before resubmission.
+      void client.resetQueries({
+        queryKey: [...scope, "patients", "registration-review"],
+      });
+    }
+  }, [canRead, client, scope]);
+  const mutation = useMutation({
+    mutationFn: (input: Parameters<typeof registerPatient>[1]) =>
+      registerPatient(request, input),
+    retry: false,
+    networkMode: "always",
+    onMutate: (input) =>
+      setReviewInput((previous) => ({
+        phone: input.phone,
+        attempt: previous.attempt + 1,
+      })),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: [...scope, "patients"] });
+    },
+  });
+  const review = useQuery({
+    queryKey: [...scope, "patients", "registration-review", reviewInput],
+    enabled: false,
+    retry: false,
+    queryFn: async ({ signal }) => {
+      const items: PatientSummary[] = [];
+      let page = 1;
+      while (true) {
+        const result = await searchPatients(
+          request,
+          reviewInput.phone,
+          page++,
+          signal,
+        );
+        items.push(...result.items);
+        if (!result.hasNext) return items;
+      }
+    },
+  });
+  return { mutation, review };
+}
 
 export type { Patient } from "./types";
 type Failure =
