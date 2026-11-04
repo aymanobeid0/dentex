@@ -1,1 +1,5 @@
-export { Root as Disclosure, Trigger as DisclosureTrigger, Content as DisclosureContent } from '@radix-ui/react-collapsible';
+export {
+  Root as Disclosure,
+  Content as DisclosureContent,
+  Trigger as DisclosureTrigger,
+} from "@radix-ui/react-collapsible";

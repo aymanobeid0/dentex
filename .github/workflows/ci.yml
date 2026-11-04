@@ -54,10 +54,13 @@ jobs:
         run: |
           npm run check:architecture &
           architecture_pid=$!
+          npm run check:frontend-architecture &
+          frontend_architecture_pid=$!
           npm run build &
           build_pid=$!
           failed=0
           wait "$architecture_pid" || failed=1
+          wait "$frontend_architecture_pid" || failed=1
           wait "$build_pid" || failed=1
           exit "$failed"
       - name: Run full suite

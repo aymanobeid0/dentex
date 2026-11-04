@@ -41,3 +41,11 @@ Before implementing or changing any screen, read `docs/ui-contract.md`, `DESIGN.
 ### Frontend state migration
 
 قبل متابعة انتقال حالة الواجهة، اقرأ `docs/frontend-state.md` و`.scratch/frontend-state-migration/map.md`؛ الفهرس يربط الحالة الحالية والتذاكر وأدلة التحقق، بينما سجلات الحوار والتسليمات المؤرخة تاريخية.
+
+### Frontend engineering skills
+
+بقرار المستخدم في2026-11-04، استخدم `vercel-react-best-practices` من `vercel-labs/agent-skills` عند كتابة أو مراجعة أو إعادة تنظيم React، واستخدم `codebase-design` من `mattpocock/skills` لتصميم مسؤوليات الموديولات وواجهاتها واعتمادياتها. النسختان المباشرتان مثبتتان في مجلد مهارات Codex. طبّق القواعد المناسبة لـReact/Vite ضمن القرارات المعتمدة للمشروع، واقرأ ملف SKILL.md والقواعد ذات الصلة قبل العمل.
+
+### Frontend architecture
+
+قبل تعديل تنظيم الواجهة أو اعتمادياتها، اقرأ `docs/frontend-architecture.md` والتزم بتنظيم app/features/shared وواجهات الميزات وفحصها.

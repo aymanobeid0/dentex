@@ -1,0 +1,119 @@
+.choice-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+.choice-field > label {
+  cursor: pointer;
+  flex: 1;
+  margin: 0;
+}
+.ui-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--border-control);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--bg);
+}
+.ui-checkbox[data-state="checked"] {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.ui-checkbox-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ui-checkbox:disabled,
+.choice-field:has(.ui-checkbox:disabled) > label {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.ui-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+}
+.ui-select > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-select:focus-visible {
+  outline: 0;
+  border-color: var(--border-focus);
+}
+.ui-select-content {
+  z-index: 40;
+  min-width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height);
+  overflow: hidden;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-menu);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+.ui-select-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  outline: 0;
+  cursor: pointer;
+  user-select: none;
+}
+.ui-select-item[data-highlighted] {
+  background: var(--bg-active);
+}
+.ui-select-scroll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+}
+.ui-tooltip {
+  z-index: 50;
+  max-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--text-strong);
+  color: var(--bg);
+  font: 14px/1.6 var(--font-sans);
+  box-shadow: var(--shadow-menu);
+}
+.ui-tooltip-arrow {
+  fill: var(--text-strong);
+}
+@media (pointer: coarse) {
+  .choice-field,
+  .choice-field > label,
+  .ui-select-item {
+    min-height: 44px;
+  }
+}

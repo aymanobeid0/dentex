@@ -1,0 +1,11 @@
+/* Central stylesheet order; feature rules remain owned by their modules. */
+@import "../shared/styles/base.css";
+@import "layout/layout.css";
+@import "../features/auth/auth.css";
+@import "../shared/styles/forms.css";
+@import "../features/employees/employees.css";
+@import "../features/roles/roles.css";
+@import "../features/account/account.css";
+@import "../features/patients/patients.css";
+@import "../ui/primitives.css";
+
