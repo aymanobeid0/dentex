@@ -1,3 +1,4 @@
+import { useApi } from './api';
 import { Disclosure, DisclosureContent, DisclosureTrigger } from './ui/Disclosure';
 import { Label } from './ui/Label';
 import { translations, type Lang } from './locales';
@@ -6,6 +7,7 @@ import { KeyRound, Save, X } from 'lucide-react';
 
 
 export function AccountPassword({lang,onExpired,onChanged}:{lang:Lang;onExpired:()=>void;onChanged:()=>void}) {
+  const fetch = useApi();
   const t=translations[lang].accountPassword; const [open,setOpen]=useState(false),[current,setCurrent]=useState(''),[next,setNext]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState<keyof typeof t|null>(null);
   const trigger = useRef<HTMLButtonElement>(null), currentInput = useRef<HTMLInputElement>(null), wasOpen = useRef(false);
   useEffect(() => { if (open) currentInput.current?.focus(); else if (wasOpen.current) trigger.current?.focus(); wasOpen.current = open; }, [open]);

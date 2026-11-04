@@ -1,3 +1,4 @@
+import { useApi } from './api';
 import { CheckField } from './ui/CheckField';
 import { SelectField } from './ui/SelectField';
 import { Label } from './ui/Label';
@@ -20,6 +21,7 @@ const blank: Form = { name: '', phone: '', gender: '', birthDate: '', address: '
 const selectedFile = () => window.location.hash === '#patients/new' ? '' : /^#patients\/([^/]+)$/.exec(window.location.hash)?.[1] ?? '';
 
 export function PatientPage({ lang, canRead, canWrite, onExpired }: { lang: Lang; canRead: boolean; canWrite: boolean; onExpired: () => void }) {
+  const fetch = useApi();
   const t = translations[lang].patients;
   const [creating, setCreating] = useState(() => window.location.hash === '#patients/new' || (!canRead && canWrite));
   const [id, setId] = useState(selectedFile), [form, setForm] = useState<Form>(blank);

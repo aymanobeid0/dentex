@@ -1,3 +1,4 @@
+import { useApi } from './api';
 import { CheckField } from './ui/CheckField';
 import { ToggleGroup, ToggleGroupItem } from './ui/ToggleGroup';
 import { translations, type Lang } from './locales';
@@ -7,6 +8,7 @@ type Role={id:string;key:string;permissions:string[]};
 
 const labels:Record<string,keyof typeof translations.ar.roles>={'employees.manage':'employees','patients.read':'patientsRead','patients.write':'patientsWrite','patient_records.read':'recordsRead','patient_records.write':'recordsWrite','dental_chart.read':'chartRead','dental_chart.write':'chartWrite','appointments.read':'appointmentsRead','appointments.write':'appointmentsWrite','prescriptions.read':'prescriptionsRead','prescriptions.write':'prescriptionsWrite','communications.read':'communicationsRead','communications.write':'communicationsWrite','invoices.read':'invoicesRead','invoices.write':'invoicesWrite','payments.read':'paymentsRead','payments.write':'paymentsWrite','patient_financial.read':'financialRead'};
 export function RolePermissionsPage({lang,onExpired}:{lang:Lang;onExpired:()=>void}){
+  const fetch = useApi();
  const saving=useRef(false); const t=translations[lang].roles;const [roles,setRoles]=useState<Role[]|null>(null),[keys,setKeys]=useState<string[]>([]),[selected,setSelected]=useState(''),[draft,setDraft]=useState<string[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState<'error'|'forbidden'|null>(null),[saved,setSaved]=useState(false);
  async function load(){setError(null);setRoles(null);try{const r=await fetch('/api/clinic/role-permissions');if(r.status===401){onExpired();return}if(!r.ok){setError(r.status===403?'forbidden':'error');return}const data=await r.json();setRoles(data.roles);setKeys(data.permissions);const role=data.roles.find((x:Role)=>x.key==='dentist')??data.roles[0];setSelected(role?.id??'');setDraft(role?.permissions??[])}catch{setError('error')}}
  useEffect(()=>{void load()},[]);

@@ -53,7 +53,9 @@
     "switchLanguage": "Français",
     "passwordChanged": "تم تغيير كلمة المرور. سجّل الدخول مجددًا.",
     "manageAdmins": "إدارة المديرين",
-    "roleSeparator": "، "
+    "roleSeparator": "، ",
+    "uncertain": "تعذر التأكد من نتيجة الطلب. تحقق من حالة الخادم قبل إعادة المحاولة.",
+    "staleIdentity": "الاتصال أو تحديث الجلسة متعذر؛ بيانات الحساب المعروضة قديمة."
   },
   "employees": {
     "title": "الموظفون",

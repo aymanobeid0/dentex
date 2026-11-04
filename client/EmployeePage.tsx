@@ -1,3 +1,4 @@
+import { useApi } from './api';
 import { CheckField } from './ui/CheckField';
 import { Label } from './ui/Label';
 import { translations, type Lang } from './locales';
@@ -11,6 +12,7 @@ type Draft={name:string;username:string;password:string;roleIds:string[]};
 const blank=():Draft=>({name:'',username:'',password:'',roleIds:[]});
 
 export function EmployeePage({lang,onExpired,onIdentityChanged,canManageAdmins}:{lang:Lang;onExpired:()=>void;onIdentityChanged:()=>Promise<void>;canManageAdmins:boolean}) {
+  const fetch = useApi();
   const t=translations[lang].employees;
   const [list,setList]=useState<Employee[]|null>(null), [roles,setRoles]=useState<Role[]>([]), [loadError,setLoadError]=useState(false);
   const [editing,setEditing]=useState<Employee|null|undefined>(undefined), [draft,setDraft]=useState<Draft>(blank), [error,setError]=useState<keyof typeof t|null>(null), [saved,setSaved]=useState(false), [busy,setBusy]=useState(false);

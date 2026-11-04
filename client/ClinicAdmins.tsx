@@ -1,3 +1,4 @@
+import { useApi } from './api';
 import { Label } from './ui/Label';
 import { translations, type Lang } from './locales';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -7,6 +8,7 @@ type Clinic={id:string;name:string;code:string};
 type Admin={id:string;name:string;username:string;active:boolean};
 
 export function ClinicAdmins({clinic,lang,onBack,onExpired}:{clinic:Clinic;lang:Lang;onBack:()=>void;onExpired:()=>void}){
+  const fetch = useApi();
   const t=translations[lang].clinicAdmins;const [admins,setAdmins]=useState<Admin[]|null>(null),[loadingError,setLoadingError]=useState(false),[selected,setSelected]=useState<Admin|null>(null),[password,setPassword]=useState(''),[error,setError]=useState<'required'|'error'|'notFound'|null>(null),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false);
   async function load(){setLoadingError(false);setAdmins(null);try{const r=await fetch(`/api/clinics/${clinic.id}/admins`);if(r.status===401){onExpired();return}if(!r.ok)throw Error();setAdmins(await r.json())}catch{setLoadingError(true)}}
   useEffect(()=>{void load()},[clinic.id]);

@@ -53,7 +53,9 @@
     "switchLanguage": "العربية",
     "passwordChanged": "Mot de passe modifié. Reconnectez-vous.",
     "manageAdmins": "Gérer les responsables",
-    "roleSeparator": "، "
+    "roleSeparator": "، ",
+    "uncertain": "Résultat de la demande incertain. Vérifiez l’état du serveur avant de réessayer.",
+    "staleIdentity": "Connexion ou actualisation indisponible ; les informations du compte peuvent être anciennes."
   },
   "employees": {
     "title": "Personnel",

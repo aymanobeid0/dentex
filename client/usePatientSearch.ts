@@ -1,3 +1,4 @@
+import { useApi } from './api';
 import { useEffect, useRef, useState } from 'react';
 
 export type PatientSummary = { id: string; name: string; fileNumber: string; phone: string; isChild: boolean };
@@ -5,6 +6,7 @@ type Result = { items: PatientSummary[]; page: number; hasNext: boolean };
 type Failure = '' | 'denied' | 'network' | 'failed' | 'invalidSearch';
 
 export function usePatientSearch(onExpired: () => void) {
+  const fetch = useApi();
   const [draft, setDraft] = useState('');
   const [request, setRequest] = useState({ q: '', page: 1, version: 0 });
   const [result, setResult] = useState<Result | null>(null);
