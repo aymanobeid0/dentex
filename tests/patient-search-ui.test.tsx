@@ -34,10 +34,10 @@ it('prevents repeated searches, clears stale results on failure, and retries the
   const button = screen.getByRole('button', { name: 'Rechercher' });
   fireEvent.click(button); fireEvent.click(button);
   expect(fetcher).toHaveBeenCalledTimes(2);
-  expect(screen.queryByText('Old patient')).toBeNull();
   expect((button as HTMLButtonElement).disabled).toBe(true);
   finish({ ok: false, status: 500 });
   expect(await screen.findByRole('alert')).toBeTruthy();
+  expect(screen.queryByText('Old patient')).toBeNull();
   expect(screen.queryByText('Aucun résultat pour cette recherche.')).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
   expect(await screen.findByText('Aucun résultat pour cette recherche.')).toBeTruthy();

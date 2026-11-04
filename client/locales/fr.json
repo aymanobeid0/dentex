@@ -210,6 +210,8 @@
     "previous": "Précédent",
     "next": "Suivant",
     "backToList": "Retour à la liste",
-    "invalidSearch": "Vérifiez la recherche et le numéro de page."
+    "invalidSearch": "Vérifiez la recherche et le numéro de page.",
+    "updating": "Mise à jour des résultats…",
+    "resultsShown": "Résultats affichés : {count}."
   }
 }

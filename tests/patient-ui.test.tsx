@@ -1,3 +1,5 @@
+import './ui-browser-apis';
+import userEvent from '@testing-library/user-event';
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -10,7 +12,7 @@ it.each(['ar', 'fr'] as const)('registers with write permission alone without fe
   render(<PatientPage lang={lang} canRead={false} canWrite onExpired={() => {}} />);
   fireEvent.change(screen.getByRole('textbox', { name: lang === 'ar' ? 'الاسم الكامل' : 'Nom complet' }), { target: { value: 'مريم أحمد' } });
   fireEvent.change(screen.getByRole('textbox', { name: lang === 'ar' ? 'الهاتف' : 'Téléphone' }), { target: { value: '46108834' } });
-  fireEvent.change(screen.getByRole('combobox', { name: lang === 'ar' ? 'الجنس' : 'Sexe' }), { target: { value: 'female' } });
+  screen.getByRole('combobox', { name: lang === 'ar' ? 'الجنس' : 'Sexe' }).focus(); await userEvent.keyboard('{Enter}{End}{Enter}');
   fireEvent.click(screen.getByRole('button', { name: lang === 'ar' ? 'تسجيل المريض' : 'Enregistrer le patient' }));
   await waitFor(() => expect(screen.getByRole('status').textContent).toContain('1042'));
   expect(fetcher).toHaveBeenCalledTimes(1);
@@ -33,7 +35,7 @@ it('prevents duplicate submissions and preserves entered fields after a conflict
   render(<PatientPage lang="fr" canRead canWrite onExpired={() => {}} />);
   const name = screen.getByRole('textbox', { name: 'Nom complet' }), phone = screen.getByRole('textbox', { name: 'Téléphone' });
   fireEvent.change(name, { target: { value: 'Patient' } }); fireEvent.change(phone, { target: { value: '46108834' } });
-  fireEvent.change(screen.getByRole('combobox'), { target: { value: 'male' } });
+  screen.getByRole('combobox').focus(); await userEvent.keyboard('{Enter}{Home}{Enter}');
   const button = screen.getByRole('button', { name: 'Enregistrer le patient' });
   fireEvent.click(button); fireEvent.click(button);
   expect(fetcher).toHaveBeenCalledTimes(1); expect((button as HTMLButtonElement).disabled).toBe(true);
