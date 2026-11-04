@@ -111,7 +111,7 @@ it("prevents duplicate submissions and preserves entered fields after a conflict
   const button = screen.getByRole("button", { name: "Enregistrer le patient" });
   fireEvent.click(button);
   fireEvent.click(button);
-  expect(fetcher).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
   expect((button as HTMLButtonElement).disabled).toBe(true);
   finish({ ok: false, status: 409 });
   expect((await screen.findByRole("alert")).textContent).toContain(

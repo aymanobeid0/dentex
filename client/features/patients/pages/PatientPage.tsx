@@ -1,5 +1,7 @@
 import { ArrowLeft, FileText, RefreshCw, UserPlus } from "lucide-react";
 import { type Lang } from "../../../shared/i18n";
+import { DiscardDraftDialog } from "../../../ui/DiscardDraftDialog";
+import type { NavigationGuard } from "../hooks/useRegistrationDraftGuard";
 import { PatientFile } from "../components/PatientFile";
 import { PatientList } from "../components/PatientList";
 import { PatientRegistrationForm } from "../components/PatientRegistrationForm";
@@ -9,21 +11,20 @@ export function PatientPage({
   canRead,
   canWrite,
   onExpired,
+  onNavigationGuardChange,
 }: {
   lang: Lang;
   canRead: boolean;
   canWrite: boolean;
   onExpired: () => void;
+  onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
 }) {
   const {
     t,
     creating,
-    setCreating,
     id,
-    setId,
     form,
     receipt,
-    setError,
     busy,
     file,
     patient,
@@ -34,9 +35,31 @@ export function PatientPage({
     newPatient,
     submit,
     changeField,
-  } = usePatientsPage({ lang, canRead, canWrite, onExpired });
+    uncertain,
+    saveBlocked,
+    review,
+    guard,
+    backToList,
+  } = usePatientsPage({
+    lang,
+    canRead,
+    canWrite,
+    onExpired,
+    onNavigationGuardChange,
+  });
   return (
     <section className="patients-page" dir={lang === "ar" ? "rtl" : "ltr"}>
+      <DiscardDraftDialog
+        open={!!guard.pending}
+        direction={lang === "ar" ? "rtl" : "ltr"}
+        title={t.discardTitle}
+        description={t.discardHint}
+        stay={t.stay}
+        discard={t.discard}
+        onStay={guard.stay}
+        onDiscard={guard.discard}
+        returnFocus={guard.returnFocus}
+      />
       <div className="content-heading">
         <h1 ref={heading} tabIndex={-1}>
           {id ? t.file : t.title}
@@ -74,6 +97,39 @@ export function PatientPage({
           )}
         </div>
       )}
+      {uncertain && (
+        <div className="card patient-review">
+          <p role="status">{canRead ? t.reviewHint : t.reviewDenied}</p>
+          {canRead && (
+            <button
+              className="language"
+              disabled={review.isFetching}
+              onClick={() => void review.refetch()}
+            >
+              <RefreshCw size={16} aria-hidden />
+              {t.reviewServer}
+            </button>
+          )}
+          {review.isFetching && <p role="status">{t.listLoading}</p>}
+          {review.isError && <p role="alert">{t.reviewFailed}</p>}
+          {canRead && review.isSuccess && (
+            <>
+              <p role="status">
+                {review.data.length ? t.reviewFound : t.reviewEmpty}
+              </p>
+              <ul>
+                {review.data.map((item) => (
+                  <li key={item.id}>
+                    <a href={`#patients/${item.id}`}>
+                      {item.name} — <bdi>{item.fileNumber}</bdi>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
       {id ? (
         !canRead ? (
           <p role="alert">{t.denied}</p>
@@ -93,6 +149,7 @@ export function PatientPage({
           fieldErrors={fieldErrors}
           submit={submit}
           changeField={changeField}
+          saveBlocked={saveBlocked}
         />
       ) : (
         <div className="card patient-empty">
@@ -101,15 +158,7 @@ export function PatientPage({
         </div>
       )}
       {canRead && (id || creating) && (
-        <button
-          className="language patient-back"
-          onClick={() => {
-            window.location.hash = "patients";
-            setId("");
-            setCreating(false);
-            setError("");
-          }}
-        >
+        <button className="language patient-back" onClick={backToList}>
           <ArrowLeft size={16} className="directional" aria-hidden />
           {t.backToList}
         </button>
