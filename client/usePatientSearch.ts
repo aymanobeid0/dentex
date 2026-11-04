@@ -1,62 +1,55 @@
-import { useApi } from './api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
+import { ApiError, readJson, useApi } from './api';
+import { useQueryScope } from './session';
+import { useReadAvailability } from './read-availability';
+import { blocksPatientData, usePatientReadFailure } from './patient-queries';
 
 export type PatientSummary = { id: string; name: string; fileNumber: string; phone: string; isChild: boolean };
 type Result = { items: PatientSummary[]; page: number; hasNext: boolean };
 type Failure = '' | 'denied' | 'network' | 'failed' | 'invalidSearch';
 
 export function usePatientSearch(onExpired: () => void) {
-  const fetch = useApi();
-  const [draft, setDraft] = useState('');
-  const [request, setRequest] = useState({ q: '', page: 1, version: 0 });
-  const [result, setResult] = useState<Result | null>(null);
-  const [error, setError] = useState<Failure>('');
-  const [loading, setLoading] = useState(true);
-  const active = useRef<AbortController | null>(null);
+  const fetch = useApi(), scope = useQueryScope(), client = useQueryClient();
+  const availability = useReadAvailability();
+  const [draft, setDraft] = useState(''), [request, setRequest] = useState({ q: '', page: 1 });
+  const [waiting, setWaiting] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const generation = useRef(0), pendingKey = useRef<string | null>(null);
-  const composing = useRef(false), typed = useRef(''), expired = useRef(onExpired);
-  expired.current = onExpired;
+  const composing = useRef(false), typed = useRef('');
+  const key = [...scope, 'patients', 'list', request.q, request.page];
+  const query = useQuery<Result>({
+    queryKey: key,
+    queryFn: ({ signal }) => readJson<Result>(fetch, `/api/clinic/patients?${new URLSearchParams({ q: request.q, page: String(request.page) })}`, { signal }),
+    enabled: !waiting && availability.online && availability.visible,
+    placeholderData: (previous, previousQuery) => blocksPatientData(previousQuery?.state.error) ? undefined : previous,
+    refetchInterval: 15000,
+    refetchIntervalInBackground: false,
+  });
+  usePatientReadFailure(query.error, onExpired);
   function clearTimer() { if (timer.current !== null) clearTimeout(timer.current); timer.current = null; }
-  function cancel() { active.current?.abort(); generation.current++; pendingKey.current = null; }
+  function cancel() { void client.cancelQueries({ queryKey: key, exact: true }); }
   function load(q: string, page: number) {
-    clearTimer();
-    const key = JSON.stringify([q, page]);
-    if (pendingKey.current === key) return;
-    cancel(); pendingKey.current = key;
-    setLoading(true); setError('');
-    setRequest({ q, page, version: generation.current });
+    clearTimer(); setWaiting(false);
+    if (q === request.q && page === request.page) void query.refetch({ cancelRefetch: false });
+    else setRequest({ q, page });
   }
-  useEffect(() => {
-    if (request.version !== generation.current) return;
-    const controller = new AbortController(); active.current = controller;
-    pendingKey.current = JSON.stringify([request.q, request.page]);
-    const current = () => !controller.signal.aborted && request.version === generation.current;
-    fetch(`/api/clinic/patients?${new URLSearchParams({ q: request.q, page: String(request.page) })}`, { signal: controller.signal })
-      .then(async response => {
-        if (!current()) return;
-        if (response.status === 401) { expired.current(); return; }
-        if (!response.ok) {
-          setResult(null); setError(response.status === 403 ? 'denied' : response.status === 400 ? 'invalidSearch' : 'failed'); return;
-        }
-        const data: Result = await response.json();
-        if (current()) setResult(data);
-      }).catch(() => { if (current()) { setResult(null); setError('network'); } })
-      .finally(() => { if (current()) { pendingKey.current = null; setLoading(false); } });
-    return () => controller.abort();
-  }, [request]);
-  useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); active.current?.abort(); }, []);
+  useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
   function change(value: string, force = false) {
     const unchanged = value.trim() === typed.current.trim();
     typed.current = value; setDraft(value);
     if (unchanged && !force) return;
-    clearTimer(); cancel(); setLoading(true); setError('');
+    clearTimer(); cancel(); setWaiting(true);
     if (!composing.current) timer.current = setTimeout(() => load(value.trim(), 1), 300);
   }
   function clear() { composing.current = false; typed.current = ''; setDraft(''); load('', 1); }
-  function compositionStart() { composing.current = true; clearTimer(); cancel(); setLoading(true); }
+  function compositionStart() { composing.current = true; clearTimer(); cancel(); setWaiting(true); }
   function compositionEnd(value: string) { composing.current = false; change(value, true); }
   function search() { if (!composing.current) load(typed.current.trim(), 1); }
-  const searchPending = pendingKey.current === JSON.stringify([draft.trim(), 1]);
-  return { draft, request, result, error, loading, change, clear, load, search, searchPending, compositionStart, compositionEnd };
+  const error: Failure = waiting || !query.error ? '' : query.error instanceof ApiError
+    ? query.error.status === 403 ? 'denied' : query.error.status === 400 ? 'invalidSearch' : query.error.kind === 'network' ? 'network' : 'failed' : 'network';
+  // Retain same-query data after transient failure, but never after an authority rejection.
+  const result = blocksPatientData(query.error) ? null : query.data ?? null;
+  const loading = waiting || query.isFetching;
+  return { draft, request, result, error, loading, change, clear, load, search, searchPending: !waiting && query.isFetching && request.q === draft.trim() && request.page === 1, compositionStart, compositionEnd,
+    stale: !availability.online || !!error && !!result };
 }

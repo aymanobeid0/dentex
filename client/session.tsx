@@ -1,12 +1,19 @@
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { ApiError, createSessionRequest, isTemporaryReadError, readJson, RequestContext } from './api';
+import { useReadAvailability } from './read-availability';
 
 export type Account = { kind: 'platform'; username: string } | {
   kind: 'clinic'; username: string; name: string; clinic: { id: string; name: string; code: string }; roles: string[]; permissions: string[];
 };
 const identity = (account: Account | null) => account ? JSON.stringify([account.kind, account.kind === 'clinic' ? account.clinic.id : null, account.username]) : 'anonymous';
 let nextSession = 0;
+const QueryScopeContext = createContext<readonly unknown[] | null>(null);
+export function useQueryScope() {
+  const scope = useContext(QueryScopeContext);
+  if (!scope) throw new Error('SessionProvider is required');
+  return scope;
+}
 
 export class Session {
   readonly id = ++nextSession;
@@ -42,16 +49,11 @@ export class Session {
 }
 
 export function SessionProvider({ session, children }: { session: Session; children: ReactNode }) {
-  return <QueryClientProvider client={session.client}><RequestContext value={session.transport.request}>{children}</RequestContext></QueryClientProvider>;
+  return <QueryClientProvider client={session.client}><QueryScopeContext value={session.key.slice(0, -1)}><RequestContext value={session.transport.request}>{children}</RequestContext></QueryScopeContext></QueryClientProvider>;
 }
 
 export function useIdentity(session: Session) {
-  const [availability, setAvailability] = useState(() => ({ online: navigator.onLine, visible: document.visibilityState !== 'hidden' }));
-  useEffect(() => {
-    const update = () => setAvailability({ online: navigator.onLine, visible: document.visibilityState !== 'hidden' });
-    window.addEventListener('online', update); window.addEventListener('offline', update); document.addEventListener('visibilitychange', update);
-    return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); document.removeEventListener('visibilitychange', update); };
-  }, []);
+  const availability = useReadAvailability();
   const query = useQuery<Account | null>({
     queryKey: session.key,
     queryFn: ({ signal }) => session.readIdentity(signal),

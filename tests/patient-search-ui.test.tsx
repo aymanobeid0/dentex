@@ -1,6 +1,7 @@
+import { renderPatient as render } from './render-patient';
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent,  screen, waitFor } from '@testing-library/react';
 import { PatientPage } from '../client/PatientPage';
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.location.hash = ''; });
