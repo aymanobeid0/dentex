@@ -80,6 +80,16 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic account lifecycle', () =
       request(app).patch(`/api/clinic/employees/${adminId}/status`).set('Origin',origin).set('Cookie',secondCookie).send({active:false}),
       request(app).patch(`/api/clinic/employees/${second.id}/status`).set('Origin',origin).set('Cookie',adminCookie).send({active:false})
     ]);
-    expect([a.status,b.status].sort()).toEqual([200,403]);
+    // Authentication may observe the first commit before the second request
+    // enters the transaction (401), or the locked authorization rejects it (403).
+    expect([[200,401],[200,403]]).toContainEqual([a.status,b.status].sort());
+    const rejected=a.status===200?b:a;
+    expect(rejected.body.error).toBe(rejected.status===401?'unauthorized':'forbidden');
+    const survivor=a.status===200?secondCookie:adminCookie;
+    const disabled=a.status===200?adminCookie:secondCookie;
+    const list=await request(app).get('/api/clinic/employees').set('Cookie',survivor);
+    expect(list.status).toBe(200);
+    expect(list.body.filter((user:{active:boolean;roles:{key:string}[]})=>user.active&&user.roles.some(role=>role.key==='admin'))).toHaveLength(1);
+    expect((await request(app).get('/api/auth/me').set('Cookie',disabled)).status).toBe(401);
   });
 });

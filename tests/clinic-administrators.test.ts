@@ -57,9 +57,14 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('platform management of clinic a
       request(app).put(`/api/clinic/employees/${adminId}`).set('Origin',origin).set('Cookie',secondCookie).send({name:'Admin fixture',username:`${prefix}-admin`,roleIds:[dentist]}),
       request(app).patch(`/api/clinic/employees/${employeeId}/status`).set('Origin',origin).set('Cookie',firstCookie).send({active:false})
     ]);
-    expect([demote.status,disable.status].sort()).toEqual([200,403]);
+    // A deactivated actor can be rejected during authentication, before the
+    // transaction's authorization check; both timings must preserve one admin.
+    expect([[200,401],[200,403]]).toContainEqual([demote.status,disable.status].sort());
+    const rejected=demote.status===200?disable:demote;
+    expect(rejected.body.error).toBe(rejected.status===401?'unauthorized':'forbidden');
     const survivor=demote.status===200?secondCookie:firstCookie;
     const list=await request(app).get(`/api/clinic/employees`).set('Cookie',survivor);
+    expect(list.status).toBe(200);
     expect(list.body.filter((u:{active:boolean;roles:{key:string}[]})=>u.active&&u.roles.some(r=>r.key==='admin'))).toHaveLength(1);
   });
 });
