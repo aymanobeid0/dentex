@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 
 export type ApiFailure = 'network' | 'http' | 'login' | 'expired' | 'uncertain';
 export class ApiError extends Error {
-  constructor(public kind: ApiFailure, public status = 0) { super(kind); }
+  constructor(public kind: ApiFailure, public status = 0, public code?: string) { super(kind); }
 }
 export type ApiRequest = (url: string, options?: RequestInit) => Promise<Response>;
 // Infrastructure only: no API data is copied into this context.
@@ -18,7 +18,12 @@ export function isTemporaryReadError(error: unknown) {
 
 export async function readJson<T>(request: ApiRequest, url: string, options?: RequestInit): Promise<T> {
   const response = await request(url, options);
-  if (!response.ok) throw new ApiError(response.status === 401 ? url.endsWith('/login') ? 'login' : 'expired' : 'http', response.status);
+  if (!response.ok) {
+    let code: string | undefined;
+    try { const body = await response.json(); if (typeof body?.error === 'string') code = body.error; }
+    catch (error) { if (error instanceof DOMException && error.name === 'AbortError') throw error; }
+    throw new ApiError(response.status === 401 ? url.endsWith('/login') ? 'login' : 'expired' : 'http', response.status, code);
+  }
   return response.json();
 }
 

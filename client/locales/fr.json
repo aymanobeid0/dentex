@@ -214,6 +214,7 @@
     "backToList": "Retour à la liste",
     "invalidSearch": "Vérifiez la recherche et le numéro de page.",
     "updating": "Mise à jour des résultats…",
-    "resultsShown": "Résultats affichés : {count}."
+    "resultsShown": "Résultats affichés : {count}.",
+    "staleData": "Les données affichées peuvent être anciennes ; connexion ou actualisation des patients indisponible."
   }
 }
