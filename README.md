@@ -1,6 +1,6 @@
 # Dentex
 
-React, Express 5, Prisma and PostgreSQL. Clinic and platform administration, employee accounts, role permissions, and patient registration with a basic patient file are implemented. Patient search, editing, and archiving remain pending.
+React, Express 5, Prisma and PostgreSQL. Clinic and platform administration, employee accounts, role permissions, and patient registration with a basic patient file are implemented. Clinic-scoped patient search, pagination, live search, and Radix UI primitives are implemented. Session identity and patient list/file reads use TanStack Query with session-isolated memory caches, visible/online polling, and stale-data notices. Patient editing and archiving remain pending.
 
 ## Development
 
@@ -38,5 +38,6 @@ The workflow definition in `.github/workflows/ci.yml` runs those checks on pull 
 
 Run `npm run dev`, then open `http://127.0.0.1:5173/`. Vite forwards `/api` to the API at `127.0.0.1:3000`. The development processes must remain running while previewing. Existing local accounts and database setup are documented in `docs/development-database.md`; do not recreate them.
 
-The repository is [aymanobeid0/dentex](https://github.com/aymanobeid0/dentex). Accounts were merged into `main` through PR #1 at `802ac85`. The next integration branch is `feat/patients-and-manual-staging`, containing the module reorganization, patient ticket 01, external translations, documentation, CI, and manual staging setup. The user reviews and merges its pull request into `main`; staging deployment remains manual from Dokploy after successful CI. Confirm the current checkout with `git status` and `git branch --show-current`; after each merged pull request, pull the changes while preserving local work. See [the root session handoff](dentex-session-handoff-2026-11-03-updated.md) for the current Git state, [.scratch/architecture/handoff.md](.scratch/architecture/handoff.md) for reorganization evidence, and [.scratch/patients/handoff.md](.scratch/patients/handoff.md) for patient registration and basic-file verification. Patient tickets 02–04 have not started.
+The repository is [aymanobeid0/dentex](https://github.com/aymanobeid0/dentex). PRs #1–#3 are merged; #3 contains patient search, Radix adoption, dentist registration grants and the session/language foundation. Frontend-state migration ticket02 (patient list/file reads) is implemented in `81345bd`, and the user confirmed local review on 2026-11-04; it is being submitted in the next PR. No deployment is implied by a merge. The current work remains on `feat/patients-and-manual-staging` with local work preserved.
 
+Start from [the current session handoff](dentex-session-handoff-2026-11-03-updated.md) and [the migration tracker](.scratch/frontend-state-migration/map.md). Migration tickets03–09 have not started. The separate patient feature tickets03–04 (editing/archiving) also remain unimplemented. Evidence and the full documentation inventory are in [the project retrospective](.scratch/project-docs/retro-2026-11-04.md). Staging deployment remains manual under [the deployment guide](docs/staging-dokploy.md).
