@@ -33,6 +33,30 @@ export const registerPatient = async (
 };
 
 import type { Patient, PatientSearchResult } from "./types";
+export async function editPatient(
+  request: ApiRequest,
+  id: string,
+  input: RegistrationInput & { editVersion: number },
+) {
+  const receipt = await readJson<{
+    id: string;
+    fileNumber: string;
+    editVersion: number;
+  }>(request, `/api/clinic/patients/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (
+    !receipt ||
+    receipt.id !== id ||
+    typeof receipt.fileNumber !== 'string' ||
+    !/^\d+$/.test(receipt.fileNumber) ||
+    receipt.editVersion !== input.editVersion + 1
+  )
+    throw new ApiError("uncertain");
+  return receipt;
+}
 export const readPatient = (
   request: ApiRequest,
   id: string,

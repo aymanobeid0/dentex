@@ -1,6 +1,7 @@
 import { ArrowLeft, FileText, RefreshCw, UserPlus } from "lucide-react";
 import { type Lang } from "../../../shared/i18n";
 import { DiscardDraftDialog } from "../../../ui/DiscardDraftDialog";
+import { CheckField } from "../../../ui/CheckField";
 import type { NavigationGuard } from "../hooks/useRegistrationDraftGuard";
 import { PatientFile } from "../components/PatientFile";
 import { PatientList } from "../components/PatientList";
@@ -25,6 +26,7 @@ export function PatientPage({
     id,
     form,
     receipt,
+    savedEdit,
     busy,
     file,
     patient,
@@ -40,6 +42,13 @@ export function PatientPage({
     review,
     guard,
     backToList,
+    editing,
+    edit,
+    editIssue,
+    startEditing,
+    acknowledgeEditReview,
+    editChanged,
+    cancelEditing,
   } = usePatientsPage({
     lang,
     canRead,
@@ -83,12 +92,12 @@ export function PatientPage({
       )}
       {receipt && (
         <p className="success" role="status">
-          {t.saved} <bdi>{receipt}</bdi>
+          {savedEdit ? t.edited : t.saved} <bdi>{receipt}</bdi>
         </p>
       )}
       {error && (
         <div className="error" role="alert">
-          <p>{t[error]}</p>
+          <p>{editing && error === 'uncertain' ? t.editUncertain : t[error]}</p>
           {id && error !== "denied" && error !== "missing" && (
             <button className="language" onClick={file.reload}>
               <RefreshCw size={16} aria-hidden />
@@ -130,13 +139,72 @@ export function PatientPage({
           )}
         </div>
       )}
-      {id ? (
+      {editing && canRead && patient ? (
+        <>
+          {editChanged && <p role="status">{t.changed}</p>}
+          {(editIssue || editChanged) && (
+            <div className="card patient-review">
+              <p>{t.editReviewHint}</p>
+              <button
+                className="language"
+                disabled={edit.review.isFetching}
+                onClick={() => void edit.review.refetch()}
+              >
+                {t.reviewFile}
+              </button>
+              {edit.review.isFetching && <p role="status">{t.loading}</p>}
+              {edit.review.isError && <p role="alert">{t.reviewFailed}</p>}
+              {edit.review.isSuccess && !edit.review.isFetching && (
+                <>
+                  <PatientFile lang={lang} t={t} patient={edit.review.data} />
+                  <CheckField
+                    checked={false}
+                    onCheckedChange={acknowledgeEditReview}
+                  >
+                    {t.continueSaving}
+                  </CheckField>
+                </>
+              )}
+            </div>
+          )}
+          <PatientRegistrationForm
+            lang={lang}
+            t={t}
+            form={form}
+            busy={busy}
+            fieldErrors={fieldErrors}
+            submit={submit}
+            changeField={changeField}
+            saveBlocked={saveBlocked || !canWrite}
+            editing
+          />
+          <button
+            className="language patient-back"
+            disabled={busy}
+            onClick={cancelEditing}
+          >
+            {t.cancelEdit}
+          </button>
+        </>
+      ) : id ? (
         !canRead ? (
           <p role="alert">{t.denied}</p>
         ) : loading ? (
           <p role="status">{t.loading}</p>
         ) : (
-          patient && <PatientFile lang={lang} t={t} patient={patient} />
+          patient && (
+            <>
+              <PatientFile lang={lang} t={t} patient={patient} />
+              {canWrite && (
+                <button
+                  className="language patient-back"
+                  onClick={startEditing}
+                >
+                  {t.edit}
+                </button>
+              )}
+            </>
+          )
         )
       ) : canRead && !creating ? (
         <PatientList lang={lang} onExpired={onExpired} />

@@ -228,7 +228,17 @@
     "invalidSearch": "Vérifiez la recherche et le numéro de page.",
     "updating": "Mise à jour des résultats…",
     "resultsShown": "Résultats affichés : {count}.",
-    "staleData": "Connexion au serveur ou actualisation des patients impossible. Réessayez plus tard ; les données affichées peuvent être anciennes."
+    "staleData": "Connexion au serveur ou actualisation des patients impossible. Réessayez plus tard ; les données affichées peuvent être anciennes.",
+    "edit": "Modifier les informations",
+    "saveChanges": "Enregistrer les modifications",
+    "conflict": "Une autre personne a modifié le dossier. Actualisez-le et vérifiez les changements avant de poursuivre.",
+    "changed": "Le dossier a changé depuis le début de la modification. Votre brouillon est conservé.",
+    "editReviewHint": "Votre brouillon est conservé. Actualisez le dossier et vérifiez ses informations avant un nouvel envoi.",
+    "reviewFile": "Actualiser le dossier",
+    "continueSaving": "J’ai vérifié le dossier et souhaite poursuivre",
+    "cancelEdit": "Annuler la modification",
+    "editUncertain": "Connexion ou confirmation des modifications impossible. Réessayez plus tard ; elles peuvent déjà être enregistrées.",
+    "edited": "Les modifications du dossier sont enregistrées."
   },
   "editing": {
     "conflict": "Un autre utilisateur a modifié cet enregistrement. Examinez la version actuelle avant de sauvegarder.",

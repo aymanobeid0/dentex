@@ -1,12 +1,12 @@
 # 01 — انتقال إدارة حالة الواجهة ومزامنة الخادم
 
-Status: ready-for-human
+Status: closed
 
 النوع: متابعة عامة للمواصفة وتنفيذ التذاكر الفرعية.
 
 حالة التخطيط: اعتمد المستخدم التذاكر التسع وحجمها واعتمادياتها، ونُشرت في المتتبع المحلي بتاريخ2026-11-04.
-حالة التنفيذ: مكتملة9/9 محليًا؛01–03 مدمجة فيmain و04/05 مدمجتان عبرPR #7.06/07 مدمجتان عبرPR #8 و08/09 مكتملتان محليًا وتنتظران فحص المستخدم قبلPR. آخر مراجعة:2026-11-05.
-حالة المتابعة: [دليل04](../../frontend-state-migration/04-verification.md) و[دليل05](../../frontend-state-migration/05-verification.md)؛ كلاهما في [PR #7](https://github.com/aymanobeid0/dentex/pull/7) بطلب المستخدم. [دليل06](../../frontend-state-migration/06-verification.md) و[دليل07](../../frontend-state-migration/07-verification.md) للتنفيذ المدموج عبر[PR #8](https://github.com/aymanobeid0/dentex/pull/8)؛ لا ادعاء فحص بشري. الأب مفتوح حتى فحص المستخدم ودمج المتبقي؛ [دليل08](../../frontend-state-migration/08-verification.md) و[دليل09](../../frontend-state-migration/09-verification.md).
+حالة التنفيذ: مكتملة9/9 ومدمجة فيmain؛01–03 مدمجة فيmain و04/05 مدمجتان عبرPR #7.06/07 مدمجتان عبرPR #8 و08/09 مدمجتان عبرPR #9. آخر مراجعة:2026-11-05.
+حالة المتابعة: [دليل04](../../frontend-state-migration/04-verification.md) و[دليل05](../../frontend-state-migration/05-verification.md)؛ كلاهما في [PR #7](https://github.com/aymanobeid0/dentex/pull/7) بطلب المستخدم. [دليل06](../../frontend-state-migration/06-verification.md) و[دليل07](../../frontend-state-migration/07-verification.md) للتنفيذ المدموج عبر[PR #8](https://github.com/aymanobeid0/dentex/pull/8)؛ لا ادعاء فحص بشري. أُغلق الأب بعد تأكيد دمج التسع؛ [دليل08](../../frontend-state-migration/08-verification.md) و[دليل09](../../frontend-state-migration/09-verification.md).
 
 ## النطاق
 
@@ -69,3 +69,5 @@ Status: ready-for-human
 2026-11-05: اكتملت08المجدولةمع[تحققها](../../frontend-state-migration/08-verification.md) وحفظمحليمستقل؛09تليها ضمنالتكليف. لااعتمادبشريأورفعأونشر.
 
 2026-11-05: اكتمل التنفيذ المحلي للتسع وفق التكليف المجدول08/09؛ المتبقي فحص المستخدم وقرارPR، دون بدء أي تذكرة أخرى.
+
+2026-11-05: أُغلق بند المتابعة بعد تأكيد دمجPR #9 في09:01:15UTC. اكتمل انتقال الحالة9/9، ولا تذاكر تنفيذ متبقية لهذا الانتقال. السجلات السابقة مؤرخة؛ لا ادعاء فحص بشري أوCI جديد.

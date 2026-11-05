@@ -1,4 +1,5 @@
 export type Patient = {
+  editVersion: number;
   id: string;
   fileNumber: string;
   name: string;

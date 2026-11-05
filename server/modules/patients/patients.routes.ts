@@ -13,5 +13,6 @@ export function patientsRouter(controller: ReturnType<typeof createPatientsContr
   router.post('/', requirePermission('patients.write'), controller.register);
   router.get('/', requirePermission('patients.read'), controller.list);
   router.get('/:id', requirePermission('patients.read'), controller.get);
+  router.put('/:id', requirePermission('patients.write'), controller.edit);
   return router;
 }
