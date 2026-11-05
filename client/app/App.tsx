@@ -132,7 +132,10 @@ function SessionApp({
       lang={lang}
       page={page}
       onNavigate={(next) => {
-        if (next !== page) navigate(() => setPage(next));
+        if (next === page) return;
+        // Platform screens stay mounted, retaining their drafts on account visits.
+        if (account.kind === "platform") setPage(next);
+        else navigate(() => setPage(next));
       }}
       kind={account.kind}
       canManageEmployees={canManageEmployees}
@@ -158,6 +161,7 @@ function SessionApp({
           active={page === "clinics"}
           externalBusy={busy}
           onBusyChange={setClinicBusy}
+          onNavigationGuardChange={registerPatientGuard}
         />
       )}
       {page === "patients" &&

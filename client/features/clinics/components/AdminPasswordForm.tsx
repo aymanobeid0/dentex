@@ -1,16 +1,27 @@
 import { Save, X } from "lucide-react";
 import { Label } from "../../../ui/Label";
 import type { useClinicAdmins } from "../hooks/useClinicAdmins";
-type Props = Pick<ReturnType<typeof useClinicAdmins>, "t" | "selected" | "setSelected" | "password" | "setPassword" | "error" | "setError" | "busy" | "reset">;
+type Props = Pick<
+  ReturnType<typeof useClinicAdmins>,
+  | "t"
+  | "selected"
+  | "password"
+  | "setPassword"
+  | "error"
+  | "busy"
+  | "saveBlocked"
+  | "cancel"
+  | "reset"
+>;
 export function AdminPasswordForm({
   t,
   selected,
-  setSelected,
   password,
   setPassword,
   error,
-  setError,
   busy,
+  saveBlocked,
+  cancel,
   reset,
 }: Props) {
   if (!selected) return null;
@@ -29,6 +40,7 @@ export function AdminPasswordForm({
               type="password"
               autoComplete="new-password"
               maxLength={1024}
+              disabled={busy}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -40,7 +52,7 @@ export function AdminPasswordForm({
           </p>
         )}
         <div className="form-actions">
-          <button className="primary action" disabled={busy}>
+          <button className="primary action" disabled={saveBlocked}>
             <Save size={16} aria-hidden="true" />
             {t.save}
           </button>
@@ -48,11 +60,7 @@ export function AdminPasswordForm({
             className="language"
             type="button"
             disabled={busy}
-            onClick={() => {
-              setSelected(null);
-              setPassword("");
-              setError(null);
-            }}
+            onClick={cancel}
           >
             <X size={16} aria-hidden="true" />
             {t.cancel}

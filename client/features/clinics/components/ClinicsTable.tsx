@@ -1,6 +1,9 @@
 import { UsersRound } from "lucide-react";
 import type { useClinics } from "../hooks/useClinics";
-type Props = Pick<ReturnType<typeof useClinics>, "t" | "setAdminClinic" | "clinics" | "loadError" | "loadClinics">;
+type Props = Pick<
+  ReturnType<typeof useClinics>,
+  "t" | "setAdminClinic" | "clinics" | "loadError" | "loadClinics"
+>;
 export function ClinicsTable({
   t,
   setAdminClinic,

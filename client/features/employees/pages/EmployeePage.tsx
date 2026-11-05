@@ -1,3 +1,4 @@
+import { WriteReview } from "../../../ui/WriteReview";
 import { DiscardDraftDialog } from "../../../ui/DiscardDraftDialog";
 import { EditReview } from "../../../ui/EditReview";
 import type { NavigationGuard } from "../../../ui/useDraftGuard";
@@ -99,6 +100,27 @@ export function EmployeePage({
           )}
         </EditReview>
       )}
+      <WriteReview
+        lang={lang}
+        uncertain={state.lifecycleUncertain}
+        busy={
+          busy || state.lifecycleReview.isFetching || !state.online || loadError
+        }
+        failed={!!state.lifecycleReview.error}
+        reviewed={state.lifecycleReviewed}
+        acknowledged={state.acknowledged}
+        password={action?.kind === "reset"}
+        onReview={state.reviewLifecycle}
+        onAcknowledge={state.acknowledgeLifecycle}
+      >
+        {state.lifecycleReviewed &&
+          state.lifecycleReview.data?.map((employee) => (
+            <p key={employee.id}>
+              {employee.name} · <bdi>{employee.username}</bdi> ·{" "}
+              {employee.active ? t.active : t.inactive}
+            </p>
+          ))}
+      </WriteReview>
       <div className="employee-heading">
         <h1>{t.title}</h1>
         {editing === undefined && !action && (
@@ -116,6 +138,8 @@ export function EmployeePage({
         <EmployeeActionForm
           t={t}
           busy={busy}
+          actionBlocked={state.actionBlocked}
+          cancelAction={state.cancelAction}
           l={l}
           action={action}
           setAction={setAction}

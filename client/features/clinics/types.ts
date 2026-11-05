@@ -13,3 +13,10 @@ export const blankClinic: ClinicDraft = {
   managerUsername: "",
   managerPassword: "",
 };
+
+export type ClinicAdmin = {
+  id: string;
+  name: string;
+  username: string;
+  active: boolean;
+};

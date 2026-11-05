@@ -255,7 +255,7 @@ it.each([409, 500])(
     );
     fireEvent.click(screen.getByRole("button", { name: "حفظ الصلاحيات" }));
     await screen.findByText(
-      status === 409 ? /عدّل مستخدم آخر/ : /تعذر التأكد من نتيجة الحفظ/,
+      status === 409 ? /عدّل مستخدم آخر/ : /تأكيد اكتمال الحفظ/,
     );
     fireEvent.click(screen.getByRole("button", { name: "حفظ الصلاحيات" }));
     expect(writes).toBe(1);
