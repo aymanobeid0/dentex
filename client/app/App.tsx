@@ -38,24 +38,20 @@ function SessionApp({
 }) {
   const { lang } = useLanguage(),
     t = translations[lang].app;
-  const { account, boot, stale, failed } = useIdentity(session);
+  const { account, anonymous, boot, stale, failed } = useIdentity(session);
   const expire = () => session.replace(null);
   const { busy, error, logout } = useLogout(expire);
   const [page, setPage] = useState<Page>("clinics");
   const [clinicBusy, setClinicBusy] = useState(false);
-  const patientNavigationGuard = useRef<((leave: () => void) => void) | null>(
-    null,
-  );
-  const registerPatientGuard = useCallback(
+  const navigationGuard = useRef<((leave: () => void) => void) | null>(null);
+  const registerNavigationGuard = useCallback(
     (guard: ((leave: () => void) => void) | null) => {
-      patientNavigationGuard.current = guard;
+      navigationGuard.current = guard;
     },
     [],
   );
   const navigate = (leave: () => void) =>
-    patientNavigationGuard.current
-      ? patientNavigationGuard.current(leave)
-      : leave();
+    navigationGuard.current ? navigationGuard.current(leave) : leave();
   const admin = account?.kind === "clinic" && account.roles.includes("admin");
   const canManageEmployees =
     account?.kind === "clinic" &&
@@ -100,7 +96,7 @@ function SessionApp({
     canReadPatients,
     canWritePatients,
   ]);
-  if ((failed || stale) && !account)
+  if ((failed || stale) && !account && !anonymous)
     return (
       <main className="login">
         <LanguageSwitch />
@@ -161,7 +157,7 @@ function SessionApp({
           active={page === "clinics"}
           externalBusy={busy}
           onBusyChange={setClinicBusy}
-          onNavigationGuardChange={registerPatientGuard}
+          onNavigationGuardChange={registerNavigationGuard}
         />
       )}
       {page === "patients" &&
@@ -172,14 +168,14 @@ function SessionApp({
           canRead={canReadPatients}
           canWrite={canWritePatients}
           onExpired={expire}
-          onNavigationGuardChange={registerPatientGuard}
+          onNavigationGuardChange={registerNavigationGuard}
         />
       ) : page === "employees" &&
         account.kind === "clinic" &&
         canManageEmployees ? (
         <EmployeePage
           lang={lang}
-          onNavigationGuardChange={registerPatientGuard}
+          onNavigationGuardChange={registerNavigationGuard}
           canManageAdmins={admin}
           onExpired={expire}
           onIdentityChanged={() => session.refresh()}
@@ -188,13 +184,13 @@ function SessionApp({
         <RolePermissionsPage
           lang={lang}
           onExpired={expire}
-          onNavigationGuardChange={registerPatientGuard}
+          onNavigationGuardChange={registerNavigationGuard}
         />
       ) : account.kind === "platform" && page === "clinics" ? null : (
         <AccountPage
           account={account}
           lang={lang}
-          onNavigationGuardChange={registerPatientGuard}
+          onNavigationGuardChange={registerNavigationGuard}
           onExpired={expire}
           onPasswordChanged={() => {
             expire();

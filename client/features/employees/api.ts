@@ -12,16 +12,6 @@ export const listEmployees = (request: ApiRequest, signal?: AbortSignal) =>
   readJson<Employee[]>(request, "/api/clinic/employees", { signal });
 export const listEmployeeRoles = (request: ApiRequest, signal?: AbortSignal) =>
   readJson<Role[]>(request, "/api/clinic/roles", { signal });
-export const saveEmployee = (
-  request: ApiRequest,
-  id: string | undefined,
-  input: EmployeeInput,
-) =>
-  request(id ? "/api/clinic/employees/" + id : "/api/clinic/employees", {
-    method: id ? "PUT" : "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
 export const submitEmployeeAction = (
   request: ApiRequest,
   id: string,

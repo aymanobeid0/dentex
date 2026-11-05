@@ -1,4 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useReadAvailability } from "../../../shared/query/useReadAvailability";
+import { useRef, useState, type FormEvent } from "react";
 import { ApiError } from "../../../shared/api/request";
 import { useApi } from "../../../shared/api/RequestProvider";
 import { translations, useLanguage } from "../../../shared/i18n";
@@ -17,8 +19,19 @@ export function useLogin({
   const { lang } = useLanguage();
   const t = translations[lang].app;
   const fetch = useApi();
-  const [busy, setBusy] = useState(false),
-    [show, setShow] = useState(false),
+  const availability = useReadAvailability();
+  const mutation = useMutation({
+    mutationFn: (input: {
+      kind: "clinic" | "platform";
+      credentials: { code?: string; username: string; password: string };
+    }) => loginAccount(fetch, input.kind, input.credentials),
+    retry: false,
+    networkMode: "always",
+    gcTime: 0,
+  });
+  const sending = useRef(false),
+    busy = mutation.isPending;
+  const [show, setShow] = useState(false),
     [error, setError] = useState("");
   const [username, setUsername] = useState(""),
     [password, setPassword] = useState(""),
@@ -26,40 +39,45 @@ export function useLogin({
     [loginKind, setLoginKind] = useState<"clinic" | "platform">("clinic");
   async function login(e: FormEvent) {
     e.preventDefault();
-    setBusy(true);
+    if (sending.current || busy || !availability.online) return;
+    sending.current = true;
     setError("");
     try {
-      const r = await loginAccount(
-        fetch,
-        loginKind,
-        loginKind === "clinic"
-          ? { code: loginCode, username, password }
-          : { username, password },
-      );
-      if (!r.ok) {
-        setError(loginFailure(r.status));
-        return;
-      }
-      onAuthenticated(await r.json());
+      const account = await mutation.mutateAsync({
+        kind: loginKind,
+        credentials:
+          loginKind === "clinic"
+            ? { code: loginCode, username, password }
+            : { username, password },
+      });
+      onAuthenticated(account);
       setPassword("");
       onLoggedIn();
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       setError(
-        error instanceof ApiError && error.kind === "uncertain"
+        error instanceof ApiError &&
+          (error.kind === "uncertain" ||
+            error.kind === "network" ||
+            error.status >= 500 ||
+            error.status === 408)
           ? "uncertain"
-          : "network",
+          : error instanceof ApiError && error.status > 0
+            ? loginFailure(error.status)
+            : "network",
       );
     } finally {
-      setBusy(false);
+      mutation.reset();
+      sending.current = false;
     }
   }
   return {
     passwordChanged,
     t,
-    busy,
+    busy: busy || !availability.online,
     show,
     setShow,
-    error,
+    error: !availability.online ? "network" : error,
     setError,
     username,
     setUsername,
