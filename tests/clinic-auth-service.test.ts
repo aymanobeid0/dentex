@@ -10,7 +10,7 @@ function dependencies(current: EmployeeRecord | null = user): ClinicAuthDependen
   return {
     clinics: { get: async () => clinic, byCode: async () => clinic },
     employees: { credential: async () => current, loginCredential: async () => user },
-    roles: { assigned: async () => [{ id: 'role', key: 'dentist', permissions: ['patients.read'] }] },
+    roles: { assigned: async () => [{ id: 'role', key: 'dentist', editVersion: 1, permissions: ['patients.read'] }] },
   };
 }
 it.each([null, { ...user, active: false }, { ...user, credentialVersion: 2 }])('rejects a changed account after password verification', async current => {

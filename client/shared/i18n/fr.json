@@ -239,6 +239,10 @@
     "reviewError": "Examen impossible. Une nouvelle lecture réussie est nécessaire avant de sauvegarder.",
     "offline": "Connexion interrompue. Les données chargées restent consultables et peuvent être anciennes.",
     "stale": "Actualisation impossible. La dernière version chargée reste affichée.",
-    "updating": "Actualisation…"
+    "updating": "Actualisation…",
+    "discardTitle": "Quitter les modifications ?",
+    "discardHint": "Les informations non enregistrées seront perdues.",
+    "stay": "Rester",
+    "discard": "Ignorer et quitter"
   }
 }

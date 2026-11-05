@@ -54,7 +54,7 @@ export function EmployeePage({
     submit,
     submitAction,
   } = state;
-  const gt = translations[lang].patients,
+  const gt = translations[lang].editing,
     rt = translations[lang].editing;
   return (
     <>

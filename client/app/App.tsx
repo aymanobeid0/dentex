@@ -181,7 +181,11 @@ function SessionApp({
           onIdentityChanged={() => session.refresh()}
         />
       ) : page === "rolePermissions" && admin ? (
-        <RolePermissionsPage lang={lang} onExpired={expire} />
+        <RolePermissionsPage
+          lang={lang}
+          onExpired={expire}
+          onNavigationGuardChange={registerPatientGuard}
+        />
       ) : account.kind === "platform" && page === "clinics" ? null : (
         <AccountPage
           account={account}

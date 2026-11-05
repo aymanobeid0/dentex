@@ -3,7 +3,10 @@ import { translations } from "../../../shared/i18n";
 import { CheckField } from "../../../ui/CheckField";
 import { ToggleGroup, ToggleGroupItem } from "../../../ui/ToggleGroup";
 import type { useRolePermissions } from "../hooks/useRolePermissions";
-const labels: Record<string, keyof typeof translations.ar.roles> = {
+export const permissionLabels: Record<
+  string,
+  keyof typeof translations.ar.roles
+> = {
   "employees.manage": "employees",
   "patients.read": "patientsRead",
   "patients.write": "patientsWrite",
@@ -32,6 +35,7 @@ type Props = Pick<
   | "selected"
   | "draft"
   | "setDraft"
+  | "saveBlocked"
   | "busy"
   | "error"
   | "saved"
@@ -49,6 +53,7 @@ export function RolePermissionEditor({
   draft,
   setDraft,
   busy,
+  saveBlocked,
   error,
   saved,
   setSaved,
@@ -100,7 +105,7 @@ export function RolePermissionEditor({
               setSaved(false);
             }}
           >
-            {t[labels[key]] ?? key}
+            {t[permissionLabels[key]] ?? key}
           </CheckField>
         ))}
       </fieldset>
@@ -116,7 +121,7 @@ export function RolePermissionEditor({
         <button
           type="button"
           className="primary action"
-          disabled={busy}
+          disabled={saveBlocked}
           onClick={save}
         >
           <Save size={16} aria-hidden="true" />

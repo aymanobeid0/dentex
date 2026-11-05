@@ -27,8 +27,10 @@ export function createRolesOperations(repository: RolesRepository): RolesOperati
 export function createRolesService(repository: RolesRepository, transactions: TransactionManager<RolesScope, ClinicMutation>) {
   return {
     async list(clinicId: string) {
-      const roles = await repository.listRoles(clinicId);
-      return { permissions: permissionKeys, roles: roles.map(role => ({ ...role, permissions: role.key === 'admin' ? [...permissionKeys] : role.permissions.filter(key => permissionKeys.includes(key as typeof permissionKeys[number])).sort() })) };
+      return transactions.run(async scope => {
+        const roles = await scope.repository.listRoles(clinicId);
+        return { permissions: permissionKeys, roles: roles.map(role => ({ ...role, permissions: role.key === 'admin' ? [...permissionKeys] : role.permissions.filter(key => permissionKeys.includes(key as typeof permissionKeys[number])).sort() })) };
+      }, {clinicId});
     },
     async choices(clinicId: string) { return (await repository.listRoles(clinicId)).map(({ id, key }) => ({ id, key })); },
     change(actor: ClinicActor, id: string, input: PermissionsInput) {
@@ -37,8 +39,8 @@ export function createRolesService(repository: RolesRepository, transactions: Tr
         const [role] = await scope.repository.findRoles(actor.clinicId, [id]);
         if (!role) throw new RolesError('not_found');
         if (role.key === 'admin') throw new RolesError('admin_locked');
-        await scope.repository.replacePermissions(id, input.permissions, permissionKeys);
-        return { ...role, permissions: [...input.permissions].sort() };
+        await scope.repository.replacePermissions(actor.clinicId, id, input.editVersion, input.permissions, permissionKeys);
+        return { ...role, editVersion: input.editVersion + 1, permissions: [...input.permissions].sort() };
       }, { clinicId: actor.clinicId, actor });
     },
   };
