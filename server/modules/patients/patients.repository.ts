@@ -4,6 +4,9 @@ import { PatientsError } from './patients.errors';
 
 export function createPatientsRepository(database: Prisma.TransactionClient): PatientsRepository {
   return {
+    async initializeNumbering(clinicId, start) {
+      await database.patientNumbering.create({ data: { clinicId, start: BigInt(start), lastNumber: BigInt(start) - 1n } });
+    },
     async list(clinicId, input) {
       const matches: Prisma.PatientWhereInput[] = [{ name: { contains: input.q.replace(/[\\%_]/g, character => `\\${character}`), mode: 'insensitive' } }];
       if (input.normalizedPhone) matches.push({ phone: input.normalizedPhone });
@@ -18,7 +21,9 @@ export function createPatientsRepository(database: Prisma.TransactionClient): Pa
     },
     async insert(clinicId, input) {
       try {
-        const patient = await database.patient.create({ data: { ...input, clinicId, birthDate: input.birthDate ? new Date(`${input.birthDate}T00:00:00.000Z`) : null }, select: { id: true, fileNumber: true } });
+        const allocated = await database.$queryRaw<{ last_number: bigint }[]>`UPDATE patient_numbering SET last_number = last_number + 1 WHERE clinic_id = ${clinicId}::uuid AND last_number < 9223372036854775807 RETURNING last_number`;
+        if (!allocated.length) throw new PatientsError('numbering_exhausted');
+        const patient = await database.patient.create({ data: { ...input, clinicId, fileNumber: allocated[0].last_number, birthDate: input.birthDate ? new Date(`${input.birthDate}T00:00:00.000Z`) : null }, select: { id: true, fileNumber: true } });
         return { id: patient.id, fileNumber: patient.fileNumber.toString() };
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') throw new PatientsError('duplicate_phone');

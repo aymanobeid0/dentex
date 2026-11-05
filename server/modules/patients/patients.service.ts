@@ -1,10 +1,13 @@
 import type { ClinicActor, ClinicMutation } from '../../shared/actor';
 import { AuthorizationError } from '../../shared/errors';
 import type { TransactionManager } from '../../shared/transaction-manager';
-import type { PatientsRepository, PatientsScope } from './patients.dto';
+import type { PatientsOperations, PatientsRepository, PatientsScope } from './patients.dto';
 import type { ArchivePatientInput, EditPatientInput, ListPatientsInput, RegisterPatientInput } from './patients.schemas';
 import { PatientsError } from './patients.errors';
 
+export function createPatientsOperations(repository: PatientsRepository): PatientsOperations {
+  return { initializeNumbering: (clinicId, start) => repository.initializeNumbering(clinicId, start) };
+}
 export function createPatientsService(repository: PatientsRepository, transactions: TransactionManager<PatientsScope, ClinicMutation>) {
   return {
     list(clinicId: string, input: ListPatientsInput) {

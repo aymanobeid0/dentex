@@ -8,6 +8,8 @@ import { createRolesRepository } from '../server/modules/roles/roles.repository'
 import { createRolesOperations } from '../server/modules/roles/roles.service';
 import { createEmployeesRepository } from '../server/modules/employees/employees.repository';
 import { createEmployeesOperations } from '../server/modules/employees/employees.service';
+import { createPatientsRepository } from '../server/modules/patients/patients.repository';
+import { createPatientsOperations } from '../server/modules/patients/patients.service';
 import type { ClinicMutation } from '../server/shared/actor';
 
 describe.skipIf(!process.env.TEST_DATABASE_URL)('transaction infrastructure with an isolated database', () => {
@@ -60,7 +62,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('transaction infrastructure with
       const roles = createRolesOperations(createRolesRepository(transaction));
       const employees = createEmployeesOperations(createEmployeesRepository(transaction), roles);
       return {
-        repository, roles, platformAuthorized: false,
+        repository, roles, patients: createPatientsOperations(createPatientsRepository(transaction)), platformAuthorized: false,
         employees: {
           ...employees,
           async registerManager(input, adminRoleId) {
@@ -69,6 +71,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('transaction infrastructure with
             roleIds = (await roles.list(clinicId)).map(role => role.id);
             userId = (await employees.administrators(clinicId))[0].id;
             expect(roleIds).toHaveLength(3);
+            expect(await transaction.patientNumbering.findUnique({ where: { clinicId } })).toMatchObject({ start: 1n, lastNumber: 0n });
             expect((await roles.assigned(clinicId, userId))[0].key).toBe('admin');
             throw Error('failure after manager assignment');
           },
@@ -82,6 +85,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('transaction infrastructure with
       expect(userId).not.toBe('');
       expect(await database.clinic.findUnique({ where: { id: clinicId } })).toBeNull();
       expect(await database.user.findUnique({ where: { id: userId } })).toBeNull();
+      expect(await database.patientNumbering.findUnique({ where: { clinicId } })).toBeNull();
       expect(await database.role.count({ where: { clinicId } })).toBe(0);
       expect(await database.userRole.count({ where: { clinicId } })).toBe(0);
       expect(await database.rolePermission.count({ where: { roleId: { in: roleIds } } })).toBe(0);

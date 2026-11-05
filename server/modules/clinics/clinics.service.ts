@@ -21,6 +21,7 @@ export function createClinicsService(repository: ClinicsRepository, employees: E
       try {
         return await transactions.run(async scope => {
           const clinic = await scope.repository.insertClinic({ name: input.name, code: input.code });
+          await scope.patients.initializeNumbering(clinic.id, '1');
           const roles = await scope.roles.initialize(clinic.id);
           const admin = roles.find(role => role.key === 'admin');
           if (!admin) throw Error('Missing initial administrator role');

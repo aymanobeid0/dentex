@@ -1,5 +1,9 @@
 # عقد الشاشات والخادم
 
+## عقد استقلال أرقام المرضى — الترقيم01
+
+رقم الملف نص موجب ضمن BIGINT، يُخصص ذريًا من عدّاد العيادة داخل معاملة التسجيل. نهاية السعة تعيد409 numbering_exhausted؛ تعرض الواجهة رسالة خاصة وتحفظ المسودة دون إعادة إرسال. لا يتغير UUID أو عقد الملف والقائمة والبحث؛ البحث يستخدم الرقم الجديد فقط. [عقد01](../.scratch/patient-numbering/01-contract.md) و[دليل01](../.scratch/patient-numbering/01-verification.md) يميزان التنفيذ البرمجي عن حالة انتقال التطوير وحواجزه. لا تُعد هذه الفقرة إثبات تطبيق الترحيل على كل بيئة.
+
 ## عقد أرشفة المريض واستعادته — التذكرة patients/04
 
 GET التفاصيل والقائمة يعيدانarchived، والقائمة تقبلstatus=active|archived|all معactive افتراضيًا. PATCH /api/clinic/patients/:id/archive يقبلarchived وeditVersion ويتطلبpatients.write؛ يعيد200 معid/fileNumber/editVersion/archived. تبقى القراءة بـpatients.read، ويُرفضPUT للمؤرشف409 patient_archived حتى الاستعادة؛ يحتفظ الهاتف والرقم بقيودهما. [العقد التفصيلي](../.scratch/patients/04-contract.md) مرجع التزامن والأخطاء والتأكيد والمراجعة اليدوية، وسُجل قبل التنفيذ.

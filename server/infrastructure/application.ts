@@ -16,7 +16,7 @@ import type { ClinicsScope } from '../modules/clinics/clinics.dto';
 import { createAccountRepository } from '../modules/account/account.repository';
 import { createAccountService } from '../modules/account/account.service';
 import { createPatientsRepository } from '../modules/patients/patients.repository';
-import { createPatientsService } from '../modules/patients/patients.service';
+import { createPatientsOperations, createPatientsService } from '../modules/patients/patients.service';
 import type { PatientsScope } from '../modules/patients/patients.dto';
 
 /** The only place that assembles feature internals; no business decisions here. */
@@ -60,7 +60,7 @@ export function createServices(database: PrismaClient) {
   });
   const clinicsTransactions = createTransactionManager<ClinicsScope, ClinicMutation>(database, async (client, context) => {
     const scope = await mutation(client, context);
-    return { repository: scope.clinicsRepository, roles: scope.roles, employees: scope.employees, platformAuthorized: scope.platformAuthorized };
+    return { repository: scope.clinicsRepository, roles: scope.roles, employees: scope.employees, patients: createPatientsOperations(createPatientsRepository(client)), platformAuthorized: scope.platformAuthorized };
   });
   return {
     auth: createAuthService(bound.authRepository, verifyPassword, bound),

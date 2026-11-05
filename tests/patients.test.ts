@@ -24,6 +24,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
     }
     for (let i = 0; i < 2; i++) {
       const clinic = await fixtureClinic(); clinics.push(clinic.id);
+      await prisma.patientNumbering.create({ data: { clinicId: clinic.id, start: 1n, lastNumber: 0n } });
       const role = await prisma.role.create({ data: { clinicId: clinic.id, key: 'admin' } });
       const user = await prisma.user.create({ data: { clinicId: clinic.id, name: 'Admin', username: prefix, passwordHash } });
       await prisma.userRole.create({ data: { clinicId: clinic.id, userId: user.id, roleId: role.id } });
@@ -59,6 +60,33 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
   const edit = (id: string, input: object, cookie = cookies[0]) => request(app).put(`/api/clinic/patients/${id}`).set('Origin', origin).set('Cookie', cookie).send(input);
   const read = (id: string) => request(app).get(`/api/clinic/patients/${id}`).set('Cookie', reader);
   const archive = (id: string, archived: boolean, editVersion: number, cookie = cookies[0]) => request(app).patch(`/api/clinic/patients/${id}/archive`).set('Origin', origin).set('Cookie', cookie).send({ archived, editVersion });
+  it('starts independent clinic sequences at one and never reuses an archived number', async () => {
+    const input = { name: 'Numbering', phone: '20112233', gender: 'male', isChild: true };
+    const first = await create(input), other = await create(input, cookies[1]);
+    expect([first.body.fileNumber, other.body.fileNumber]).toEqual(['1', '1']);
+    expect((await archive(first.body.id, true, 1)).status).toBe(200);
+    const next = await create(input);
+    expect(next.body.fileNumber).toBe('2');
+    expect((await archive(first.body.id, false, 2)).status).toBe(200);
+    // Keep earlier list tests isolated from these numbering fixtures.
+    await prisma.patient.deleteMany({ where: { id: { in: [first.body.id, other.body.id, next.body.id] } } });
+  });
+  it('allocates concurrent numbers independently and rejects exhaustion without wrapping', async () => {
+    const input = { name: 'Capacity fixture', phone: '20112233', gender: 'female', isChild: true };
+    const results = await Promise.all(Array.from({ length: 8 }, () => create(input)));
+    expect(results.map(r => r.status)).toEqual(Array(8).fill(201));
+    expect(results.map(r => BigInt(r.body.fileNumber)).sort((a,b) => a < b ? -1 : 1)).toEqual([3n,4n,5n,6n,7n,8n,9n,10n]);
+    const independent = await create(input, cookies[1]);
+    expect(independent.body.fileNumber).toBe('2');
+    await prisma.patientNumbering.update({ where: { clinicId: clinics[0] }, data: { lastNumber: 9223372036854775806n } });
+    const last = await create(input), exhausted = await create(input);
+    expect(last.body.fileNumber).toBe('9223372036854775807');
+    expect(exhausted.status).toBe(409);
+    expect(exhausted.body).toEqual({ error: 'numbering_exhausted' });
+    expect((await read(last.body.id)).body.fileNumber).toBe('9223372036854775807');
+    await prisma.patient.deleteMany({ where: { id: { in: [...results.map(r => r.body.id), independent.body.id, last.body.id] } } });
+    await prisma.patientNumbering.update({ where: { clinicId: clinics[0] }, data: { lastNumber: 10n } });
+  });
   it('lists only its clinic with summary fields and opens a listed file', async () => {
     const saved = await create({ name: 'Listed patient', phone: '60112233', gender: 'male' });
     await create({ name: 'Other clinic', phone: '60112233', gender: 'male' }, cookies[1]);
@@ -78,6 +106,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
       expect(result.items.map((p: { id: string }) => p.id)).toEqual(expected);
       expect(result.items.map((p: { isChild: boolean }) => p.isChild)).toEqual([true, false]);
     }
+    await prisma.patientNumberHistory.create({ data: { clinicId: clinics[0], oldFileNumber: BigInt(first.body.fileNumber), patientId: second.body.id } });
     expect((await search(first.body.fileNumber)).items.map((p: { id: string }) => p.id)).toEqual([first.body.id]);
     expect((await search('not found')).items).toEqual([]);
     expect((await search('%')).items).toEqual([]);
