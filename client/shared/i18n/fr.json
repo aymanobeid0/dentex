@@ -238,7 +238,20 @@
     "continueSaving": "J’ai vérifié le dossier et souhaite poursuivre",
     "cancelEdit": "Annuler la modification",
     "editUncertain": "Connexion ou confirmation des modifications impossible. Réessayez plus tard ; elles peuvent déjà être enregistrées.",
-    "edited": "Les modifications du dossier sont enregistrées."
+    "edited": "Les modifications du dossier sont enregistrées.",
+    "archive": "Archiver le dossier",
+    "restore": "Restaurer le dossier",
+    "confirmArchive": "Confirmer l’archivage",
+    "confirmRestore": "Confirmer la restauration",
+    "archiveConfirmHint": "Le dossier et ses informations seront conservés. Les modifications seront bloquées jusqu’à sa restauration.",
+    "restoreConfirmHint": "Le dossier redeviendra actif avec le même numéro et les mêmes informations.",
+    "archived": "Archivé",
+    "active": "Actif",
+    "allStatuses": "Tous les dossiers",
+    "statusFilter": "État du dossier",
+    "archivedHint": "Ce dossier est archivé. Restaurez-le avant de modifier ses informations.",
+    "archiveUncertain": "Connexion ou confirmation du changement d’état impossible. Réessayez plus tard ; l’opération peut déjà avoir été effectuée.",
+    "acceptCurrentStatus": "J’ai vérifié l’état actuel ; fermer la vérification"
   },
   "editing": {
     "conflict": "Un autre utilisateur a modifié cet enregistrement. Examinez la version actuelle avant de sauvegarder.",

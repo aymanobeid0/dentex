@@ -1,5 +1,9 @@
 # عقد الشاشات والخادم
 
+## عقد أرشفة المريض واستعادته — التذكرة patients/04
+
+GET التفاصيل والقائمة يعيدانarchived، والقائمة تقبلstatus=active|archived|all معactive افتراضيًا. PATCH /api/clinic/patients/:id/archive يقبلarchived وeditVersion ويتطلبpatients.write؛ يعيد200 معid/fileNumber/editVersion/archived. تبقى القراءة بـpatients.read، ويُرفضPUT للمؤرشف409 patient_archived حتى الاستعادة؛ يحتفظ الهاتف والرقم بقيودهما. [العقد التفصيلي](../.scratch/patients/04-contract.md) مرجع التزامن والأخطاء والتأكيد والمراجعة اليدوية، وسُجل قبل التنفيذ.
+
 ## عقد تعديل المريض — التذكرة patients/03
 
 التفاصيل تعيد editVersion؛ PUT /api/clinic/patients/:id يقبل الحقول المعتمدة وإصدار التحرير ويعيد200 مع id/fileNumber/editVersion. يتطلب patients.write، وقراءة الملف مستقلة بـpatients.read؛ لا تغيير لرقم الملف. تعارض الإصدار409 edit_conflict والهاتف409 duplicate_phone دون أثر جزئي. [العقد التفصيلي](../.scratch/patients/03-contract.md) مرجع المدخلات والأخطاء وحماية المسودات ونتائج الكتابة غير المؤكدة؛ سُجل قبل التنفيذ.

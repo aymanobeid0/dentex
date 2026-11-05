@@ -210,3 +210,7 @@
 .patient-review li {
   margin-block: 8px;
 }
+.patient-status-filter {
+  max-width: 240px;
+  margin-block: 16px;
+}

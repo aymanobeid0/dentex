@@ -11,6 +11,7 @@ import type { PatientSearchResult } from "../types";
 export type { PatientSummary } from "../types";
 
 type Failure = "" | "denied" | "network" | "failed" | "invalidSearch";
+type PatientStatus = "active" | "archived" | "all";
 
 export function usePatientSearch(onExpired: () => void) {
   const fetch = useApi(),
@@ -18,19 +19,33 @@ export function usePatientSearch(onExpired: () => void) {
     client = useQueryClient();
   const availability = useReadAvailability();
   const [draft, setDraft] = useState(""),
-    [request, setRequest] = useState({ q: "", page: 1 });
+    [request, setRequest] = useState({
+      q: "",
+      page: 1,
+      status: "active" as PatientStatus,
+    });
   const [waiting, setWaiting] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composing = useRef(false),
     typed = useRef("");
-  const key = [...scope, "patients", "list", request.q, request.page];
+  const key = [
+    ...scope,
+    "patients",
+    "list",
+    request.q,
+    request.page,
+    request.status,
+  ];
   const query = useQuery<PatientSearchResult>({
     queryKey: key,
     queryFn: ({ signal }) =>
-      searchPatients(fetch, request.q, request.page, signal),
+      searchPatients(fetch, request.q, request.page, signal, request.status),
     enabled: !waiting && availability.online && availability.visible,
     placeholderData: (previous, previousQuery) =>
-      blocksPatientData(previousQuery?.state.error) ? undefined : previous,
+      blocksPatientData(previousQuery?.state.error) ||
+      previousQuery?.queryKey.at(-1) !== request.status
+        ? undefined
+        : previous,
     refetchInterval: 15000,
     refetchIntervalInBackground: false,
   });
@@ -42,12 +57,12 @@ export function usePatientSearch(onExpired: () => void) {
   function cancel() {
     void client.cancelQueries({ queryKey: key, exact: true });
   }
-  function load(q: string, page: number) {
+  function load(q: string, page: number, status = request.status) {
     clearTimer();
     setWaiting(false);
-    if (q === request.q && page === request.page)
+    if (q === request.q && page === request.page && status === request.status)
       void query.refetch({ cancelRefetch: false });
-    else setRequest({ q, page });
+    else setRequest({ q, page, status });
   }
   useEffect(
     () => () => {
@@ -109,6 +124,10 @@ export function usePatientSearch(onExpired: () => void) {
     change,
     clear,
     load,
+    changeStatus: (status: PatientStatus) => {
+      cancel();
+      load(typed.current.trim(), 1, status);
+    },
     search,
     searchPending:
       !waiting &&

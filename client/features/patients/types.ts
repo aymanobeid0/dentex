@@ -1,4 +1,5 @@
 export type Patient = {
+  archived: boolean;
   editVersion: number;
   id: string;
   fileNumber: string;
@@ -11,6 +12,7 @@ export type Patient = {
   administrativeNote: string | null;
 };
 export type PatientSummary = {
+  archived: boolean;
   id: string;
   name: string;
   fileNumber: string;

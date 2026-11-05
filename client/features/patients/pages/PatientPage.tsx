@@ -2,6 +2,7 @@ import { ArrowLeft, FileText, RefreshCw, UserPlus } from "lucide-react";
 import { type Lang } from "../../../shared/i18n";
 import { DiscardDraftDialog } from "../../../ui/DiscardDraftDialog";
 import { CheckField } from "../../../ui/CheckField";
+import { ConfirmDialog } from "../../../ui/ConfirmDialog";
 import type { NavigationGuard } from "../hooks/useRegistrationDraftGuard";
 import { PatientFile } from "../components/PatientFile";
 import { PatientList } from "../components/PatientList";
@@ -49,6 +50,16 @@ export function PatientPage({
     acknowledgeEditReview,
     editChanged,
     cancelEditing,
+    archiveAction,
+    archiveOpen,
+    archiveIssue,
+    archiveFocus,
+    startArchive,
+    cancelArchive,
+    submitArchive,
+    archiveReviewed,
+    acknowledgeArchiveReview,
+    archiveBlocked,
   } = usePatientsPage({
     lang,
     canRead,
@@ -70,6 +81,63 @@ export function PatientPage({
         returnFocus={guard.returnFocus}
       />
       <div className="content-heading">
+        <ConfirmDialog
+          open={archiveOpen && !!archiveAction && !guard.pending}
+          direction={lang === "ar" ? "rtl" : "ltr"}
+          title={archiveAction?.archived ? t.archive : t.restore}
+          description={
+            archiveAction?.archived
+              ? t.archiveConfirmHint
+              : t.restoreConfirmHint
+          }
+          cancel={t.cancelEdit}
+          confirm={
+            archiveAction?.archived ? t.confirmArchive : t.confirmRestore
+          }
+          onCancel={cancelArchive}
+          onConfirm={() => void submitArchive()}
+          busy={busy}
+          blocked={archiveBlocked}
+          returnFocus={archiveFocus}
+        >
+          {busy && <p role="status">{t.loading}</p>}
+          {archiveIssue && (
+            <div>
+              <p role="alert">
+                {archiveIssue === "uncertain"
+                  ? t.archiveUncertain
+                  : t[archiveIssue]}
+              </p>
+              <button
+                className="language"
+                disabled={edit.review.isFetching || !canRead}
+                onClick={() => {
+                  void edit.review.refetch();
+                }}
+              >
+                {t.reviewFile}
+              </button>
+              {edit.review.isFetching && <p role="status">{t.loading}</p>}
+              {edit.review.isError && <p role="alert">{t.reviewFailed}</p>}
+              {edit.review.isSuccess &&
+                !edit.review.isFetching &&
+                canRead &&
+                patient && (
+                  <>
+                    <PatientFile lang={lang} t={t} patient={edit.review.data} />
+                    <CheckField
+                      checked={archiveReviewed}
+                      onCheckedChange={acknowledgeArchiveReview}
+                    >
+                      {edit.review.data.archived === archiveAction?.archived
+                        ? t.acceptCurrentStatus
+                        : t.continueSaving}
+                    </CheckField>
+                  </>
+                )}
+            </div>
+          )}
+        </ConfirmDialog>
         <h1 ref={heading} tabIndex={-1}>
           {id ? t.file : t.title}
         </h1>
@@ -85,6 +153,11 @@ export function PatientPage({
           {t.staleData}
         </p>
       )}
+      {!patient && archiveAction && archiveIssue && !archiveOpen && canRead && (
+        <button className="language" onClick={startArchive}>
+          {t.reviewFile}
+        </button>
+      )}
       {file.updating && (
         <p className="patient-search-feedback" role="status">
           {t.updating}
@@ -97,7 +170,7 @@ export function PatientPage({
       )}
       {error && (
         <div className="error" role="alert">
-          <p>{editing && error === 'uncertain' ? t.editUncertain : t[error]}</p>
+          <p>{editing && error === "uncertain" ? t.editUncertain : t[error]}</p>
           {id && error !== "denied" && error !== "missing" && (
             <button className="language" onClick={file.reload}>
               <RefreshCw size={16} aria-hidden />
@@ -141,6 +214,7 @@ export function PatientPage({
       )}
       {editing && canRead && patient ? (
         <>
+          {patient.archived && <p role="alert">{t.archivedHint}</p>}
           {editChanged && <p role="status">{t.changed}</p>}
           {(editIssue || editChanged) && (
             <div className="card patient-review">
@@ -195,12 +269,21 @@ export function PatientPage({
           patient && (
             <>
               <PatientFile lang={lang} t={t} patient={patient} />
-              {canWrite && (
+              {patient.archived && <p role="status">{t.archivedHint}</p>}
+              {canWrite && !patient.archived && (
                 <button
                   className="language patient-back"
                   onClick={startEditing}
                 >
                   {t.edit}
+                </button>
+              )}
+              {canWrite && (
+                <button
+                  className="language patient-back"
+                  onClick={startArchive}
+                >
+                  {patient.archived ? t.restore : t.archive}
                 </button>
               )}
             </>

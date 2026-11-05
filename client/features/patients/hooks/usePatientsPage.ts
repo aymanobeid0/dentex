@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ApiError } from "../../../shared/api/request";
 import { translations, type Lang } from "../../../shared/i18n";
 import {
+  blocksPatientData,
   usePatientEdit,
   usePatientFile,
   usePatientRegistration,
@@ -30,6 +31,7 @@ type Failure =
   | "failed"
   | "origin"
   | "conflict"
+  | "archivedHint"
   | "uncertain";
 type FieldFailure =
   "requiredField" | "invalidPhone" | "invalidDate" | "duplicate";
@@ -41,6 +43,7 @@ const responseFailure = (error: unknown): Failure => {
     invalid_input: "invalid",
     duplicate_phone: "duplicate",
     edit_conflict: "conflict",
+    patient_archived: "archivedHint",
   };
   if (
     !(error instanceof ApiError) ||
@@ -96,8 +99,10 @@ export function usePatientsPage({
   const [id, setId] = useState(selectedFile),
     [form, setForm] = useState<Form>(blank);
   const file = usePatientFile(id, canRead && !creating, onExpired);
-  const { patient, loading } = file;
-  const edit = usePatientEdit(id, canRead && !!patient);
+  const { loading } = file;
+  const edit = usePatientEdit(id, canRead && !!file.patient, onExpired);
+  const reviewBlocked = blocksPatientData(edit.review.error);
+  const patient = reviewBlocked ? null : file.patient;
   const [editing, setEditing] = useState<{
     version: number;
     original: string;
@@ -110,14 +115,40 @@ export function usePatientsPage({
   const saveBlocked =
     !availability.online ||
     (editing
-      ? !!editIssue || editChanged || edit.review.isFetching || !canRead
+      ? !!editIssue ||
+        editChanged ||
+        !!patient?.archived ||
+        edit.review.isFetching ||
+        !canRead
       : uncertain && (!canRead || !review.isSuccess || review.isFetching));
   const [receipt, setReceipt] = useState("");
   const [savedEdit, setSavedEdit] = useState(false);
   const [writeError, setError] = useState<Failure>("");
-  const busy = mutation.isPending || edit.mutation.isPending;
-  const error =
-    editIssue || (uncertain ? "uncertain" : writeError || file.error);
+  const busy =
+    mutation.isPending ||
+    edit.mutation.isPending ||
+    edit.archiveMutation.isPending;
+  const [archiveAction, setArchiveAction] = useState<{
+    archived: boolean;
+    version: number;
+  } | null>(null);
+  const [archiveIssue, setArchiveIssue] = useState<Failure>("");
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiveReviewed, setArchiveReviewed] = useState(false);
+  const archiveFocus = useRef<HTMLElement | null>(null);
+  const archiveBlocked =
+    !availability.online ||
+    !canWrite ||
+    !canRead ||
+    !patient ||
+    edit.review.isFetching ||
+    (!!archiveIssue &&
+      (!archiveReviewed ||
+        !edit.review.isSuccess ||
+        edit.review.data.editVersion !== archiveAction?.version));
+  const error = reviewBlocked
+    ? "denied"
+    : editIssue || (uncertain ? "uncertain" : writeError || file.error);
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof Form, FieldFailure>>
   >({});
@@ -134,6 +165,7 @@ export function usePatientsPage({
       expired.current();
   }, [review.error, edit.review.error]);
   const dirty =
+    !!archiveIssue ||
     !!editIssue ||
     (editing
       ? JSON.stringify(form) !== editing.original
@@ -151,6 +183,10 @@ export function usePatientsPage({
       setUncertain(false);
       setEditing(null);
       setEditIssue(null);
+      setArchiveAction(null);
+      setArchiveOpen(false);
+      setArchiveIssue("");
+      setArchiveReviewed(false);
     },
     onNavigationGuardChange,
   );
@@ -177,6 +213,10 @@ export function usePatientsPage({
         setReceipt("");
         setEditing(null);
         setEditIssue(null);
+        setArchiveAction(null);
+        setArchiveOpen(false);
+        setArchiveIssue("");
+        setArchiveReviewed(false);
         setForm(blank);
         setFieldErrors({});
       });
@@ -208,7 +248,7 @@ export function usePatientsPage({
     });
   }
   function startEditing() {
-    if (!patient || !canRead || !canWrite || busy) return;
+    if (!patient || patient.archived || !canRead || !canWrite || busy) return;
     const {
       name,
       phone,
@@ -245,12 +285,97 @@ export function usePatientsPage({
       !edit.review.isSuccess ||
       edit.review.isFetching ||
       !availability.online ||
-      !patient
+      !patient ||
+      edit.review.data.archived
     )
       return;
     setEditing({ ...editing, version: edit.review.data.editVersion });
     setEditIssue(null);
     setError("");
+  }
+  function startArchive() {
+    if (archiveAction && archiveIssue && canRead && canWrite && !busy) {
+      setArchiveOpen(true);
+      return;
+    }
+    if (!patient || !canRead || !canWrite || busy || editing) return;
+    archiveFocus.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    setArchiveAction({
+      archived: !patient.archived,
+      version: patient.editVersion,
+    });
+    setArchiveOpen(true);
+    setArchiveIssue("");
+    setArchiveReviewed(false);
+    setError("");
+    setReceipt("");
+  }
+  function cancelArchive() {
+    if (busy) return;
+    setArchiveOpen(false);
+    if (archiveIssue) return;
+    setArchiveAction(null);
+    setArchiveOpen(false);
+    setArchiveIssue("");
+    setArchiveReviewed(false);
+  }
+  async function submitArchive() {
+    if (!archiveAction || submitting.current || busy || archiveBlocked) return;
+    submitting.current = true;
+    try {
+      await edit.archiveMutation.mutateAsync({
+        archived: archiveAction.archived,
+        editVersion: archiveAction.version,
+      });
+      guard.release();
+      setArchiveAction(null);
+      setArchiveOpen(false);
+      setArchiveIssue("");
+      setArchiveReviewed(false);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof ApiError && error.status === 401) expired.current();
+      else {
+        setArchiveIssue(responseFailure(error));
+        setArchiveReviewed(false);
+      }
+    } finally {
+      submitting.current = false;
+    }
+  }
+  function acknowledgeArchiveReview(checked: boolean) {
+    if (!checked) {
+      setArchiveReviewed(false);
+      return;
+    }
+    if (
+      !archiveAction ||
+      !canRead ||
+      !canWrite ||
+      !patient ||
+      !availability.online ||
+      !edit.review.isSuccess ||
+      edit.review.isFetching
+    )
+      return;
+    if (edit.review.data.archived === archiveAction.archived) {
+      setArchiveAction(null);
+      setArchiveOpen(false);
+      setArchiveIssue("");
+      setArchiveReviewed(false);
+      setArchiveOpen(false);
+      guard.release();
+      file.reload();
+      return;
+    }
+    setArchiveAction({
+      ...archiveAction,
+      version: edit.review.data.editVersion,
+    });
+    setArchiveReviewed(true);
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -375,6 +500,16 @@ export function usePatientsPage({
         setForm(blank);
         setError("");
       }),
+    archiveAction,
+    archiveOpen,
+    archiveIssue,
+    archiveFocus,
+    startArchive,
+    cancelArchive,
+    submitArchive,
+    archiveReviewed,
+    acknowledgeArchiveReview,
+    archiveBlocked,
     backToList: () => {
       window.location.hash = "patients";
     },

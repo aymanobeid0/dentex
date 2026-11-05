@@ -9,10 +9,10 @@ export function createPatientsRepository(database: Prisma.TransactionClient): Pa
       if (input.normalizedPhone) matches.push({ phone: input.normalizedPhone });
       if (input.fileNumber !== null) matches.push({ fileNumber: BigInt(input.fileNumber) });
       const rows = await database.patient.findMany({
-        where: { clinicId, ...(input.q ? { OR: matches } : {}) },
+        where: { clinicId, ...(input.status === 'all' ? {} : { archived: input.status === 'archived' }), ...(input.q ? { OR: matches } : {}) },
         orderBy: [{ createdAt: 'desc' }, { fileNumber: 'desc' }],
         skip: (input.page - 1) * 25, take: 26,
-        select: { id: true, fileNumber: true, name: true, phone: true, isChild: true },
+        select: { id: true, fileNumber: true, name: true, phone: true, isChild: true, archived: true },
       });
       return { items: rows.slice(0, 25).map(row => ({ ...row, fileNumber: row.fileNumber.toString() })), page: input.page, hasNext: rows.length > 25 };
     },
@@ -26,7 +26,7 @@ export function createPatientsRepository(database: Prisma.TransactionClient): Pa
       }
     },
     async find(clinicId, id) {
-      const row = await database.patient.findFirst({ where: { clinicId, id }, select: { id: true, fileNumber: true, editVersion: true, name: true, phone: true, gender: true, isChild: true, birthDate: true, address: true, administrativeNote: true } });
+      const row = await database.patient.findFirst({ where: { clinicId, id }, select: { id: true, fileNumber: true, editVersion: true, archived: true, name: true, phone: true, gender: true, isChild: true, birthDate: true, address: true, administrativeNote: true } });
       if (!row) return null;
       return { ...row, gender: row.gender as Patient['gender'], fileNumber: row.fileNumber.toString(), birthDate: row.birthDate?.toISOString().slice(0, 10) ?? null };
     },
@@ -34,7 +34,7 @@ export function createPatientsRepository(database: Prisma.TransactionClient): Pa
       const { editVersion, ...fields } = input;
       try {
         const result = await database.patient.updateMany({
-          where: { clinicId, id, editVersion },
+          where: { clinicId, id, editVersion, archived: false },
           data: { ...fields, birthDate: fields.birthDate ? new Date(`${fields.birthDate}T00:00:00.000Z`) : null, editVersion: { increment: 1 } },
         });
         if (!result.count) throw new PatientsError('edit_conflict');
@@ -44,6 +44,12 @@ export function createPatientsRepository(database: Prisma.TransactionClient): Pa
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') throw new PatientsError('duplicate_phone');
         throw error;
       }
+    },
+    async setArchived(clinicId, id, input) {
+      const result = await database.patient.updateMany({ where: { clinicId, id, editVersion: input.editVersion }, data: { archived: input.archived, editVersion: { increment: 1 } } });
+      if (!result.count) throw new PatientsError('edit_conflict');
+      const row = await database.patient.findFirstOrThrow({ where: { clinicId, id }, select: { id: true, fileNumber: true, editVersion: true, archived: true } });
+      return { ...row, fileNumber: row.fileNumber.toString() };
     },
   };
 }

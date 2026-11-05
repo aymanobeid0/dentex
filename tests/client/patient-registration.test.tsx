@@ -296,6 +296,7 @@ it("keeps an uncertain draft through reconnection and requires server review bef
   expect(
     fetcher.mock.calls.some(([url]) => String(url).includes("q=46108834")),
   ).toBe(true);
+  expect(fetcher.mock.calls.some(([url]) => String(url).includes('status=all'))).toBe(true);
   expect(posts).toHaveLength(1);
   fireEvent.click(save);
   await waitFor(() => expect(posts).toHaveLength(2));
