@@ -8,7 +8,10 @@ export interface Patient extends PatientReceipt {
   name: string; phone: string; gender: 'male' | 'female'; isChild: boolean;
   birthDate: string | null; address: string | null; administrativeNote: string | null;
 }
+export interface PatientsOperations { initializeNumbering(clinicId: string, start: string): Promise<void> }
 export interface PatientsRepository {
+  findOldNumber(clinicId: string, oldFileNumber: string): Promise<(PatientReceipt & { name: string }) | null>;
+  initializeNumbering(clinicId: string, start: string): Promise<void>;
   list(clinicId: string, input: ListPatientsInput): Promise<PatientList>;
   insert(clinicId: string, input: RegisterPatientInput): Promise<PatientReceipt>;
   find(clinicId: string, id: string): Promise<Patient | null>;

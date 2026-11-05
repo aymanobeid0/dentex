@@ -31,6 +31,7 @@ type Failure =
   | "failed"
   | "origin"
   | "conflict"
+  | "exhausted"
   | "archivedHint"
   | "uncertain";
 type FieldFailure =
@@ -44,6 +45,7 @@ const responseFailure = (error: unknown): Failure => {
     duplicate_phone: "duplicate",
     edit_conflict: "conflict",
     patient_archived: "archivedHint",
+    numbering_exhausted: "exhausted",
   };
   if (
     !(error instanceof ApiError) ||

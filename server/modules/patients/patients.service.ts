@@ -1,12 +1,24 @@
 import type { ClinicActor, ClinicMutation } from '../../shared/actor';
 import { AuthorizationError } from '../../shared/errors';
 import type { TransactionManager } from '../../shared/transaction-manager';
-import type { PatientsRepository, PatientsScope } from './patients.dto';
+import type { PatientsOperations, PatientsRepository, PatientsScope } from './patients.dto';
 import type { ArchivePatientInput, EditPatientInput, ListPatientsInput, RegisterPatientInput } from './patients.schemas';
 import { PatientsError } from './patients.errors';
 
+export function createPatientsOperations(repository: PatientsRepository): PatientsOperations {
+  return { initializeNumbering: (clinicId, start) => repository.initializeNumbering(clinicId, start) };
+}
 export function createPatientsService(repository: PatientsRepository, transactions: TransactionManager<PatientsScope, ClinicMutation>) {
   return {
+    lookupOldNumber(actor: ClinicActor, oldFileNumber: string) {
+      return transactions.run(async scope => {
+        const fresh = scope.actor;
+        if (!fresh?.active || fresh.credentialVersion !== actor.credentialVersion || !fresh.roles.includes('admin')) throw new AuthorizationError();
+        const patient = await scope.repository.findOldNumber(actor.clinicId, oldFileNumber);
+        if (!patient) throw new PatientsError('not_found');
+        return patient;
+      }, { clinicId: actor.clinicId, actor });
+    },
     list(clinicId: string, input: ListPatientsInput) {
       return repository.list(clinicId, input);
     },

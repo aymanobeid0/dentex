@@ -22,6 +22,25 @@ afterEach(() => {
   window.history.replaceState(null, "", "/");
 });
 
+it.each(['ar', 'fr'] as const)('keeps the registration draft on exhausted numbering in %s without retry', async lang => {
+  const fetcher = vi.fn(async (_url: string, options?: RequestInit) => options?.method === 'POST'
+    ? { ok: false, status: 409, json: async () => ({ error: 'numbering_exhausted' }) }
+    : { ok: true, json: async () => ({ items: [], page: 1, hasNext: false }) });
+  vi.stubGlobal('fetch', fetcher);
+  window.history.replaceState(null, '', '#patients/new');
+  renderPatient(<PatientPage lang={lang} canRead canWrite onExpired={() => {}} />);
+  const name = screen.getByRole('textbox', { name: lang === 'ar' ? 'الاسم الكامل' : 'Nom complet' });
+  fireEvent.change(name, { target: { value: 'Draft capacity' } });
+  fireEvent.change(screen.getByRole('textbox', { name: lang === 'ar' ? 'الهاتف' : 'Téléphone' }), { target: { value: '46108834' } });
+  const user = userEvent.setup();
+  screen.getByRole('combobox').focus();
+  await user.keyboard('{Enter}{End}{Enter}');
+  fireEvent.submit(name.closest('form')!);
+  expect((await screen.findByRole('alert')).textContent).toContain(lang === 'ar' ? 'سعة أرقام' : 'capacité');
+  expect((name as HTMLInputElement).value).toBe('Draft capacity');
+  expect(fetcher.mock.calls.filter(([, options]) => options?.method === 'POST')).toHaveLength(1);
+});
+
 it("guards sidebar navigation and logout without losing a draft after identity refresh", async () => {
   vi.stubGlobal(
     "matchMedia",

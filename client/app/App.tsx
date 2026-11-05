@@ -167,6 +167,7 @@ function SessionApp({
           lang={lang}
           canRead={canReadPatients}
           canWrite={canWritePatients}
+          canLookupOldNumber={admin}
           onExpired={expire}
           onNavigationGuardChange={registerNavigationGuard}
         />

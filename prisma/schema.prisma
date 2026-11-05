@@ -15,6 +15,7 @@ model Clinic {
   users User[]
   roles Role[]
   patients Patient[]
+  patientNumbering PatientNumbering?
   @@map("clinics")
 }
 model Patient {
@@ -22,7 +23,7 @@ model Patient {
   editVersion Int @default(1) @map("edit_version")
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
-  fileNumber BigInt @default(autoincrement()) @map("file_number")
+  fileNumber BigInt @map("file_number")
   name String @db.VarChar(200)
   phone String @db.VarChar(12)
   gender String @db.VarChar(6)
@@ -32,6 +33,8 @@ model Patient {
   administrativeNote String? @map("administrative_note") @db.VarChar(2000)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  numberingHistory PatientNumberHistory[]
+  @@unique([clinicId, id])
   @@unique([clinicId, fileNumber])
   @@map("patients")
 }
@@ -95,4 +98,20 @@ model RolePermission {
   permission Permission @relation(fields: [permissionKey], references: [key], onDelete: NoAction, onUpdate: NoAction)
   @@id([roleId, permissionKey])
   @@map("role_permissions")
+}
+
+model PatientNumbering {
+  clinicId String @id @map("clinic_id") @db.Uuid
+  start BigInt
+  lastNumber BigInt @map("last_number")
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  @@map("patient_numbering")
+}
+model PatientNumberHistory {
+  clinicId String @map("clinic_id") @db.Uuid
+  oldFileNumber BigInt @map("old_file_number")
+  patientId String @unique @map("patient_id") @db.Uuid
+  patient Patient @relation(fields: [clinicId, patientId], references: [clinicId, id], onDelete: Cascade, onUpdate: NoAction)
+  @@id([clinicId, oldFileNumber])
+  @@map("patient_number_history")
 }

@@ -1,5 +1,6 @@
 import type { EmployeesOperations } from '../employees';
 import type { RolesOperations } from '../roles';
+import type { PatientsOperations } from '../patients';
 export interface Clinic { id: string; name: string; code: string }
 export interface ClinicsRepository {
   listClinics(): Promise<Clinic[]>;
@@ -17,5 +18,6 @@ export interface ClinicsScope {
   repository: ClinicsRepository;
   roles: RolesOperations;
   employees: EmployeesOperations;
+  patients: PatientsOperations;
   platformAuthorized: boolean;
 }

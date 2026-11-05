@@ -31,12 +31,14 @@ export function ClinicForm({
     const errorKey = fieldErrors[key];
     return (
       <Label className="field">
-        <span>{label}</span>
+        <span id={`${key}-label`}>{label}</span>
         <span className="input-shell">
           <input
+            id={`clinic-${key}`}
+            aria-labelledby={`${key}-label`}
             type={key === "managerPassword" ? "password" : "text"}
-            dir={key === "code" ? "ltr" : undefined}
-            inputMode={key === "code" ? "numeric" : undefined}
+            dir={key === "code" || key === "patientFileNumberStart" ? "ltr" : undefined}
+            inputMode={key === "code" || key === "patientFileNumberStart" ? "numeric" : undefined}
             maxLength={
               key === "code" ? 4 : key === "managerPassword" ? 1024 : 200
             }
@@ -65,6 +67,7 @@ export function ClinicForm({
       <form onSubmit={createClinic} noValidate>
         {clinicField("name", t.name)}
         {clinicField("code", t.code)}
+        {clinicField("patientFileNumberStart", t.patientFileNumberStart)}
         {clinicField("managerName", t.managerName)}
         {clinicField("managerUsername", t.managerUsername)}
         {clinicField("managerPassword", t.managerPassword)}

@@ -55,7 +55,9 @@
     "manageAdmins": "Gérer les responsables",
     "roleSeparator": "، ",
     "uncertain": "Connexion au serveur ou confirmation de la demande impossible. Réessayez plus tard.",
-    "staleIdentity": "Connexion au serveur ou actualisation du compte impossible. Réessayez plus tard ; les données affichées peuvent être anciennes."
+    "staleIdentity": "Connexion au serveur ou actualisation du compte impossible. Réessayez plus tard ; les données affichées peuvent être anciennes.",
+    "patientFileNumberStart": "Premier numéro de dossier patient",
+    "numberingStartInvalid": "Saisissez un entier de 1 à 9223372036854775807."
   },
   "employees": {
     "title": "Personnel",
@@ -251,7 +253,14 @@
     "statusFilter": "État du dossier",
     "archivedHint": "Ce dossier est archivé. Restaurez-le avant de modifier ses informations.",
     "archiveUncertain": "Connexion ou confirmation du changement d’état impossible. Réessayez plus tard ; l’opération peut déjà avoir été effectuée.",
-    "acceptCurrentStatus": "J’ai vérifié l’état actuel ; fermer la vérification"
+    "acceptCurrentStatus": "J’ai vérifié l’état actuel ; fermer la vérification",
+    "exhausted": "La capacité des numéros de dossier est atteinte. Inscription impossible ; le brouillon est conservé.",
+    "oldNumberLookup": "Retrouver un ancien numéro",
+    "oldNumber": "Ancien numéro de dossier",
+    "oldNumberHint": "Saisissez une seule ancienne référence pour retrouver le dossier actuel de ce cabinet.",
+    "oldNumberInvalid": "Saisissez un entier positif dans la capacité des numéros de dossier.",
+    "oldNumberMissing": "Aucune ancienne référence correspondante dans ce cabinet.",
+    "closeLookup": "Fermer"
   },
   "editing": {
     "conflict": "Un autre utilisateur a modifié cet enregistrement. Examinez la version actuelle avant de sauvegarder.",

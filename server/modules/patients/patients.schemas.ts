@@ -31,3 +31,5 @@ export const listPatientsSchema = z.strictObject({
   return { ...input, normalizedPhone: parsedPhone.success ? parsedPhone.data : null, fileNumber: number !== null && number <= 9223372036854775807n ? number.toString() : null };
 });
 export type ListPatientsInput = z.infer<typeof listPatientsSchema>;
+
+export const oldFileNumberSchema = z.string().trim().max(19).transform(normalizeDigits).pipe(z.string().regex(/^[1-9]\d*$/).refine(value => /^[1-9]\d*$/.test(value) && value.length <= 19 && BigInt(value) <= 9223372036854775807n));
