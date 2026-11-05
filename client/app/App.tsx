@@ -194,6 +194,7 @@ function SessionApp({
         <AccountPage
           account={account}
           lang={lang}
+          onNavigationGuardChange={registerPatientGuard}
           onExpired={expire}
           onPasswordChanged={() => {
             expire();
