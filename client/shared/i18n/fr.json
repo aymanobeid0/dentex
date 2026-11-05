@@ -244,5 +244,13 @@
     "discardHint": "Les informations non enregistrées seront perdues.",
     "stay": "Rester",
     "discard": "Ignorer et quitter"
+  },
+  "writes": {
+    "uncertain": "Le résultat de cette opération est incertain. Aucune nouvelle tentative automatique.",
+    "review": "Examiner les données du serveur",
+    "passwordHint": "La lecture du compte ne permet pas de vérifier le mot de passe enregistré. Une nouvelle réinitialisation invalidera à nouveau ses sessions. Décidez explicitement avant de recommencer.",
+    "createHint": "Comparez les données ci-dessous avec votre demande. Cette lecture ne garantit pas l’absence de doublon ni le résultat de la première opération. Ne recommencez que si nécessaire.",
+    "reviewError": "Examen impossible. Une nouvelle lecture réussie est nécessaire.",
+    "acknowledge": "Données examinées ; autoriser une tentative manuelle"
   }
 }

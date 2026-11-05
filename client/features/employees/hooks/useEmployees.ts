@@ -7,11 +7,12 @@ import {
   readEmployee,
   listEmployeeRoles,
   listEmployees,
-  saveEmployee,
-  submitEmployeeAction,
+  createEmployee,
+  changeEmployeeAccount,
+  uncertainEmployeeWrite,
 } from "../api";
 import type { Employee, Role } from "../types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../../../shared/api/request";
 import { useQueryScope } from "../../../shared/query/QueryScope";
 import { useDisplayedQuery } from "../../../shared/query/useDisplayedQuery";
@@ -80,6 +81,22 @@ export function useEmployees({
       void client.invalidateQueries({ queryKey: [...scope, "employees"] });
     },
   });
+  const createMutation = useMutation({
+    mutationFn: (input: EmployeeDraft) => createEmployee(fetch, input),
+    retry: false,
+    networkMode: "always",
+    gcTime: 0,
+  });
+  const accountMutation = useMutation({
+    mutationFn: (input: Parameters<typeof changeEmployeeAccount>[1]) =>
+      changeEmployeeAccount(fetch, input),
+    retry: false,
+    networkMode: "always",
+    gcTime: 0,
+  });
+  const [lifecycleUncertain, setLifecycleUncertain] = useState(false);
+  const [lifecycleReviewed, setLifecycleReviewed] = useState(false);
+  const [acknowledged, setAcknowledged] = useState(false);
   const [editing, setEditing] = useState<Employee | null | undefined>(
       undefined,
     ),
@@ -97,6 +114,69 @@ export function useEmployees({
       keyof typeof t | "requiredPassword" | null
     >(null),
     [notice, setNotice] = useState<"statusSaved" | "resetSaved" | null>(null);
+  const lifecycleReview = useQuery({
+    queryKey: [
+      ...scope,
+      "employees",
+      "lifecycle-review",
+      action?.employee.id ?? "create",
+    ],
+    queryFn: async ({ signal }) =>
+      action
+        ? [await readEmployee(fetch, action.employee.id, signal)]
+        : listEmployees(fetch, signal),
+    enabled: false,
+    retry: false,
+    networkMode: "always",
+  });
+  const lifecycleGeneration = useRef(0);
+  useEffect(() => {
+    if (!employeesQuery.blocked && !rolesQuery.blocked) return;
+    lifecycleGeneration.current++;
+    setLifecycleReviewed(false);
+    setAcknowledged(false);
+    void client.cancelQueries({
+      queryKey: [...scope, "employees", "lifecycle-review"],
+    });
+  }, [employeesQuery.blocked, rolesQuery.blocked, client, scope]);
+  async function reviewLifecycle() {
+    if (
+      busy ||
+      lifecycleReview.isFetching ||
+      !employeesQuery.online ||
+      loadError
+    )
+      return;
+    const generation = ++lifecycleGeneration.current;
+    setLifecycleReviewed(false);
+    setAcknowledged(false);
+    const result = await lifecycleReview.refetch();
+    if (generation === lifecycleGeneration.current && !result.error)
+      setLifecycleReviewed(true);
+    if (result.error instanceof ApiError && result.error.status === 401)
+      onExpired();
+  }
+  function markLifecycleUncertain() {
+    setLifecycleUncertain(true);
+    setLifecycleReviewed(false);
+    setAcknowledged(false);
+  }
+  function clearLifecycle() {
+    lifecycleGeneration.current++;
+    setLifecycleUncertain(false);
+    setLifecycleReviewed(false);
+    setAcknowledged(false);
+  }
+  function discardAll() {
+    setEditing(undefined);
+    setDraft(emptyEmployeeDraft());
+    setSaveIssue(null);
+    setReviewed(null);
+    setAction(null);
+    setNewPassword("");
+    setActionError(null);
+    clearLifecycle();
+  }
   const roleName = (role: Role) =>
     t[role.key as "admin" | "dentist" | "receptionist"] ?? role.key;
   async function load() {
@@ -119,14 +199,9 @@ export function useEmployees({
           .sort()
           .join() ?? ""));
   const guard = useDraftGuard(
-    dirty || !!saveIssue,
-    busy || reviewBusy,
-    () => {
-      setEditing(undefined);
-      setDraft(emptyEmployeeDraft());
-      setSaveIssue(null);
-      setReviewed(null);
-    },
+    dirty || !!saveIssue || !!newPassword || lifecycleUncertain,
+    busy || reviewBusy || lifecycleReview.isFetching,
+    discardAll,
     onNavigationGuardChange,
   );
   async function review() {
@@ -171,6 +246,7 @@ export function useEmployees({
     setError(null);
   }
   function open(employee: Employee | null) {
+    clearLifecycle();
     setSaveIssue(null);
     setReviewed(null);
     setReviewFailed(false);
@@ -195,6 +271,8 @@ export function useEmployees({
       busy ||
       reviewBusy ||
       saveIssue ||
+      (lifecycleUncertain && !acknowledged) ||
+      lifecycleReview.isFetching ||
       changed ||
       loadError ||
       !employeesQuery.online
@@ -213,14 +291,6 @@ export function useEmployees({
     sending.current = true;
     setBusy(true);
     try {
-      const body = editing
-        ? {
-            name: draft.name,
-            username: draft.username,
-            roleIds: draft.roleIds,
-            editVersion: editing.editVersion,
-          }
-        : draft;
       if (editing) {
         try {
           await mutation.mutateAsync({
@@ -264,93 +334,109 @@ export function useEmployees({
         await load();
         return;
       }
-      const response = await saveEmployee(fetch, undefined, body);
-      if (response.status === 401) {
-        onExpired();
-        return;
-      }
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setError(
-          data.error === "duplicate_username"
-            ? "duplicate"
-            : data.error === "last_admin"
-              ? "lastAdmin"
-              : data.error === "invalid_roles"
-                ? "invalidRoles"
-                : response.status === 403
-                  ? "forbidden"
-                  : "error",
-        );
-        return;
-      }
-      setEditing(undefined);
-      setDraft(emptyEmployeeDraft());
+      await createMutation.mutateAsync(draft);
+      discardAll();
       setSaved(true);
-      await onIdentityChanged();
-      await load();
-    } catch {
-      setError("error");
+      guard.release();
+      await Promise.all([onIdentityChanged().catch(() => {}), load()]);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof ApiError && error.status === 401) onExpired();
+      else if (uncertainEmployeeWrite(error)) {
+        markLifecycleUncertain();
+      } else
+        setError(
+          error instanceof ApiError && error.code === "duplicate_username"
+            ? "duplicate"
+            : error instanceof ApiError && error.code === "invalid_roles"
+              ? "invalidRoles"
+              : error instanceof ApiError && error.status === 403
+                ? "forbidden"
+                : "error",
+        );
     } finally {
+      createMutation.reset();
       sending.current = false;
       setBusy(false);
     }
   }
   async function submitAction(e: FormEvent) {
     e.preventDefault();
-    if (!action) return;
+    if (
+      !action ||
+      sending.current ||
+      busy ||
+      loadError ||
+      !employeesQuery.online ||
+      lifecycleReview.isFetching ||
+      (lifecycleUncertain && !acknowledged)
+    )
+      return;
     setActionError(null);
     if (action.kind === "reset" && !newPassword.trim()) {
       setActionError("requiredPassword");
       return;
     }
+    sending.current = true;
     setBusy(true);
     try {
-      const status = action.kind === "status";
-      const response = await submitEmployeeAction(
-        fetch,
-        action.employee.id,
-        status,
-        status
-          ? { active: !action.employee.active }
-          : { password: newPassword },
+      await accountMutation.mutateAsync(
+        action.kind === "status"
+          ? {
+              id: action.employee.id,
+              kind: "status",
+              active: !action.employee.active,
+            }
+          : { id: action.employee.id, kind: "reset", password: newPassword },
       );
-      if (response.status === 401) {
-        onExpired();
-        return;
-      }
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
+      const status = action.kind === "status";
+      discardAll();
+      guard.release();
+      setNotice(status ? "statusSaved" : "resetSaved");
+      await Promise.all([onIdentityChanged().catch(() => {}), load()]);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof ApiError && error.status === 401) onExpired();
+      else if (uncertainEmployeeWrite(error)) {
+        markLifecycleUncertain();
+      } else
         setActionError(
-          data.error === "last_admin"
+          error instanceof ApiError && error.code === "last_admin"
             ? "lastAdmin"
-            : response.status === 403
+            : error instanceof ApiError && error.status === 403
               ? "forbidden"
               : "error",
         );
-        return;
-      }
-      setAction(null);
-      setNewPassword("");
-      setNotice(status ? "statusSaved" : "resetSaved");
-      await onIdentityChanged();
-      await load();
-    } catch {
-      setActionError("error");
     } finally {
+      accountMutation.reset();
+      sending.current = false;
       setBusy(false);
     }
   }
   return {
+    lifecycleUncertain,
+    lifecycleReview,
+    lifecycleReviewed: lifecycleReviewed && !loadError,
+    acknowledged,
+    reviewLifecycle,
+    acknowledgeLifecycle: () => {
+      if (
+        lifecycleReviewed &&
+        !loadError &&
+        employeesQuery.online &&
+        !lifecycleReview.isFetching
+      )
+        setAcknowledged(true);
+    },
+    actionBlocked:
+      busy ||
+      loadError ||
+      !employeesQuery.online ||
+      lifecycleReview.isFetching ||
+      (lifecycleUncertain && !acknowledged),
+    cancelAction: () => guard.requestLeave(discardAll),
     canManageAdmins,
-    cancel: () =>
-      guard.requestLeave(() => {
-        setEditing(undefined);
-        setDraft(emptyEmployeeDraft());
-        setError(null);
-        setSaveIssue(null);
-        setReviewed(null);
-      }),
+    cancel: () => guard.requestLeave(discardAll),
     guard,
     review,
     reviewed: employeesQuery.blocked || rolesQuery.blocked ? null : reviewed,
@@ -363,6 +449,8 @@ export function useEmployees({
       busy ||
       reviewBusy ||
       !!saveIssue ||
+      (lifecycleUncertain && !acknowledged) ||
+      lifecycleReview.isFetching ||
       changed ||
       loadError ||
       !employeesQuery.online,

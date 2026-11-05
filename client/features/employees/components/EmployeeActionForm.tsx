@@ -8,6 +8,8 @@ type Props = Pick<
   | "l"
   | "action"
   | "setAction"
+  | "actionBlocked"
+  | "cancelAction"
   | "newPassword"
   | "setNewPassword"
   | "actionError"
@@ -17,6 +19,8 @@ type Props = Pick<
 export function EmployeeActionForm({
   t,
   busy,
+  actionBlocked,
+  cancelAction,
   l,
   action,
   setAction,
@@ -61,7 +65,7 @@ export function EmployeeActionForm({
           </p>
         )}
         <div className="form-actions">
-          <button className="primary action" disabled={busy}>
+          <button className="primary action" disabled={actionBlocked}>
             <Save size={16} aria-hidden="true" />
             {l.confirm}
           </button>
@@ -69,11 +73,7 @@ export function EmployeeActionForm({
             type="button"
             className="language"
             disabled={busy}
-            onClick={() => {
-              setAction(null);
-              setNewPassword("");
-              setActionError(null);
-            }}
+            onClick={cancelAction}
           >
             <X size={16} aria-hidden="true" />
             {t.cancel}
