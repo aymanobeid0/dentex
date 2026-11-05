@@ -227,5 +227,22 @@
     "updating": "Mise à jour des résultats…",
     "resultsShown": "Résultats affichés : {count}.",
     "staleData": "Les données affichées peuvent être anciennes ; connexion ou actualisation des patients indisponible."
+  },
+  "editing": {
+    "conflict": "Un autre utilisateur a modifié cet enregistrement. Examinez la version actuelle avant de sauvegarder.",
+    "changed": "La version d’origine a changé. Votre brouillon est conservé ; examinez la version actuelle.",
+    "uncertain": "Le résultat de la sauvegarde est incertain. Vérifiez le serveur avant une nouvelle tentative.",
+    "review": "Examiner la version actuelle",
+    "useLatest": "Charger la version actuelle et recommencer",
+    "keepDraft": "Différences examinées ; conserver mon brouillon",
+    "reviewHint": "Comparez les données du serveur ci-dessous avec votre brouillon avant de choisir. Sauvegarder votre brouillon peut remplacer ces données.",
+    "reviewError": "Examen impossible. Une nouvelle lecture réussie est nécessaire avant de sauvegarder.",
+    "offline": "Connexion interrompue. Les données chargées restent consultables et peuvent être anciennes.",
+    "stale": "Actualisation impossible. La dernière version chargée reste affichée.",
+    "updating": "Actualisation…",
+    "discardTitle": "Quitter les modifications ?",
+    "discardHint": "Les informations non enregistrées seront perdues.",
+    "stay": "Rester",
+    "discard": "Ignorer et quitter"
   }
 }

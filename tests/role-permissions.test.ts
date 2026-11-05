@@ -28,6 +28,26 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic role permissions',()=>{
     expect(dentist.permissions).not.toContain('payments.write');
     expect(roles[0].find(r=>r.key==='admin')!.permissions).toContain('employees.manage');
   });
+  it('rejects simultaneous grant replacements based on the same editing version', async()=>{
+    const initial=await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0]);
+    const role=initial.body.roles.find((r:{key:string})=>r.key==='receptionist');
+    expect(role.editVersion).toBe(1);
+    const results=await Promise.all([['patients.read'],['patients.write']].map(permissions=>request(app).put(`/api/clinic/role-permissions/${role.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions,editVersion:role.editVersion})));
+    expect(results.map(r=>r.status).sort()).toEqual([200,409]);
+    expect(results.find(r=>r.status===409)!.body.error).toBe('edit_conflict');
+    const latest=await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0]);
+    expect(latest.body.roles.find((r:{id:string})=>r.id===role.id)).toEqual(results.find(r=>r.status===200)!.body);
+    await request(app).put(`/api/clinic/role-permissions/${role.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:role.permissions,editVersion:2}).expect(200);
+  });
+  it('rejects absent or invalid grant versions without changing the grant set', async()=>{
+    const read=()=>request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0]);
+    const initial=await read(),role=initial.body.roles.find((r:{key:string})=>r.key==='dentist');
+    for(const editVersion of [undefined,0,-1,1.5,'1',null,2147483647]) {
+      const result=await request(app).put(`/api/clinic/role-permissions/${role.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion,permissions:[]});
+      expect(result.status).toBe(400);expect(result.body.error).toBe('invalid_permissions');
+    }
+    expect((await read()).body).toEqual(initial.body);
+  });
   it('lets a default dentist register and read a patient while keeping the grant revocable and clinic-scoped', async () => {
     const dentist = roles[0].find(role => role.key === 'dentist')!;
     const created = await request(app).post('/api/clinic/employees').set('Origin', origin).set('Cookie', cookies[0]).send({ name: 'Default dentist', username: 'default-dentist', password: 'test-password', roleIds: [dentist.id] });
@@ -42,20 +62,20 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic role permissions',()=>{
       const file = await request(app).get(`/api/clinic/patients/${patient.body.id}`).set('Cookie', cookie);
       expect(file.status).toBe(200); expect(file.body.name).toBe(payload.name);
       expect((await request(app).get(`/api/clinic/patients/${patient.body.id}`).set('Cookie', cookies[1])).status).toBe(404);
-      const revoke = await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin', origin).set('Cookie', cookies[0]).send({ permissions: dentist.permissions.filter(key => key !== 'patients.write') });
+      const revoke = await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin', origin).set('Cookie', cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===dentist.id)?.editVersion ?? 1, permissions: dentist.permissions.filter(key => key !== 'patients.write') });
       expect(revoke.status).toBe(200);
       expect((await request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', cookie).send({ ...payload, isChild: true })).status).toBe(403);
       const other = await request(app).get('/api/clinic/role-permissions').set('Cookie', cookies[1]);
       expect(other.body.roles.find((role: { key: string }) => role.key === 'dentist').permissions).toContain('patients.write');
     } finally {
-      expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin', origin).set('Cookie', cookies[0]).send({ permissions: dentist.permissions })).status).toBe(200);
+      expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin', origin).set('Cookie', cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===dentist.id)?.editVersion ?? 1, permissions: dentist.permissions })).status).toBe(200);
     }
   });
   it('protects the admin role and scopes role updates to the authenticated clinic',async()=>{
     const admin=roles[0].find(r=>r.key==='admin')!, foreign=roles[1].find(r=>r.key==='dentist')!;
-    expect((await request(app).put(`/api/clinic/role-permissions/${admin.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:[]})).status).toBe(403);
-    expect((await request(app).put(`/api/clinic/role-permissions/${foreign.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:[]})).status).toBe(404);
-    const invalid=await request(app).put(`/api/clinic/role-permissions/${roles[0].find(r=>r.key==='dentist')!.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:['unknown.permission']});expect(invalid.status).toBe(400);
+    expect((await request(app).put(`/api/clinic/role-permissions/${admin.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===admin.id)?.editVersion ?? 1,permissions:[]})).status).toBe(403);
+    expect((await request(app).put(`/api/clinic/role-permissions/${foreign.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===foreign.id)?.editVersion ?? 1,permissions:[]})).status).toBe(404);
+    const invalid=await request(app).put(`/api/clinic/role-permissions/${roles[0].find(r=>r.key==='dentist')!.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===roles[0].find(r=>r.key==='dentist')!.id)?.editVersion ?? 1,permissions:['unknown.permission']});expect(invalid.status).toBe(400);
     const me=await request(app).get('/api/auth/me').set('Cookie',cookies[0]);expect(me.body.permissions).toContain('employees.manage');expect(me.body.permissions).toContain('payments.write');
   });
   it('unions roles and applies grant and removal on the next request only in the edited clinic',async()=>{
@@ -66,26 +86,26 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic role permissions',()=>{
     let me=await request(app).get('/api/auth/me').set('Cookie',employeeCookie);
     expect(me.body.permissions).toContain('patient_records.write');expect(me.body.permissions).toContain('communications.write');
     expect((await request(app).get('/api/clinic/employees').set('Cookie',employeeCookie)).status).toBe(403);
-    expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:['employees.manage']})).status).toBe(200);
+    expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===dentist.id)?.editVersion ?? 1,permissions:['employees.manage']})).status).toBe(200);
     expect((await request(app).get('/api/clinic/employees').set('Cookie',employeeCookie)).status).toBe(200);
     me=await request(app).get('/api/auth/me').set('Cookie',employeeCookie);expect(me.body.permissions).toContain('employees.manage');expect(me.body.permissions).toContain('communications.write');expect(me.body.permissions).not.toContain('patient_records.write');
     const other=await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[1]);expect(other.body.roles.find((r:{key:string})=>r.key==='dentist').permissions).toContain('patient_records.write');
-    expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:[]})).status).toBe(200);
+    expect((await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===dentist.id)?.editVersion ?? 1,permissions:[]})).status).toBe(200);
     expect((await request(app).get('/api/clinic/employees').set('Cookie',employeeCookie)).status).toBe(403);
     expect((await request(app).get('/api/clinic/role-permissions').set('Cookie',employeeCookie)).status).toBe(403);
   });
 
   it('does not allow delegated employee managers to obtain or control administrator access',async()=>{
     const dentist=roles[0].find(r=>r.key==='dentist')!, admin=roles[0].find(r=>r.key==='admin')!;
-    const grant=await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({permissions:['employees.manage']});expect(grant.status).toBe(200);
+    const grant=await request(app).put(`/api/clinic/role-permissions/${dentist.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion:(await request(app).get('/api/clinic/role-permissions').set('Cookie',cookies[0])).body.roles.find((r:{id:string;editVersion:number})=>r.id===dentist.id)?.editVersion ?? 1,permissions:['employees.manage']});expect(grant.status).toBe(200);
     const created=await request(app).post('/api/clinic/employees').set('Origin',origin).set('Cookie',cookies[0]).send({name:'Delegate',username:'delegate',password:'test-password',roleIds:[dentist.id]});expect(created.status).toBe(201);
     const login=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:codes[0],username:'delegate',password:'test-password'});const delegate=login.headers['set-cookie'][0];
-    const escalate=await request(app).put(`/api/clinic/employees/${created.body.id}`).set('Origin',origin).set('Cookie',delegate).send({name:'Delegate',username:'delegate',roleIds:[admin.id]});expect(escalate.status).toBe(403);
+    const escalate=await request(app).put(`/api/clinic/employees/${created.body.id}`).set('Origin',origin).set('Cookie',delegate).send({editVersion: (await request(app).get(`/api/clinic/employees/${created.body.id}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Delegate',username:'delegate',roleIds:[admin.id]});expect(escalate.status).toBe(403);
     const createAdmin=await request(app).post('/api/clinic/employees').set('Origin',origin).set('Cookie',delegate).send({name:'New Admin',username:'new-admin',password:'test-password',roleIds:[admin.id]});expect(createAdmin.status).toBe(403);
     const list=await request(app).get('/api/clinic/employees').set('Cookie',delegate);const manager=list.body.find((e:{roles:{key:string}[]})=>e.roles.some(r=>r.key==='admin'));
-    const editManager=await request(app).put(`/api/clinic/employees/${manager.id}`).set('Origin',origin).set('Cookie',delegate).send({name:'Changed manager',username:'changed-manager',roleIds:manager.roles.map((role:{id:string})=>role.id)});expect(editManager.status).toBe(403);
+    const editManager=await request(app).put(`/api/clinic/employees/${manager.id}`).set('Origin',origin).set('Cookie',delegate).send({editVersion: (await request(app).get(`/api/clinic/employees/${manager.id}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Changed manager',username:'changed-manager',roleIds:manager.roles.map((role:{id:string})=>role.id)});expect(editManager.status).toBe(403);
     const unchanged=await request(app).get(`/api/clinic/employees/${manager.id}`).set('Cookie',cookies[0]);expect(unchanged.body).toMatchObject({name:manager.name,username:manager.username});
-    const remove=await request(app).put(`/api/clinic/employees/${manager.id}`).set('Origin',origin).set('Cookie',delegate).send({name:manager.name,username:manager.username,roleIds:[dentist.id]});expect(remove.status).toBe(403);
+    const remove=await request(app).put(`/api/clinic/employees/${manager.id}`).set('Origin',origin).set('Cookie',delegate).send({editVersion: (await request(app).get(`/api/clinic/employees/${manager.id}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:manager.name,username:manager.username,roleIds:[dentist.id]});expect(remove.status).toBe(403);
     const reset=await request(app).post(`/api/clinic/employees/${manager.id}/reset-password`).set('Origin',origin).set('Cookie',delegate).send({password:'test-password'});expect(reset.status).toBe(403);
     const disable=await request(app).patch(`/api/clinic/employees/${manager.id}/status`).set('Origin',origin).set('Cookie',delegate).send({active:false});expect(disable.status).toBe(403);
   });

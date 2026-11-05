@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"tsx watch server/index.ts\" \"vite --host 127.0.0.1\"",
+    "check:dev": "node scripts/check-dev.mjs",
     "build": "tsc --noEmit && vite build && esbuild server/index.ts scripts/platform-admin.ts --bundle --platform=node --format=esm --packages=external --outdir=dist-server",
     "test": "vitest run",
     "db:generate": "prisma generate",

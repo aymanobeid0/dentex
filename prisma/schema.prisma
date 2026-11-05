@@ -44,6 +44,7 @@ model PlatformAdmin {
   @@map("platform_admins")
 }
 model User {
+  editVersion Int @default(1) @map("edit_version")
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   name String
@@ -60,6 +61,7 @@ model User {
   @@map("users")
 }
 model Role {
+  editVersion Int @default(1) @map("edit_version")
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   key String

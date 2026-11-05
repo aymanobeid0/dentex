@@ -1,4 +1,3 @@
-import { emptyEmployeeDraft } from "../types";
 import { Save, X } from "lucide-react";
 import { CheckField } from "../../../ui/CheckField";
 import { Label } from "../../../ui/Label";
@@ -9,11 +8,11 @@ type Props = Pick<
   | "t"
   | "roles"
   | "editing"
-  | "setEditing"
   | "draft"
   | "setDraft"
   | "error"
-  | "setError"
+  | "saveBlocked"
+  | "cancel"
   | "busy"
   | "roleName"
   | "submit"
@@ -23,12 +22,12 @@ export function EmployeeForm({
   t,
   roles,
   editing,
-  setEditing,
   draft,
   setDraft,
   error,
-  setError,
   busy,
+  saveBlocked,
+  cancel,
   roleName,
   submit,
 }: Props) {
@@ -99,7 +98,7 @@ export function EmployeeForm({
           </p>
         )}
         <div className="form-actions">
-          <button className="primary action" disabled={busy}>
+          <button className="primary action" disabled={saveBlocked}>
             <Save size={16} aria-hidden="true" />
             {t.save}
           </button>
@@ -108,9 +107,7 @@ export function EmployeeForm({
             className="language"
             disabled={busy}
             onClick={() => {
-              setEditing(undefined);
-              setDraft(emptyEmployeeDraft());
-              setError(null);
+              cancel();
             }}
           >
             <X size={16} aria-hidden="true" />

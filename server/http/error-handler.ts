@@ -6,7 +6,7 @@ const statuses: Readonly<Record<string, number>> = {
   unauthorized: 401, invalid_credentials: 401,
   forbidden: 403, untrusted_origin: 403, admin_locked: 403,
   not_found: 404,
-  duplicate_code: 409, duplicate_username: 409, last_admin: 409, duplicate_phone: 409,
+  edit_conflict: 409, duplicate_code: 409, duplicate_username: 409, last_admin: 409, duplicate_phone: 409,
   too_many_attempts: 429,
 };
 

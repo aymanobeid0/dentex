@@ -3,14 +3,14 @@ import { createAuthService } from '../server/modules/auth/auth.service';
 import type { AuthRepository, ClinicAuthDependencies } from '../server/modules/auth/auth.dto';
 import type { EmployeeRecord } from '../server/modules/employees';
 
-const user: EmployeeRecord = { id: 'user', clinicId: 'clinic', name: 'Employee', username: 'employee', active: true, credentialVersion: 1, passwordHash: 'private-hash' };
+const user: EmployeeRecord = { id: 'user', clinicId: 'clinic', name: 'Employee', username: 'employee', active: true, credentialVersion: 1, editVersion: 1, passwordHash: 'private-hash' };
 const platform: AuthRepository = { findPlatformById: async () => null, findPlatformByUsername: async () => null, lockPlatform: async () => {} };
 function dependencies(current: EmployeeRecord | null = user): ClinicAuthDependencies {
   const clinic = { id: 'clinic', name: 'Clinic', code: '0001' };
   return {
     clinics: { get: async () => clinic, byCode: async () => clinic },
     employees: { credential: async () => current, loginCredential: async () => user },
-    roles: { assigned: async () => [{ id: 'role', key: 'dentist', permissions: ['patients.read'] }] },
+    roles: { assigned: async () => [{ id: 'role', key: 'dentist', editVersion: 1, permissions: ['patients.read'] }] },
   };
 }
 it.each([null, { ...user, active: false }, { ...user, credentialVersion: 2 }])('rejects a changed account after password verification', async current => {

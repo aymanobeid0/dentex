@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { uuidSchema, textSchema, newPasswordSchema } from '../../shared/schemas';
 const roleIds = z.array(uuidSchema).min(1).max(3).refine(ids => new Set(ids).size === ids.length);
-export const editEmployeeSchema = z.object({ name: textSchema, username: textSchema, roleIds });
+const employeeFields = z.object({ name: textSchema, username: textSchema, roleIds });
+export const editEmployeeSchema = employeeFields.extend({ editVersion: z.number().int().min(1).max(2147483646) });
 // Existing creation checked trimmed length but hashed the original password.
 const creationPassword = z.string().refine(value => value.trim().length > 0 && value.trim().length <= 1024);
-export const createEmployeeSchema = editEmployeeSchema.extend({ password: creationPassword });
+export const createEmployeeSchema = employeeFields.extend({ password: creationPassword });
 export const employeeStatusSchema = z.object({ active: z.boolean() });
 export const resetPasswordSchema = z.object({ password: newPasswordSchema });
 export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>;

@@ -12,6 +12,7 @@ import { SelectField } from "../../client/ui/SelectField";
 import { Label } from "../../client/ui/Label";
 import { PasswordVisibility } from "../../client/ui/PasswordVisibility";
 import { AccountPassword } from "../../client/features/account/components/AccountPassword";
+import { renderPatient } from "./render-patient";
 import { RolePermissionsPage } from "../../client/features/roles/pages/RolePermissionsPage";
 import { AppSidebar } from "../../client/app/layout/AppSidebar";
 
@@ -135,14 +136,14 @@ it.each(["ar", "fr"] as const)(
         ok: true,
         json: async () => ({
           roles: [
-            { id: "a", key: "dentist", permissions: ["patients.read"] },
-            { id: "b", key: "receptionist", permissions: ["patients.write"] },
+            { id: "a", key: "dentist", editVersion: 1, permissions: ["patients.read"] },
+            { id: "b", key: "receptionist", editVersion: 1, permissions: ["patients.write"] },
           ],
           permissions: ["patients.read", "patients.write"],
         }),
       }),
     );
-    render(<RolePermissionsPage lang={lang} onExpired={() => {}} />);
+    renderPatient(<RolePermissionsPage lang={lang} onExpired={() => {}} />);
     const radios = await screen.findAllByRole("radio"),
       user = userEvent.setup();
     radios[0].focus();

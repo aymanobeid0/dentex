@@ -1,13 +1,8 @@
 import "./ui-browser-apis";
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { renderPatient as render } from "./render-patient";
 import { RolePermissionsPage } from "../../client/features/roles/pages/RolePermissionsPage";
 
 afterEach(() => {
@@ -20,8 +15,13 @@ it("keeps the selected role stable while its permissions are being saved", async
     resolveSave = resolve;
   });
   const roles = [
-    { id: "a", key: "dentist", permissions: ["patients.read"] },
-    { id: "b", key: "receptionist", permissions: ["patients.write"] },
+    { id: "a", key: "dentist", editVersion: 1, permissions: ["patients.read"] },
+    {
+      id: "b",
+      key: "receptionist",
+      editVersion: 1,
+      permissions: ["patients.write"],
+    },
   ];
   vi.stubGlobal(
     "fetch",
@@ -45,12 +45,13 @@ it("keeps the selected role stable while its permissions are being saved", async
     screen.getByRole("button", { name: "Enregistrer les autorisations" }),
   );
   const other = screen.getByRole("radio", { name: "Accueil" });
-  expect((other as HTMLButtonElement).disabled).toBe(true);
+  await waitFor(() => expect((other as HTMLButtonElement).disabled).toBe(true));
   fireEvent.click(other);
   resolveSave({
     ok: true,
     json: async () => ({
       ...roles[0],
+      editVersion: 2,
       permissions: ["patients.read", "patients.write"],
     }),
   } as Response);
