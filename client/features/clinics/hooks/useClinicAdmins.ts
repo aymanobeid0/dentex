@@ -1,79 +1,125 @@
-import type { Clinic } from "../types";
-import { useEffect, useState, type FormEvent } from "react";
+import type { Clinic, ClinicAdmin } from "../types";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "../../../shared/api/RequestProvider";
+import { ApiError } from "../../../shared/api/request";
 import { translations, type Lang } from "../../../shared/i18n";
-import { listClinicAdmins, resetClinicAdminPassword } from "../api";
-type Admin = { id: string; name: string; username: string; active: boolean };
+import { useDisplayedQuery } from "../../../shared/query/useDisplayedQuery";
+import { useQueryScope } from "../../../shared/query/QueryScope";
+import { useDraftGuard, type NavigationGuard } from "../../../ui/useDraftGuard";
+import {
+  listClinicAdmins,
+  resetClinicAdminPassword,
+  uncertainClinicWrite,
+} from "../api";
+import { useClinicWriteReview } from "./useClinicWriteReview";
 export function useClinicAdmins({
   clinic,
   lang,
   onExpired,
+  active,
+  externalBusy,
+  onNavigationGuardChange,
 }: {
   clinic: Clinic;
   lang: Lang;
   onExpired: () => void;
+  active: boolean;
+  externalBusy: boolean;
+  onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
 }) {
-  const fetch = useApi();
-  const t = translations[lang].clinicAdmins;
-  const [admins, setAdmins] = useState<Admin[] | null>(null),
-    [loadingError, setLoadingError] = useState(false),
-    [selected, setSelected] = useState<Admin | null>(null),
+  const fetch = useApi(),
+    t = translations[lang].clinicAdmins,
+    scope = useQueryScope(),
+    client = useQueryClient();
+  const query = useDisplayedQuery(
+    ["clinics", clinic.id, "admins"],
+    (signal) => listClinicAdmins(fetch, clinic.id, signal),
+    onExpired,
+    active,
+  );
+  useEffect(() => {
+    if (!active)
+      void client.cancelQueries({
+        queryKey: [...scope, "clinics", clinic.id, "admins"],
+        exact: true,
+      });
+  }, [active, clinic.id, client, scope]);
+  const admins = query.data ?? null,
+    loadingError = query.blocked || (!admins && !!query.error);
+  const [selected, setSelected] = useState<ClinicAdmin | null>(null),
     [password, setPassword] = useState(""),
     [error, setError] = useState<"required" | "error" | "notFound" | null>(
       null,
     ),
-    [busy, setBusy] = useState(false),
     [saved, setSaved] = useState(false);
-  async function load() {
-    setLoadingError(false);
-    setAdmins(null);
-    try {
-      const r = await listClinicAdmins(fetch, clinic.id);
-      if (r.status === 401) {
-        onExpired();
-        return;
-      }
-      if (!r.ok) throw Error();
-      setAdmins(await r.json());
-    } catch {
-      setLoadingError(true);
-    }
+  const mutation = useMutation({
+    mutationFn: (input: { id: string; password: string }) =>
+      resetClinicAdminPassword(fetch, clinic.id, input.id, input.password),
+    retry: false,
+    networkMode: "always",
+    gcTime: 0,
+  });
+  const busy = mutation.isPending,
+    sending = useRef(false);
+  const recovery = useClinicWriteReview(
+    ["clinics", clinic.id, "reset-review"],
+    (signal) => listClinicAdmins(fetch, clinic.id, signal),
+    query.blocked,
+    query.online && active,
+    onExpired,
+  );
+  function discard() {
+    setSelected(null);
+    setPassword("");
+    setError(null);
+    recovery.clear();
   }
-  useEffect(() => {
-    void load();
-  }, [clinic.id]);
-  async function reset(e: FormEvent) {
-    e.preventDefault();
+  const guard = useDraftGuard(
+    !!password || recovery.uncertain,
+    busy || externalBusy || recovery.query.isFetching,
+    discard,
+    onNavigationGuardChange,
+  );
+  async function reset(event: FormEvent) {
+    event.preventDefault();
+    if (
+      !selected ||
+      sending.current ||
+      busy ||
+      externalBusy ||
+      !active ||
+      loadingError ||
+      recovery.saveBlocked
+    )
+      return;
     setError(null);
     if (!password.trim()) {
       setError("required");
       return;
     }
-    if (!selected) return;
-    setBusy(true);
+    sending.current = true;
     try {
-      const r = await resetClinicAdminPassword(
-        fetch,
-        clinic.id,
-        selected.id,
-        password,
-      );
-      if (r.status === 401) {
-        onExpired();
-        return;
-      }
-      if (!r.ok) {
-        setError(r.status === 404 ? "notFound" : "error");
-        return;
-      }
-      setSelected(null);
-      setPassword("");
+      await mutation.mutateAsync({ id: selected.id, password });
+      discard();
+      guard.release();
       setSaved(true);
-      await load();
-    } catch {
-      setError("error");
+      await client.invalidateQueries({
+        queryKey: [...scope, "clinics", clinic.id],
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof ApiError && error.status === 401) onExpired();
+      else if (uncertainClinicWrite(error)) recovery.markUncertain();
+      else
+        setError(
+          error instanceof ApiError && error.status === 404
+            ? "notFound"
+            : "error",
+        );
     } finally {
-      setBusy(false);
+      mutation.reset();
+      sending.current = false;
     }
   }
   return {
@@ -89,7 +135,12 @@ export function useClinicAdmins({
     busy,
     saved,
     setSaved,
-    load,
+    load: () => query.refetch(),
     reset,
+    query,
+    guard,
+    recovery,
+    cancel: () => guard.requestLeave(discard),
+    saveBlocked: busy || externalBusy || loadingError || recovery.saveBlocked,
   };
 }

@@ -1,22 +1,49 @@
 import { blankClinic, type ClinicDraft, type Clinic } from "../types";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApi } from "../../../shared/api/RequestProvider";
+import { ApiError } from "../../../shared/api/request";
 import { translations, type Lang } from "../../../shared/i18n";
-import { createClinic as createClinicRequest, listClinics } from "../api";
+import { useDisplayedQuery } from "../../../shared/query/useDisplayedQuery";
+import { useQueryScope } from "../../../shared/query/QueryScope";
+import { useDraftGuard } from "../../../ui/useDraftGuard";
+import {
+  createClinic as createClinicRequest,
+  listClinics,
+  uncertainClinicWrite,
+} from "../api";
+import { useClinicWriteReview } from "./useClinicWriteReview";
 export function useClinics({
   lang,
   onExpired,
+  active,
+  externalBusy,
 }: {
   lang: Lang;
   onExpired: () => void;
+  active: boolean;
+  externalBusy: boolean;
 }) {
   const fetch = useApi(),
-    expire = onExpired,
-    t = translations[lang].app;
-  const [busy, setBusy] = useState(false),
-    [adminClinic, setAdminClinic] = useState<Clinic | null>(null),
-    [clinics, setClinics] = useState<Clinic[] | null>(null),
-    [loadError, setLoadError] = useState(false);
+    t = translations[lang].app,
+    client = useQueryClient(),
+    scope = useQueryScope();
+  const [adminClinic, setAdminClinic] = useState<Clinic | null>(null);
+  const query = useDisplayedQuery(
+    ["clinics", "list"],
+    (signal) => listClinics(fetch, signal),
+    onExpired,
+    active && !adminClinic,
+  );
+  useEffect(() => {
+    if (!active || !!adminClinic)
+      void client.cancelQueries({
+        queryKey: [...scope, "clinics", "list"],
+        exact: true,
+      });
+  }, [active, adminClinic, client, scope]);
+  const clinics = query.data ?? null,
+    loadError = query.blocked || (!clinics && !!query.error);
   const [creating, setCreating] = useState(false),
     [clinicForm, setClinicForm] = useState<ClinicDraft>(blankClinic),
     [fieldErrors, setFieldErrors] = useState<
@@ -26,11 +53,52 @@ export function useClinics({
     >({}),
     [createError, setCreateError] = useState(""),
     [created, setCreated] = useState(false);
-  async function createClinic(e: FormEvent) {
-    e.preventDefault();
-    const errors: Partial<
-      Record<keyof ClinicDraft, "required" | "codeInvalid" | "duplicate">
-    > = {};
+  const mutation = useMutation({
+    mutationFn: (input: ClinicDraft) => createClinicRequest(fetch, input),
+    retry: false,
+    networkMode: "always",
+    gcTime: 0,
+  });
+  const recovery = useClinicWriteReview(
+    ["clinics", "creation-review"],
+    (signal) => listClinics(fetch, signal),
+    query.blocked,
+    query.online && active,
+    onExpired,
+  );
+  const sending = useRef(false),
+    busy = mutation.isPending;
+  const dirty =
+    creating &&
+    Object.keys(blankClinic).some(
+      (key) =>
+        clinicForm[key as keyof ClinicDraft] !==
+        blankClinic[key as keyof ClinicDraft],
+    );
+  function discard() {
+    setClinicForm(blankClinic);
+    setCreating(false);
+    setFieldErrors({});
+    setCreateError("");
+    recovery.clear();
+  }
+  const guard = useDraftGuard(
+    dirty || recovery.uncertain,
+    busy || externalBusy || recovery.query.isFetching,
+    discard,
+  );
+  async function createClinic(event: FormEvent) {
+    event.preventDefault();
+    if (
+      sending.current ||
+      busy ||
+      externalBusy ||
+      !active ||
+      loadError ||
+      recovery.saveBlocked
+    )
+      return;
+    const errors: typeof fieldErrors = {};
     for (const key of Object.keys(clinicForm) as (keyof ClinicDraft)[])
       if (!clinicForm[key].trim()) errors[key] = "required";
     if (clinicForm.code && !/^[0-9]{4}$/.test(clinicForm.code))
@@ -38,50 +106,25 @@ export function useClinics({
     setFieldErrors(errors);
     setCreateError("");
     if (Object.keys(errors).length) return;
-    setBusy(true);
+    sending.current = true;
     try {
-      const r = await createClinicRequest(fetch, clinicForm);
-      if (r.status === 401) {
-        expire();
-        return;
-      }
-      if (r.status === 409) {
-        setFieldErrors({ code: "duplicate" });
-        return;
-      }
-      if (!r.ok) {
-        setCreateError("createError");
-        return;
-      }
-      setClinicForm(blankClinic);
-      setCreating(false);
+      await mutation.mutateAsync(clinicForm);
+      discard();
+      guard.release();
       setCreated(true);
-      await loadClinics();
-    } catch {
-      setCreateError("network");
+      await client.invalidateQueries({ queryKey: [...scope, "clinics"] });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof ApiError && error.status === 401) onExpired();
+      else if (uncertainClinicWrite(error)) recovery.markUncertain();
+      else if (error instanceof ApiError && error.code === "duplicate_code")
+        setFieldErrors({ code: "duplicate" });
+      else setCreateError("createError");
     } finally {
-      setBusy(false);
+      mutation.reset();
+      sending.current = false;
     }
   }
-  async function loadClinics() {
-    setLoadError(false);
-    setClinics(null);
-    try {
-      const r = await listClinics(fetch);
-      if (r.status === 401) {
-        expire();
-        return;
-      }
-      if (!r.ok) throw Error();
-      setClinics(await r.json());
-    } catch {
-      setLoadError(true);
-    }
-  }
-  useEffect(() => {
-    void loadClinics();
-  }, []);
-
   return {
     t,
     busy,
@@ -100,6 +143,11 @@ export function useClinics({
     created,
     setCreated,
     createClinic,
-    loadClinics,
+    loadClinics: () => query.refetch(),
+    query,
+    guard,
+    recovery,
+    cancel: () => guard.requestLeave(discard),
+    saveBlocked: busy || externalBusy || loadError || recovery.saveBlocked,
   };
 }

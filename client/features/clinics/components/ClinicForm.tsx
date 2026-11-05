@@ -1,18 +1,30 @@
-import { blankClinic, type ClinicDraft } from "../types";
+import { type ClinicDraft } from "../types";
 import { Save, X } from "lucide-react";
 import { Label } from "../../../ui/Label";
 import type { useClinics } from "../hooks/useClinics";
-type Props = Pick<ReturnType<typeof useClinics>, "t" | "busy" | "setCreating" | "clinicForm" | "setClinicForm" | "fieldErrors" | "setFieldErrors" | "createError" | "setCreateError" | "createClinic">;
+type Props = Pick<
+  ReturnType<typeof useClinics>,
+  | "t"
+  | "busy"
+  | "saveBlocked"
+  | "cancel"
+  | "clinicForm"
+  | "setClinicForm"
+  | "fieldErrors"
+  | "setFieldErrors"
+  | "createError"
+  | "createClinic"
+>;
 export function ClinicForm({
   t,
   busy,
-  setCreating,
+  saveBlocked,
+  cancel,
   clinicForm,
   setClinicForm,
   fieldErrors,
   setFieldErrors,
   createError,
-  setCreateError,
   createClinic,
 }: Props) {
   function clinicField(key: keyof ClinicDraft, label: string) {
@@ -29,6 +41,7 @@ export function ClinicForm({
               key === "code" ? 4 : key === "managerPassword" ? 1024 : 200
             }
             autoComplete={key === "managerPassword" ? "new-password" : "off"}
+            disabled={busy}
             value={clinicForm[key]}
             onChange={(e) => {
               setClinicForm({ ...clinicForm, [key]: e.target.value });
@@ -61,7 +74,7 @@ export function ClinicForm({
           </p>
         )}
         <div className="form-actions">
-          <button className="primary action" disabled={busy}>
+          <button className="primary action" disabled={saveBlocked}>
             <Save size={16} aria-hidden="true" />
             {t.save}
           </button>
@@ -69,12 +82,7 @@ export function ClinicForm({
             type="button"
             className="language"
             disabled={busy}
-            onClick={() => {
-              setCreating(false);
-              setClinicForm(blankClinic);
-              setFieldErrors({});
-              setCreateError("");
-            }}
+            onClick={cancel}
           >
             <X size={16} aria-hidden="true" />
             {t.cancel}
