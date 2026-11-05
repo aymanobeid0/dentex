@@ -159,7 +159,9 @@
     "cancel": "Annuler",
     "required": "Saisissez les deux mots de passe.",
     "incorrect": "Le mot de passe actuel est incorrect.",
-    "error": "Impossible de confirmer le changement du mot de passe. Vérifiez la connexion au serveur et réessayez plus tard."
+    "error": "Impossible de confirmer le changement du mot de passe. Vérifiez la connexion au serveur et réessayez plus tard.",
+    "uncertain": "Connexion au serveur ou confirmation du changement impossible. Réessayez plus tard ; le mot de passe peut déjà avoir été modifié. Vous pouvez revenir à la connexion pour vérifier.",
+    "signInAgain": "Revenir à la connexion"
   },
   "patients": {
     "discardTitle": "Quitter l’inscription ?",

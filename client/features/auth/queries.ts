@@ -19,6 +19,7 @@ export function useIdentity(session: Session) {
   });
   return {
     account: query.data ?? null,
+    anonymous: query.data === null,
     boot: query.isPending && query.fetchStatus === "fetching",
     stale: !availability.online || query.isError,
     failed: query.isError,

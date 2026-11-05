@@ -188,7 +188,7 @@ it("provides sidebar tooltips to keyboard focus and dismisses with Escape", asyn
   await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
 });
 it("exposes an expandable account password form without losing its labels", async () => {
-  render(
+  renderPatient(
     <AccountPassword lang="fr" onExpired={() => {}} onChanged={() => {}} />,
   );
   const user = userEvent.setup();

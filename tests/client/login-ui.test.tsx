@@ -10,9 +10,9 @@ afterEach(() => {
 });
 it.each([
   [403, "Origine de la demande non autorisée."],
-  [500, "Une erreur du serveur est survenue."],
+  [500, "confirmation de la demande impossible."],
 ])(
-  "shows the real class of login failure %s in both languages",
+  "distinguishes rejected origin from an unconfirmed login %s in both languages",
   async (status, frText) => {
     localStorage.setItem("dentex-lang", "fr");
     vi.stubGlobal(
@@ -46,7 +46,7 @@ it.each([
       screen.getByRole("button", { name: "التغيير إلى اللغة العربية" }),
     );
     expect(screen.getByRole("alert").textContent).toContain(
-      status === 403 ? "مصدر الطلب" : "خطأ في الخادم",
+      status === 403 ? "مصدر الطلب" : "تأكيد اكتمال الطلب",
     );
   },
 );

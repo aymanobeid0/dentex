@@ -1,3 +1,4 @@
+import type { NavigationGuard } from "../../../ui/useDraftGuard";
 import { translations, type Lang } from "../../../shared/i18n";
 import { AccountPassword } from "../components/AccountPassword";
 type AccountSummary =
@@ -14,11 +15,13 @@ export function AccountPage({
   lang,
   onExpired,
   onPasswordChanged,
+  onNavigationGuardChange,
 }: {
   account: AccountSummary;
   lang: Lang;
   onExpired: () => void;
   onPasswordChanged: () => void;
+  onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
 }) {
   const t = translations[lang].app;
   const expire = onExpired;
@@ -62,6 +65,7 @@ export function AccountPage({
         {account.kind === "clinic" && (
           <AccountPassword
             lang={lang}
+            onNavigationGuardChange={onNavigationGuardChange}
             onExpired={() => expire()}
             onChanged={() => {
               onPasswordChanged();

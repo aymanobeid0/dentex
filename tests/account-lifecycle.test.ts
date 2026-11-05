@@ -46,6 +46,17 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('clinic account lifecycle', () =
     expect((await login(`${prefix}-employee`,'initial-test-password')).status).toBe(401);
     const next=await login(`${prefix}-employee`,'reset-test-password'); expect(next.status).toBe(200); employeeCookie=next.headers['set-cookie'][0];
   });
+  it('rejects invalid password changes without ending the current session or changing the stored password',async()=>{
+    for (const body of [{currentPassword:'reset-test-password',newPassword:''},{currentPassword:'',newPassword:'new-password'},{currentPassword:'reset-test-password',newPassword:'x'.repeat(1025)}]) {
+      const result=await request(app).post('/api/clinic/account/password').set('Origin',origin).set('Cookie',employeeCookie).send(body);
+      expect(result.status).toBe(400);
+    }
+    expect((await request(app).get('/api/auth/me').set('Cookie',employeeCookie)).status).toBe(200);
+    expect((await login(`${prefix}-employee`,'reset-test-password')).status).toBe(200);
+    const untrusted=await request(app).post('/api/clinic/account/password').set('Origin','https://untrusted.example').set('Cookie',employeeCookie).send({currentPassword:'reset-test-password',newPassword:'other-password'});
+    expect(untrusted.status).toBe(403);
+    expect((await request(app).get('/api/auth/me').set('Cookie',employeeCookie)).status).toBe(200);
+  });
   it('requires the current password and revokes the session when changing it',async()=>{
     const change=(currentPassword:string)=>request(app).post('/api/clinic/account/password').set('Origin',origin).set('Cookie',employeeCookie).send({currentPassword,newPassword:'changed-test-password'});
     expect((await change('wrong')).body.error).toBe('incorrect_password');
