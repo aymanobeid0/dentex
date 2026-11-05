@@ -8,6 +8,7 @@ import {
 import type { FormEvent } from "react";
 import { translations, type Lang } from "../../../shared/i18n";
 import { Label } from "../../../ui/Label";
+import { SelectField } from "../../../ui/SelectField";
 import { ScreenReaderStatus } from "../../../ui/ScreenReaderStatus";
 import { usePatientSearch } from "../hooks/usePatientSearch";
 
@@ -33,6 +34,7 @@ export function PatientList({
     stale,
     compositionStart,
     compositionEnd,
+    changeStatus,
   } = usePatientSearch(onExpired);
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -75,6 +77,24 @@ export function PatientList({
           </button>
         )}
       </form>
+      <Label className="field patient-status-filter" htmlFor="patient-status">
+        <span id="patient-status-label">{t.statusFilter}</span>
+        <SelectField
+          placeholder={t.active}
+          id="patient-status"
+          labelledBy="patient-status-label"
+          direction={lang === "ar" ? "rtl" : "ltr"}
+          value={request.status}
+          onValueChange={(value) =>
+            changeStatus(value as "active" | "archived" | "all")
+          }
+          options={[
+            { value: "active", label: t.active },
+            { value: "archived", label: t.archived },
+            { value: "all", label: t.allStatuses },
+          ]}
+        />
+      </Label>
       <ScreenReaderStatus>{status}</ScreenReaderStatus>
       {stale && (
         <p className="patient-search-feedback" role="status">
@@ -125,6 +145,7 @@ export function PatientList({
                     <th scope="col">{t.number}</th>
                     <th scope="col">{t.phone}</th>
                     <th scope="col">{t.child}</th>
+                    <th scope="col">{t.statusFilter}</th>
                     <th scope="col">{t.openFile}</th>
                   </tr>
                 </thead>
@@ -149,6 +170,7 @@ export function PatientList({
                           t.no
                         )}
                       </td>
+                      <td>{patient.archived ? t.archived : t.active}</td>
                       <td>
                         <a
                           className="language"

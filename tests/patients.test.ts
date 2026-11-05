@@ -56,12 +56,15 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
     await prisma.$disconnect();
   });
   const create = (input: object, cookie = cookies[0]) => request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', cookie).send(input);
+  const edit = (id: string, input: object, cookie = cookies[0]) => request(app).put(`/api/clinic/patients/${id}`).set('Origin', origin).set('Cookie', cookie).send(input);
+  const read = (id: string) => request(app).get(`/api/clinic/patients/${id}`).set('Cookie', reader);
+  const archive = (id: string, archived: boolean, editVersion: number, cookie = cookies[0]) => request(app).patch(`/api/clinic/patients/${id}/archive`).set('Origin', origin).set('Cookie', cookie).send({ archived, editVersion });
   it('lists only its clinic with summary fields and opens a listed file', async () => {
     const saved = await create({ name: 'Listed patient', phone: '60112233', gender: 'male' });
     await create({ name: 'Other clinic', phone: '60112233', gender: 'male' }, cookies[1]);
     const result = await request(app).get('/api/clinic/patients').set('Cookie', reader);
     expect(result.status).toBe(200);
-    expect(result.body).toEqual({ items: [{ ...saved.body, name: 'Listed patient', phone: '+22260112233', isChild: false }], page: 1, hasNext: false });
+    expect(result.body).toEqual({ items: [{ ...saved.body, name: 'Listed patient', phone: '+22260112233', isChild: false, archived: false }], page: 1, hasNext: false });
     expect((await request(app).get(`/api/clinic/patients/${result.body.items[0].id}`).set('Cookie', reader)).body.name).toBe('Listed patient');
   });
   it('searches duplicate names, shared phones in registration formats, and complete file numbers', async () => {
@@ -112,7 +115,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
     expect(result.body).toEqual({ id: expect.any(String), fileNumber: expect.stringMatching(/^\d+$/) });
     const file = await request(app).get(`/api/clinic/patients/${result.body.id}`).set('Cookie', cookies[0]);
     expect(file.status).toBe(200);
-    expect(file.body).toEqual({ ...result.body, name: 'مريم أحمد', phone: '+22246108834', gender: 'female', isChild: false, birthDate: '2000-02-29', address: 'نواكشوط', administrativeNote: 'اتصال مساءً' });
+    expect(file.body).toEqual({ ...result.body, editVersion: 1, archived: false, name: 'مريم أحمد', phone: '+22246108834', gender: 'female', isChild: false, birthDate: '2000-02-29', address: 'نواكشوط', administrativeNote: 'اتصال مساءً' });
     expect((await request(app).get(`/api/clinic/patients/${result.body.id}`).set('Cookie', cookies[1])).status).toBe(404);
   });
   it('allows children before and after the adult and normalizes equivalent phone forms', async () => {
@@ -141,6 +144,116 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
   ])('rejects invalid or client-owned fields %j', async change => {
     const result = await create({ name: 'Invalid', phone: '44112233', gender: 'male', ...change });
     expect(result.status).toBe(400); expect(result.body).toEqual({ error: 'invalid_input' });
+  });
+  it('edits the complete basic file, normalizes its phone and preserves its identity', async () => {
+    const saved = await create({ name: 'Before edit', phone: '70112233', gender: 'male' });
+    const result = await edit(saved.body.id, { name: ' After edit ', phone: '٠٠٢٢٢ ٧٠-١١-٢٢-٣٣', gender: 'female', isChild: true, birthDate: '2001-02-03', address: ' Here ', administrativeNote: ' Call ', editVersion: 1 });
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual({ ...saved.body, editVersion: 2 });
+    expect((await read(saved.body.id)).body).toEqual({ ...saved.body, archived: false, name: 'After edit', phone: '+22270112233', gender: 'female', isChild: true, birthDate: '2001-02-03', address: 'Here', administrativeNote: 'Call', editVersion: 2 });
+  });
+  it('rejects a child becoming a second adult atomically, then permits another phone', async () => {
+    const base = { name: 'Parent', phone: '71112233', gender: 'female' };
+    await create(base);
+    const child = await create({ ...base, name: 'Child', isChild: true });
+    const result = await edit(child.body.id, { ...base, name: 'Rejected name', isChild: false, editVersion: 1 });
+    expect(result.status).toBe(409); expect(result.body).toEqual({ error: 'duplicate_phone' });
+    expect((await read(child.body.id)).body).toMatchObject({ name: 'Child', isChild: true, editVersion: 1 });
+    expect((await edit(child.body.id, { ...base, name: 'Adult now', phone: '71112234', editVersion: 1 })).status).toBe(200);
+    expect((await read(child.body.id)).body).toMatchObject({ ...child.body, name: 'Adult now', isChild: false, phone: '+22271112234', editVersion: 2 });
+  });
+  it('serializes stale editors and concurrent claims on one adult phone without partial writes', async () => {
+    const input = { name: 'Concurrent edit', phone: '72112233', gender: 'male' };
+    const first = await create(input), second = await create({ ...input, phone: '72112234' });
+    const updates = await Promise.all([edit(first.body.id, { ...input, name: 'Winner A', editVersion: 1 }), edit(first.body.id, { ...input, name: 'Winner B', editVersion: 1 })]);
+    expect(updates.map(r => r.status).sort()).toEqual([200, 409]);
+    expect(updates.find(r => r.status === 409)?.body).toEqual({ error: 'edit_conflict' });
+    const latest = (await read(first.body.id)).body;
+    expect(latest.editVersion).toBe(2);
+    const claims = await Promise.all([edit(first.body.id, { ...input, phone: '72112235', editVersion: 2 }), edit(second.body.id, { ...input, phone: '72112235', editVersion: 1 })]);
+    expect(claims.map(r => r.status).sort()).toEqual([200, 409]);
+    expect(claims.find(r => r.status === 409)?.body).toEqual({ error: 'duplicate_phone' });
+    const loser = claims[0].status === 409 ? first : second;
+    expect((await read(loser.body.id)).body).toMatchObject(claims[0].status === 409 ? latest : { name: input.name, phone: '+22272112234', editVersion: 1 });
+  });
+  it('enforces edit permissions, tenant, origin, immutable fields and required version', async () => {
+    const base = { name: 'Protected edit', phone: '73112233', gender: 'male', editVersion: 1 };
+    const saved = await create({ name: base.name, phone: base.phone, gender: base.gender });
+    const path = `/api/clinic/patients/${saved.body.id}`;
+    for (const cookie of [reader, neither, platform]) expect((await edit(saved.body.id, base, cookie)).status).toBe(403);
+    expect((await edit(saved.body.id, base, cookies[1])).status).toBe(404);
+    expect((await request(app).put(path).set('Origin', origin).send(base)).status).toBe(401);
+    expect((await request(app).put(path).set('Cookie', writer).set('Origin', 'https://untrusted.test').send(base)).status).toBe(403);
+    for (const change of [{ editVersion: undefined }, { editVersion: 0 }, { editVersion: 1.5 }, { editVersion: 2147483647 }, { fileNumber: '9' }, { clinicId: clinics[1] }, { id: saved.body.id }, { phone: '123' }, { name: '' }]) {
+      expect((await edit(saved.body.id, { ...base, ...change })).status).toBe(400);
+    }
+    expect((await edit('not-a-uuid', base)).status).toBe(404);
+    const success = await edit(saved.body.id, { ...base, name: 'Writer can edit' }, writer);
+    expect(success.status).toBe(200); expect(Object.keys(success.body).sort()).toEqual(['editVersion', 'fileNumber', 'id']);
+    await prisma.rolePermission.deleteMany({ where: { roleId: writerRole } });
+    try { expect((await edit(saved.body.id, { ...base, editVersion: 2 }, writer)).status).toBe(403); }
+    finally { await prisma.rolePermission.create({ data: { roleId: writerRole, permissionKey: 'patients.write' } }); }
+    expect((await read(saved.body.id)).body).toMatchObject({ name: 'Writer can edit', editVersion: 2 });
+  });
+  it('archives without deleting data, filters shared phones and restores the same file', async () => {
+    const input = { name: 'Archive adult', phone: '74112233', gender: 'female' };
+    const saved = await create(input);
+    const child = await create({ ...input, name: 'Archive child', isChild: true });
+    const before = (await read(saved.body.id)).body;
+    const result = await archive(saved.body.id, true, 1);
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual({ ...saved.body, archived: true, editVersion: 2 });
+    expect((await read(saved.body.id)).body).toEqual({ ...before, archived: true, editVersion: 2 });
+    const search = async (status?: string) => (await request(app).get('/api/clinic/patients').query({ q: '٠٠٢٢٢ ٧٤١١٢٢٣٣', ...(status ? { status } : {}) }).set('Cookie', reader)).body.items;
+    expect((await search()).map((p: { id: string }) => p.id)).toEqual([child.body.id]);
+    expect((await search('archived')).map((p: { id: string }) => p.id)).toEqual([saved.body.id]);
+    expect((await search('all')).map((p: { id: string }) => p.id)).toEqual([child.body.id, saved.body.id]);
+    expect((await create(input)).status).toBe(409);
+    expect((await edit(saved.body.id, { ...input, name: 'Must not persist', editVersion: 2 })).body).toEqual({ error: 'patient_archived' });
+    const restored = await archive(saved.body.id, false, 2);
+    expect(restored.status).toBe(200); expect(restored.body).toEqual({ ...saved.body, archived: false, editVersion: 3 });
+    expect((await read(saved.body.id)).body).toEqual({ ...before, editVersion: 3 });
+  });
+  it('serializes archive/edit races and rejects stale restoration without changing the archived file', async () => {
+    const input = { name: 'Archive race', phone: '75112233', gender: 'female' };
+    for (let index = 0; index < 4; index++) {
+      const saved = await create({ ...input, phone: `7511223${index}`, isChild: true });
+      const results = await Promise.all([archive(saved.body.id, true, 1), edit(saved.body.id, { ...input, name: 'Racing edit', isChild: true, editVersion: 1 })]);
+      expect(results.map(r => r.status).sort()).toEqual([200, 409]);
+      const first = (await read(saved.body.id)).body;
+      if (!first.archived) expect((await archive(saved.body.id, true, 2)).status).toBe(200);
+      const archived = (await read(saved.body.id)).body;
+      const rejected = await edit(saved.body.id, { ...input, name: 'Too late', editVersion: archived.editVersion });
+      expect(rejected.status).toBe(409); expect(rejected.body).toEqual({ error: 'patient_archived' });
+      expect((await archive(saved.body.id, false, 1)).body).toEqual({ error: 'edit_conflict' });
+      expect((await read(saved.body.id)).body).toEqual(archived);
+      const restore = await archive(saved.body.id, false, archived.editVersion);
+      expect(restore.status).toBe(200);
+      expect((await edit(saved.body.id, { ...input, editVersion: archived.editVersion })).body).toEqual({ error: 'edit_conflict' });
+    }
+  });
+  it('requires current write permission for archive/restore and read permission for archived search', async () => {
+    const input = { name: 'Archive protected', phone: '76112233', gender: 'male' };
+    const saved = await create(input);
+    for (const cookie of [reader, neither, platform]) expect((await archive(saved.body.id, true, 1, cookie)).status).toBe(403);
+    expect((await archive(saved.body.id, true, 1, cookies[1])).status).toBe(404);
+    expect((await archive('not-an-id', true, 1)).status).toBe(404);
+    const path = `/api/clinic/patients/${saved.body.id}/archive`;
+    expect((await request(app).patch(path).set('Origin', origin).send({ archived: true, editVersion: 1 })).status).toBe(401);
+    expect((await request(app).patch(path).set('Cookie', writer).set('Origin', 'https://untrusted.test').send({ archived: true, editVersion: 1 })).status).toBe(403);
+    for (const body of [{ archived: true }, { archived: 'true', editVersion: 1 }, { archived: true, editVersion: 0 }, { archived: true, editVersion: 2147483647 }, { archived: true, editVersion: 1, clinicId: clinics[1] }]) {
+      expect((await request(app).patch(path).set('Cookie', writer).set('Origin', origin).send(body)).status).toBe(400);
+    }
+    expect((await archive(saved.body.id, true, 1, writer)).status).toBe(200);
+    for (const cookie of [writer, neither, platform]) expect((await request(app).get('/api/clinic/patients?status=all').set('Cookie', cookie)).status).toBe(403);
+    const other = await request(app).get('/api/clinic/patients?status=all&q=76112233').set('Cookie', cookies[1]);
+    expect(other.body.items).toEqual([]);
+    await prisma.rolePermission.deleteMany({ where: { roleId: writerRole } });
+    try { expect((await archive(saved.body.id, false, 2, writer)).status).toBe(403); }
+    finally { await prisma.rolePermission.create({ data: { roleId: writerRole, permissionKey: 'patients.write' } }); }
+    expect((await read(saved.body.id)).body.archived).toBe(true);
+    expect((await archive(saved.body.id, false, 2, writer)).status).toBe(200);
+    for (const query of ['status=invalid', 'status=active&status=archived']) expect((await request(app).get(`/api/clinic/patients?${query}`).set('Cookie', reader)).status).toBe(400);
   });
   it('separates reading from writing and enforces current permissions, session and origin', async () => {
     const payload = { name: 'Write-only registration', phone: '55112233', gender: 'male' };

@@ -33,6 +33,30 @@ export const registerPatient = async (
 };
 
 import type { Patient, PatientSearchResult } from "./types";
+export async function editPatient(
+  request: ApiRequest,
+  id: string,
+  input: RegistrationInput & { editVersion: number },
+) {
+  const receipt = await readJson<{
+    id: string;
+    fileNumber: string;
+    editVersion: number;
+  }>(request, `/api/clinic/patients/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (
+    !receipt ||
+    receipt.id !== id ||
+    typeof receipt.fileNumber !== "string" ||
+    !/^\d+$/.test(receipt.fileNumber) ||
+    receipt.editVersion !== input.editVersion + 1
+  )
+    throw new ApiError("uncertain");
+  return receipt;
+}
 export const readPatient = (
   request: ApiRequest,
   id: string,
@@ -46,9 +70,36 @@ export const searchPatients = (
   q: string,
   page: number,
   signal?: AbortSignal,
+  status: "active" | "archived" | "all" = "active",
 ) =>
   readJson<PatientSearchResult>(
     request,
-    `/api/clinic/patients?${new URLSearchParams({ q, page: String(page) })}`,
+    `/api/clinic/patients?${new URLSearchParams({ q, page: String(page), ...(status === "active" ? {} : { status }) })}`,
     { signal },
   );
+export async function archivePatient(
+  request: ApiRequest,
+  id: string,
+  input: { archived: boolean; editVersion: number },
+) {
+  const receipt = await readJson<{
+    id: string;
+    fileNumber: string;
+    editVersion: number;
+    archived: boolean;
+  }>(request, `/api/clinic/patients/${encodeURIComponent(id)}/archive`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (
+    !receipt ||
+    receipt.id !== id ||
+    typeof receipt.fileNumber !== "string" ||
+    !/^\d+$/.test(receipt.fileNumber) ||
+    receipt.editVersion !== input.editVersion + 1 ||
+    receipt.archived !== input.archived
+  )
+    throw new ApiError("uncertain");
+  return receipt;
+}

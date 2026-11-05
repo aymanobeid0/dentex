@@ -16,7 +16,12 @@ export const registerPatientSchema = z.strictObject({
   isChild: z.boolean().default(false), birthDate, address: optionalText(500), administrativeNote: optionalText(2000),
 });
 export type RegisterPatientInput = z.infer<typeof registerPatientSchema>;
+export const editPatientSchema = registerPatientSchema.extend({ editVersion: z.number().int().min(1).max(2147483646) });
+export type EditPatientInput = z.infer<typeof editPatientSchema>;
+export const archivePatientSchema = z.strictObject({ archived: z.boolean(), editVersion: z.number().int().min(1).max(2147483646) });
+export type ArchivePatientInput = z.infer<typeof archivePatientSchema>;
 export const listPatientsSchema = z.strictObject({
+  status: z.enum(['active', 'archived', 'all']).default('active'),
   q: z.string().trim().max(200).default(''),
   page: z.string().regex(/^[1-9]\d*$/).transform(Number).pipe(z.number().int().max(1000000)).default(1),
 }).transform(input => {

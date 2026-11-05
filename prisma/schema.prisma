@@ -18,6 +18,8 @@ model Clinic {
   @@map("clinics")
 }
 model Patient {
+  archived Boolean @default(false)
+  editVersion Int @default(1) @map("edit_version")
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   fileNumber BigInt @default(autoincrement()) @map("file_number")

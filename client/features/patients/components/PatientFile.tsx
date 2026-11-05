@@ -21,6 +21,9 @@ export function PatientFile({ lang, t, patient }: Props) {
               </>
             )}
           </span>
+          <p className="patient-hint">
+            {patient.archived ? t.archived : t.active}
+          </p>
         </div>
       </header>
       <dl className="patient-data">

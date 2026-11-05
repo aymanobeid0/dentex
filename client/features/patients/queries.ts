@@ -4,7 +4,13 @@ import { ApiError } from "../../shared/api/request";
 import { useApi } from "../../shared/api/RequestProvider";
 import { useQueryScope } from "../../shared/query/QueryScope";
 import { useReadAvailability } from "../../shared/query/useReadAvailability";
-import { readPatient, registerPatient, searchPatients } from "./api";
+import {
+  archivePatient,
+  editPatient,
+  readPatient,
+  registerPatient,
+  searchPatients,
+} from "./api";
 import type { Patient, PatientSummary } from "./types";
 
 export function usePatientRegistration(canRead: boolean) {
@@ -48,6 +54,7 @@ export function usePatientRegistration(canRead: boolean) {
           reviewInput.phone,
           page++,
           signal,
+          "all",
         );
         items.push(...result.items);
         if (!result.hasNext) return items;
@@ -58,6 +65,54 @@ export function usePatientRegistration(canRead: boolean) {
 }
 
 export type { Patient } from "./types";
+
+export function usePatientEdit(
+  id: string,
+  canRead: boolean,
+  onExpired: () => void,
+) {
+  const request = useApi(),
+    client = useQueryClient(),
+    scope = useQueryScope();
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    setAttempt((value) => value + 1);
+  }, [id]);
+  const mutation = useMutation({
+    mutationFn: (input: Parameters<typeof editPatient>[2]) =>
+      editPatient(request, id, input),
+    retry: false,
+    networkMode: "always",
+    onMutate: () => setAttempt((value) => value + 1),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: [...scope, "patients"] });
+    },
+  });
+  const archiveMutation = useMutation({
+    mutationFn: (input: Parameters<typeof archivePatient>[2]) =>
+      archivePatient(request, id, input),
+    retry: false,
+    networkMode: "always",
+    onMutate: () => setAttempt((value) => value + 1),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: [...scope, "patients"] });
+    },
+  });
+  const review = useQuery({
+    queryKey: [...scope, "patients", "edit-review", id, attempt],
+    queryFn: ({ signal }) => readPatient(request, id, signal),
+    enabled: false,
+    retry: false,
+  });
+  useEffect(() => {
+    if (!canRead)
+      void client.resetQueries({
+        queryKey: [...scope, "patients", "edit-review"],
+      });
+  }, [canRead, client, scope]);
+  usePatientReadFailure(review.error, onExpired);
+  return { mutation, archiveMutation, review };
+}
 type Failure =
   "" | "denied" | "missing" | "network" | "invalid" | "failed" | "origin";
 export const blocksPatientData = (error: unknown) =>
@@ -73,11 +128,15 @@ export function usePatientReadFailure(error: unknown, onExpired: () => void) {
     if (error.status === 401) expired.current();
     // A rejected read also invalidates hidden patient copies. Keep the active
     // query's rejection visible, and require a fresh response for other keys.
-    if (error.status === 403)
-      client.removeQueries({
+    if (error.status === 403) {
+      const others = {
         queryKey: [...scope, "patients"],
-        type: "inactive",
-      });
+        predicate: (query: { state: { error: unknown } }) =>
+          query.state.error !== error,
+      };
+      void client.cancelQueries(others);
+      client.removeQueries(others);
+    }
   }, [error, client, scope]);
 }
 
