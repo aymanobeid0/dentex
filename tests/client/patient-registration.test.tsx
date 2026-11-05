@@ -225,7 +225,7 @@ it.each([false, true])(
     );
     await screen.findByRole("alert");
     fireEvent.click(
-      screen.getByRole("button", { name: "Vérifier sur le serveur" }),
+      screen.getByRole("button", { name: "Actualiser la liste des patients" }),
     );
     if (pending) await waitFor(() => expect(finish).toBeTypeOf("function"));
     else await screen.findByRole("link", { name: /Saved child/ });
@@ -278,7 +278,7 @@ it("keeps an uncertain draft through reconnection and requires server review bef
   const save = screen.getByRole("button", { name: "Enregistrer le patient" });
   fireEvent.click(save);
   expect((await screen.findByRole("alert")).textContent).toContain(
-    "Impossible de confirmer",
+    "confirmation de l’inscription impossible",
   );
   expect((save as HTMLButtonElement).disabled).toBe(true);
   fireEvent(window, new Event("offline"));
@@ -289,7 +289,7 @@ it("keeps an uncertain draft through reconnection and requires server review bef
       .value,
   ).toBe("Marie");
   fireEvent.click(
-    screen.getByRole("button", { name: "Vérifier sur le serveur" }),
+    screen.getByRole("button", { name: "Actualiser la liste des patients" }),
   );
   await screen.findByText(/Aucun dossier trouvé/);
   await waitFor(() => expect((save as HTMLButtonElement).disabled).toBe(false));
@@ -327,12 +327,12 @@ it.each(["lost-body", "invalid-receipt", "server-error"])(
       screen.getByRole("button", { name: "Enregistrer le patient" }),
     );
     expect((await screen.findByRole("alert")).textContent).toContain(
-      "Impossible de confirmer",
+      "confirmation de l’inscription impossible",
     );
     fireEvent.click(
-      screen.getByRole("button", { name: "Vérifier sur le serveur" }),
+      screen.getByRole("button", { name: "Actualiser la liste des patients" }),
     );
-    await screen.findByText(/Vérification impossible/);
+    await screen.findByText(/Connexion au serveur ou actualisation des patients impossible/);
     expect(
       (
         screen.getByRole("button", {

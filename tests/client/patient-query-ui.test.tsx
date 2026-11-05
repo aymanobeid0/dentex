@@ -1,3 +1,4 @@
+import { translations } from "../../client/shared/i18n";
 import "./ui-browser-apis";
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
@@ -118,7 +119,7 @@ it("updates only the open patient file and keeps it readable offline", async () 
   fireEvent(window, new Event("offline"));
   expect(screen.getByRole("heading", { name: "Updated file" })).toBeTruthy();
   expect(
-    screen.getByText(/Les données affichées peuvent être anciennes/),
+    screen.getByText(translations.fr.patients.staleData),
   ).toBeTruthy();
 });
 
@@ -175,7 +176,7 @@ it("pauses list polling while hidden/offline and revalidates only the current se
   expect(reads()).toHaveLength(before);
   expect(screen.getByRole("link", { name: "Visible patient" })).toBeTruthy();
   expect(
-    screen.getByText(/Les données affichées peuvent être anciennes/),
+    screen.getByText(translations.fr.patients.staleData),
   ).toBeTruthy();
   vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
   fireEvent(window, new Event("online"));
@@ -264,7 +265,7 @@ it("keeps same-search rows after bounded transient retries and explicitly warns 
   await advance(18100);
   expect(screen.getByRole("link", { name: "Loaded patient" })).toBeTruthy();
   expect(
-    screen.getByText(/Les données affichées peuvent être anciennes/),
+    screen.getByText(translations.fr.patients.staleData),
   ).toBeTruthy();
   expect(fetcher.mock.calls.filter(([url]) => url.includes("?"))).toHaveLength(
     4,

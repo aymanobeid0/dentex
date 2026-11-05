@@ -24,7 +24,7 @@ it.each([409, 500])('clears the unsaved warning when discarding a rejected or un
   fireEvent.click(await screen.findByRole('button',{name:'Modifier le membre'}));
   fireEvent.change(screen.getByLabelText('Nom'),{target:{value:'Draft'}});
   fireEvent.click(screen.getByRole('button',{name:'Enregistrer'}));
-  await screen.findByText(status===409?/autre utilisateur/:/résultat.*incertain/i);
+  await screen.findByText(status===409?/autre utilisateur/:/confirmation de l’enregistrement impossible/);
   fireEvent.click(screen.getByRole('button',{name:'Enregistrer'}));expect(writes).toBe(1);
   fireEvent.click(screen.getByRole('button',{name:'Annuler'}));
   fireEvent.click(await screen.findByRole('button',{name:'Ignorer et quitter'}));
@@ -156,7 +156,7 @@ it("warns before discarding an Arabic draft and keeps offline data readable with
     configurable: true,
   });
   fireEvent(window, new Event("offline"));
-  expect(await screen.findByText(/البيانات المحملة للقراءة فقط/)).toBeTruthy();
+  expect(await screen.findByText(/انقطع الاتصال بالخادم/)).toBeTruthy();
   expect(
     (screen.getByRole("button", { name: "حفظ" }) as HTMLButtonElement).disabled,
   ).toBe(true);

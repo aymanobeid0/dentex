@@ -171,7 +171,7 @@ it("keeps loaded identity with an offline warning and stops hidden/offline polli
   vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
   fireEvent(window, new Event("offline"));
   expect(
-    screen.getByText(/les informations du compte peuvent être anciennes/),
+    screen.getByText(/les données affichées peuvent être anciennes/),
   ).toBeTruthy();
   vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
   fireEvent(document, new Event("visibilitychange"));
@@ -238,7 +238,7 @@ it("shows an uncertain login result without success, retry, or a queued write on
   await screen.findByLabelText("Code du cabinet");
   fillLogin();
   expect(
-    await screen.findByText(/Résultat de la demande incertain/),
+    await screen.findByText(/confirmation de la demande impossible/),
   ).toBeTruthy();
   fireEvent(window, new Event("online"));
   expect(writes).toBe(1);
@@ -246,7 +246,7 @@ it("shows an uncertain login result without success, retry, or a queued write on
   fireEvent.click(
     screen.getByRole("button", { name: "التغيير إلى اللغة العربية" }),
   );
-  expect(screen.getByRole("alert").textContent).toContain("تعذر التأكد");
+  expect(screen.getByRole("alert").textContent).toContain("تأكيد اكتمال الطلب");
   expect(document.documentElement.dir).toBe("rtl");
   expect(localStorage.getItem("dentex-lang")).toBe("ar");
 });

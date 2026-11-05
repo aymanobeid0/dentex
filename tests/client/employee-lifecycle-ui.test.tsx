@@ -209,7 +209,7 @@ it("keeps the creation password after a lost reply and requires manual server re
   });
   fireEvent.click(screen.getByRole("checkbox", { name: "Dentiste" }));
   fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
-  await screen.findByText(/résultat.*incertain/i);
+  await screen.findByText(translations.fr.writes.uncertain);
   expect(
     (screen.getByLabelText("Mot de passe") as HTMLInputElement).value,
   ).toBe("private-test-password");
@@ -218,12 +218,12 @@ it("keeps the creation password after a lost reply and requires manual server re
       .disabled,
   ).toBe(true);
   fireEvent.click(
-    screen.getByRole("button", { name: "Examiner les données du serveur" }),
+    screen.getByRole("button", { name: translations.fr.writes.review }),
   );
   await screen.findByText(/^Employee/);
   fireEvent.click(
     screen.getByRole("button", {
-      name: "Données examinées ; autoriser une tentative manuelle",
+      name: translations.fr.writes.acknowledge,
     }),
   );
   expect(writes).toBe(1);
