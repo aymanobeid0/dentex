@@ -79,7 +79,7 @@ function SessionApp({
         account?.kind === "clinic" &&
         window.location.hash.startsWith("#patients")
       )
-        setPage("patients");
+        navigate(() => setPage("patients"));
     };
     window.addEventListener("hashchange", open);
     return () => window.removeEventListener("hashchange", open);
@@ -175,6 +175,7 @@ function SessionApp({
         canManageEmployees ? (
         <EmployeePage
           lang={lang}
+          onNavigationGuardChange={registerPatientGuard}
           canManageAdmins={admin}
           onExpired={expire}
           onIdentityChanged={() => session.refresh()}

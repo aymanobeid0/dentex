@@ -49,12 +49,12 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('platform management of clinic a
     const firstCookie=refreshed.headers['set-cookie'][0];
     const roles=await request(app).get('/api/clinic/roles').set('Cookie',firstCookie);
     const adminRole=roles.body.find((r:{key:string})=>r.key==='admin').id, dentist=roles.body.find((r:{key:string})=>r.key==='dentist').id;
-    const promote=await request(app).put(`/api/clinic/employees/${employeeId}`).set('Origin',origin).set('Cookie',firstCookie).send({name:'Employee fixture',username:`${prefix}-employee`,roleIds:[adminRole,dentist]});
+    const promote=await request(app).put(`/api/clinic/employees/${employeeId}`).set('Origin',origin).set('Cookie',firstCookie).send({editVersion: (await request(app).get(`/api/clinic/employees/${employeeId}`).set('Cookie', firstCookie)).body.editVersion ?? 1,name:'Employee fixture',username:`${prefix}-employee`,roleIds:[adminRole,dentist]});
     expect(promote.status).toBe(200);
     const secondLogin=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:clinicCode,username:`${prefix}-employee`,password:'initial-test-password'});
     const secondCookie=secondLogin.headers['set-cookie'][0];
     const [demote,disable]=await Promise.all([
-      request(app).put(`/api/clinic/employees/${adminId}`).set('Origin',origin).set('Cookie',secondCookie).send({name:'Admin fixture',username:`${prefix}-admin`,roleIds:[dentist]}),
+      request(app).put(`/api/clinic/employees/${adminId}`).set('Origin',origin).set('Cookie',secondCookie).send({editVersion: (await request(app).get(`/api/clinic/employees/${adminId}`).set('Cookie', firstCookie)).body.editVersion ?? 1,name:'Admin fixture',username:`${prefix}-admin`,roleIds:[dentist]}),
       request(app).patch(`/api/clinic/employees/${employeeId}/status`).set('Origin',origin).set('Cookie',firstCookie).send({active:false})
     ]);
     // A deactivated actor can be rejected during authentication, before the

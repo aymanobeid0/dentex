@@ -8,7 +8,7 @@ import { EmployeesError } from './employees.errors';
 
 async function expose(user: EmployeeRecord, roles: RolesOperations): Promise<Employee> {
   const assigned = await roles.assigned(user.clinicId, user.id);
-  return { id: user.id, name: user.name, username: user.username, active: user.active, roles: assigned.map(({ id, key }) => ({ id, key })).sort((a, b) => a.key.localeCompare(b.key)) };
+  return { editVersion: user.editVersion, id: user.id, name: user.name, username: user.username, active: user.active, roles: assigned.map(({ id, key }) => ({ id, key })).sort((a, b) => a.key.localeCompare(b.key)) };
 }
 
 export function createEmployeesOperations(repository: EmployeesRepository, roles: RolesOperations): EmployeesOperations {
@@ -59,11 +59,13 @@ export function createEmployeesService(repository: EmployeesRepository, roles: R
     if (await scope.repository.countActive(clinicId, await scope.roles.administratorIds(clinicId)) <= 1) throw new EmployeesError('last_admin');
   }
   return {
-    async list(clinicId: string) { return Promise.all((await repository.listEmployees(clinicId)).map(user => expose(user, roles))); },
+    async list(clinicId: string) { return transactions.run(async scope => Promise.all((await scope.repository.listEmployees(clinicId)).map(user => expose(user, scope.roles))), { clinicId }); },
     async get(clinicId: string, id: string) {
-      const user = await repository.findEmployee(clinicId, id);
-      if (!user) throw new EmployeesError('not_found');
-      return expose(user, roles);
+      return transactions.run(async scope => {
+        const user = await scope.repository.findEmployee(clinicId, id);
+        if (!user) throw new EmployeesError('not_found');
+        return expose(user, scope.roles);
+      }, { clinicId });
     },
     async register(actor: ClinicActor, input: CreateEmployeeInput) {
       const passwordHash = await hashPassword(input.password);
@@ -87,7 +89,7 @@ export function createEmployeesService(repository: EmployeesRepository, roles: R
         const wasAdmin = assigned.some(role => role.key === 'admin'), willBeAdmin = selected.some(role => role.key === 'admin');
         if (!isAdmin && (wasAdmin || willBeAdmin)) throw new AuthorizationError();
         if (user.active && wasAdmin && !willBeAdmin) await protectLastAdmin(scope, actor.clinicId);
-        const updated = await scope.repository.editEmployee(id, { name: input.name, username: input.username });
+        const updated = await scope.repository.editEmployee(actor.clinicId, id, input.editVersion, { name: input.name, username: input.username });
         await scope.roles.assign(actor.clinicId, id, input.roleIds);
         return expose(updated, scope.roles);
       });

@@ -1,3 +1,7 @@
+import { DiscardDraftDialog } from "../../../ui/DiscardDraftDialog";
+import { EditReview } from "../../../ui/EditReview";
+import type { NavigationGuard } from "../../../ui/useDraftGuard";
+import { translations } from "../../../shared/i18n";
 import { Plus } from "lucide-react";
 import { type Lang } from "../../../shared/i18n";
 import { EmployeeActionForm } from "../components/EmployeeActionForm";
@@ -9,23 +13,30 @@ export function EmployeePage({
   onExpired,
   onIdentityChanged,
   canManageAdmins,
+  onNavigationGuardChange,
 }: {
   lang: Lang;
   onExpired: () => void;
   onIdentityChanged: () => Promise<void>;
   canManageAdmins: boolean;
+  onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
 }) {
+  const state = useEmployees({
+    lang,
+    onExpired,
+    onIdentityChanged,
+    canManageAdmins,
+    onNavigationGuardChange,
+  });
   const {
     t,
     list,
     roles,
     loadError,
     editing,
-    setEditing,
     draft,
     setDraft,
     error,
-    setError,
     saved,
     busy,
     l,
@@ -42,9 +53,52 @@ export function EmployeePage({
     open,
     submit,
     submitAction,
-  } = useEmployees({ lang, onExpired, onIdentityChanged, canManageAdmins });
+  } = state;
+  const gt = translations[lang].patients,
+    rt = translations[lang].editing;
   return (
     <>
+      <DiscardDraftDialog
+        open={!!state.guard.pending}
+        direction={lang === "ar" ? "rtl" : "ltr"}
+        title={gt.discardTitle}
+        description={gt.discardHint}
+        stay={gt.stay}
+        discard={gt.discard}
+        onStay={state.guard.stay}
+        onDiscard={state.guard.discard}
+        returnFocus={state.guard.returnFocus}
+      />
+      {(!state.online || state.stale) && (
+        <p role="status">{!state.online ? rt.offline : rt.stale}</p>
+      )}
+      {state.updating && <p role="status">{rt.updating}</p>}
+      {loadError && editing !== undefined && <p role="alert">{t.error}</p>}
+      {editing && (
+        <EditReview
+          lang={lang}
+          issue={state.saveIssue}
+          changed={state.changed}
+          busy={state.reviewBusy || busy || !state.online}
+          failed={state.reviewFailed}
+          reviewed={!!state.reviewed}
+          onReview={state.review}
+          onAccept={state.acceptReview}
+        >
+          {state.reviewed && (
+            <dl>
+              <dt>{t.name}</dt>
+              <dd>{state.reviewed.name}</dd>
+              <dt>{t.username}</dt>
+              <dd>{state.reviewed.username}</dd>
+              <dt>{t.roles}</dt>
+              <dd>
+                {state.reviewed.roles.map(roleName).join(t.roleSeparator)}
+              </dd>
+            </dl>
+          )}
+        </EditReview>
+      )}
       <div className="employee-heading">
         <h1>{t.title}</h1>
         {editing === undefined && !action && (
@@ -71,18 +125,18 @@ export function EmployeePage({
           setActionError={setActionError}
           submitAction={submitAction}
         />
-      ) : editing !== undefined ? (
+      ) : editing !== undefined && !loadError ? (
         <EmployeeForm
           canManageAdmins={canManageAdmins}
           t={t}
           roles={roles}
           editing={editing}
-          setEditing={setEditing}
           draft={draft}
           setDraft={setDraft}
           error={error}
-          setError={setError}
           busy={busy}
+          saveBlocked={state.saveBlocked}
+          cancel={state.cancel}
           roleName={roleName}
           submit={submit}
         />

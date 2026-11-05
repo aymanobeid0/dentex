@@ -1,7 +1,7 @@
 import type { Role, RolesOperations } from '../roles';
 import type { ActorAccess, ClinicActor } from '../../shared/actor';
-export interface EmployeeRecord { id: string; clinicId: string; name: string; username: string; active: boolean; passwordHash: string; credentialVersion: number }
-export interface Employee { id: string; name: string; username: string; active: boolean; roles: Role[] }
+export interface EmployeeRecord { editVersion: number; id: string; clinicId: string; name: string; username: string; active: boolean; passwordHash: string; credentialVersion: number }
+export interface Employee { editVersion: number; id: string; name: string; username: string; active: boolean; roles: Role[] }
 export interface NewEmployee { clinicId: string; name: string; username: string; passwordHash: string }
 export interface EmployeesRepository {
   listEmployees(clinicId: string, ids?: string[]): Promise<EmployeeRecord[]>;
@@ -9,7 +9,7 @@ export interface EmployeesRepository {
   findCredential(id: string): Promise<EmployeeRecord | null>;
   findLogin(clinicId: string, username: string): Promise<EmployeeRecord | null>;
   insertEmployee(input: NewEmployee): Promise<EmployeeRecord>;
-  editEmployee(id: string, input: { name: string; username: string }): Promise<EmployeeRecord>;
+  editEmployee(clinicId: string, id: string, editVersion: number, input: { name: string; username: string }): Promise<EmployeeRecord>;
   setActive(id: string, active: boolean, changed: boolean): Promise<EmployeeRecord>;
   resetPassword(id: string, passwordHash: string): Promise<void>;
   compareAndSetPassword(clinicId: string, id: string, version: number, passwordHash: string): Promise<boolean>;

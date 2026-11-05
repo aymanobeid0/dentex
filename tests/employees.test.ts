@@ -31,6 +31,16 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('managing clinic employees', () 
     const other=await request(app).get('/api/clinic/employees').set('Cookie',cookies[1]);
     expect(other.body).not.toContainEqual(expect.objectContaining({id:createdId}));
   });
+  it('rejects simultaneous edits from the same version without replacing the winning roles or name', async () => {
+    const base=await request(app).get(`/api/clinic/employees/${createdId}`).set('Cookie',cookies[0]);
+    expect(base.body.editVersion).toBe(1);
+    const writes=await Promise.all(['First','Second'].map((name,i)=>request(app).put(`/api/clinic/employees/${createdId}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion:base.body.editVersion,name,username:'shared',roleIds:[i ? roleIds[0].receptionist : roleIds[0].dentist]})));
+    expect(writes.map(r=>r.status).sort()).toEqual([200,409]);
+    expect(writes.find(r=>r.status===409)!.body.error).toBe('edit_conflict');
+    const current=await request(app).get(`/api/clinic/employees/${createdId}`).set('Cookie',cookies[0]);
+    expect(current.body).toEqual(writes.find(r=>r.status===200)!.body);
+    expect(current.body.editVersion).toBe(2);
+  });
   it('enforces scoped usernames and role assignment, and the new employee can log in', async () => {
     const payload={name:'Employee',username:'shared',password:'test-password',roleIds:[roleIds[0].dentist]};
     expect((await request(app).post('/api/clinic/employees').set('Origin',origin).set('Cookie',cookies[0]).send(payload)).status).toBe(409);
@@ -41,24 +51,38 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('managing clinic employees', () 
     const login=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:codes[0],username:'shared',password:'test-password'});
     expect(login.status).toBe(200);
     expect((await request(app).get('/api/clinic/employees').set('Cookie',login.headers['set-cookie'][0])).status).toBe(403);
-    const cross=await request(app).put(`/api/clinic/employees/${other.body.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({name:'Wrong',username:'shared',roleIds:[roleIds[0].dentist]});
+    const cross=await request(app).put(`/api/clinic/employees/${other.body.id}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion: (await request(app).get(`/api/clinic/employees/${other.body.id}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Wrong',username:'shared',roleIds:[roleIds[0].dentist]});
     expect(cross.status).toBe(404);
   });
+  it('requires a valid editing version and keeps password/status lifecycles independent', async () => {
+    const url=`/api/clinic/employees/${createdId}`;
+    const read=()=>request(app).get(url).set('Cookie',cookies[0]);
+    const base=await read();
+    for (const version of [undefined,0,-1,1.5,'1',null,2147483647]) {
+      const result=await request(app).put(url).set('Origin',origin).set('Cookie',cookies[0]).send({name:'Invalid',username:'invalid',roleIds:[roleIds[0].dentist],editVersion:version});
+      expect(result.status).toBe(400); expect(result.body.error).toBe('invalid_input');
+    }
+    expect((await read()).body).toEqual(base.body);
+    await request(app).patch(url+'/status').set('Origin',origin).set('Cookie',cookies[0]).send({active:false}).expect(200);
+    await request(app).post(url+'/reset-password').set('Origin',origin).set('Cookie',cookies[0]).send({password:'test-password'}).expect(204);
+    expect((await read()).body.editVersion).toBe(base.body.editVersion);
+    await request(app).patch(url+'/status').set('Origin',origin).set('Cookie',cookies[0]).send({active:true}).expect(200);
+  });
   it('edits employee data and roles, and prevents removal of the last administrator', async () => {
-    const edit=await request(app).put(`/api/clinic/employees/${createdId}`).set('Origin',origin).set('Cookie',cookies[0]).send({name:'Updated employee',username:'new-shared',roleIds:[roleIds[0].dentist,roleIds[0].receptionist]});
+    const edit=await request(app).put(`/api/clinic/employees/${createdId}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion: (await request(app).get(`/api/clinic/employees/${createdId}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Updated employee',username:'new-shared',roleIds:[roleIds[0].dentist,roleIds[0].receptionist]});
     expect(edit.status).toBe(200); expect(edit.body).toMatchObject({name:'Updated employee',username:'new-shared'});
     expect(edit.body.roles.map((r:{key:string})=>r.key)).toEqual(['dentist','receptionist']);
-    const denied=await request(app).put(`/api/clinic/employees/${adminIds[0]}`).set('Origin',origin).set('Cookie',cookies[0]).send({name:'Admin 0',username:`${prefix}-0`,roleIds:[roleIds[0].dentist]});
+    const denied=await request(app).put(`/api/clinic/employees/${adminIds[0]}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion: (await request(app).get(`/api/clinic/employees/${adminIds[0]}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Admin 0',username:`${prefix}-0`,roleIds:[roleIds[0].dentist]});
     expect(denied.status).toBe(409); expect(denied.body.error).toBe('last_admin');
   });
   it('serializes simultaneous administrator role removals', async () => {
-    const promotion=await request(app).put(`/api/clinic/employees/${createdId}`).set('Origin',origin).set('Cookie',cookies[0]).send({name:'Updated employee',username:'new-shared',roleIds:[roleIds[0].admin,roleIds[0].dentist]});
+    const promotion=await request(app).put(`/api/clinic/employees/${createdId}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion: (await request(app).get(`/api/clinic/employees/${createdId}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Updated employee',username:'new-shared',roleIds:[roleIds[0].admin,roleIds[0].dentist]});
     expect(promotion.status).toBe(200);
     const login=await request(app).post('/api/auth/clinic/login').set('Origin',origin).send({code:codes[0],username:'new-shared',password:'test-password'});
     const employeeCookie=login.headers['set-cookie'][0];
     const [a,b]=await Promise.all([
-      request(app).put(`/api/clinic/employees/${adminIds[0]}`).set('Origin',origin).set('Cookie',employeeCookie).send({name:'Admin 0',username:`${prefix}-0`,roleIds:[roleIds[0].dentist]}),
-      request(app).put(`/api/clinic/employees/${createdId}`).set('Origin',origin).set('Cookie',cookies[0]).send({name:'Updated employee',username:'new-shared',roleIds:[roleIds[0].dentist]})
+      request(app).put(`/api/clinic/employees/${adminIds[0]}`).set('Origin',origin).set('Cookie',employeeCookie).send({editVersion: (await request(app).get(`/api/clinic/employees/${adminIds[0]}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Admin 0',username:`${prefix}-0`,roleIds:[roleIds[0].dentist]}),
+      request(app).put(`/api/clinic/employees/${createdId}`).set('Origin',origin).set('Cookie',cookies[0]).send({editVersion: (await request(app).get(`/api/clinic/employees/${createdId}`).set('Cookie', cookies[0])).body.editVersion ?? 1,name:'Updated employee',username:'new-shared',roleIds:[roleIds[0].dentist]})
     ]);
     expect([a.status,b.status].sort()).toEqual([200,403]);
     const survivor=a.status===200 ? employeeCookie : cookies[0];
