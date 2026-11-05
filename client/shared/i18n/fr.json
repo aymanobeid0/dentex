@@ -254,7 +254,13 @@
     "archivedHint": "Ce dossier est archivé. Restaurez-le avant de modifier ses informations.",
     "archiveUncertain": "Connexion ou confirmation du changement d’état impossible. Réessayez plus tard ; l’opération peut déjà avoir été effectuée.",
     "acceptCurrentStatus": "J’ai vérifié l’état actuel ; fermer la vérification",
-    "exhausted": "La capacité des numéros de dossier est atteinte. Inscription impossible ; le brouillon est conservé."
+    "exhausted": "La capacité des numéros de dossier est atteinte. Inscription impossible ; le brouillon est conservé.",
+    "oldNumberLookup": "Retrouver un ancien numéro",
+    "oldNumber": "Ancien numéro de dossier",
+    "oldNumberHint": "Saisissez une seule ancienne référence pour retrouver le dossier actuel de ce cabinet.",
+    "oldNumberInvalid": "Saisissez un entier positif dans la capacité des numéros de dossier.",
+    "oldNumberMissing": "Aucune ancienne référence correspondante dans ce cabinet.",
+    "closeLookup": "Fermer"
   },
   "editing": {
     "conflict": "Un autre utilisateur a modifié cet enregistrement. Examinez la version actuelle avant de sauvegarder.",

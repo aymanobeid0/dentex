@@ -4,6 +4,10 @@ import { PatientsError } from './patients.errors';
 
 export function createPatientsRepository(database: Prisma.TransactionClient): PatientsRepository {
   return {
+    async findOldNumber(clinicId, oldFileNumber) {
+      const history = await database.patientNumberHistory.findUnique({ where: { clinicId_oldFileNumber: { clinicId, oldFileNumber: BigInt(oldFileNumber) } }, select: { patient: { select: { id: true, name: true, fileNumber: true } } } });
+      return history ? { ...history.patient, fileNumber: history.patient.fileNumber.toString() } : null;
+    },
     async initializeNumbering(clinicId, start) {
       await database.patientNumbering.create({ data: { clinicId, start: BigInt(start), lastNumber: BigInt(start) - 1n } });
     },

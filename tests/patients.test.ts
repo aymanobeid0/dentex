@@ -126,6 +126,35 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('patient registration and basic 
     expect([...first.items, ...second.items].map(p => p.id)).toEqual(ids);
     expect(empty).toEqual({ items: [], page: 3, hasNext: false });
   });
+  it('looks up individual old numbers only for current clinic administrators without mixing normal search', async () => {
+    const input = { name: 'History current', phone: '25112233', gender: 'female', isChild: true };
+    const first = await create(input), second = await create({ ...input, name: 'History target' });
+    const other = await create({ ...input, name: 'Foreign history' }, cookies[1]);
+    const old = first.body.fileNumber;
+    await prisma.patientNumberHistory.create({ data: { clinicId: clinics[0], oldFileNumber: BigInt(old), patientId: second.body.id } });
+    await prisma.patientNumberHistory.create({ data: { clinicId: clinics[1], oldFileNumber: BigInt(old), patientId: other.body.id } });
+    const lookup = (number = old, cookie = cookies[0]) => request(app).get(`/api/clinic/patients/numbering-history/${number}`).set('Cookie', cookie);
+    expect((await lookup()).status).toBe(200);
+    expect((await lookup()).body).toEqual({ ...second.body, name: 'History target' });
+    expect((await lookup(old, cookies[1])).body).toEqual({ ...other.body, name: 'Foreign history' });
+    const ordinary = await request(app).get('/api/clinic/patients').query({ q: old }).set('Cookie', cookies[0]);
+    expect(ordinary.body.items.map((p: { id: string }) => p.id)).toEqual([first.body.id]);
+    expect((await request(app).get(`/api/clinic/patients/${second.body.id}`).set('Cookie', cookies[0])).body.id).toBe(second.body.id);
+    for (const cookie of [reader, writer, neither, platform]) expect((await lookup(old, cookie)).status).toBe(403);
+    expect((await request(app).get(`/api/clinic/patients/numbering-history/${old}`)).status).toBe(401);
+    for (const invalid of ['0', '-1', '1.5', 'abc', '9223372036854775808']) expect((await lookup(invalid)).status).toBe(400);
+    expect((await lookup('9223372036854775807')).status).toBe(404);
+    expect((await lookup(second.body.fileNumber)).status).toBe(404);
+    expect((await archive(second.body.id, true, 1)).status).toBe(200);
+    expect((await lookup()).body.id).toBe(second.body.id);
+    const numberAr = old.replace(/\d/g, (digit: string) => String.fromCharCode(0x660 + Number(digit)));
+    expect((await lookup(encodeURIComponent(numberAr))).body.id).toBe(second.body.id);
+    const role = await prisma.role.findUniqueOrThrow({ where: { clinicId_key: { clinicId: clinics[0], key: 'admin' } } });
+    const assignment = await prisma.userRole.findFirstOrThrow({ where: { roleId: role.id } });
+    await prisma.userRole.delete({ where: { userId_roleId: { userId: assignment.userId, roleId: role.id } } });
+    try { expect((await lookup()).status).toBe(403); }
+    finally { await prisma.userRole.create({ data: assignment }); }
+  });
   it.each(['page=0', 'page=-1', 'page=1.5', 'page=1000001', 'q=a&q=b', 'page=1&page=2', 'clinicId=other', 'q=' + 'x'.repeat(201)])('rejects invalid list queries: %s', async query => {
     const result = await request(app).get(`/api/clinic/patients?${query}`).set('Cookie', reader);
     expect(result.status).toBe(400); expect(result.body).toEqual({ error: 'invalid_input' });

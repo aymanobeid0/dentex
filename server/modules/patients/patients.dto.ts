@@ -10,6 +10,7 @@ export interface Patient extends PatientReceipt {
 }
 export interface PatientsOperations { initializeNumbering(clinicId: string, start: string): Promise<void> }
 export interface PatientsRepository {
+  findOldNumber(clinicId: string, oldFileNumber: string): Promise<(PatientReceipt & { name: string }) | null>;
   initializeNumbering(clinicId: string, start: string): Promise<void>;
   list(clinicId: string, input: ListPatientsInput): Promise<PatientList>;
   insert(clinicId: string, input: RegisterPatientInput): Promise<PatientReceipt>;

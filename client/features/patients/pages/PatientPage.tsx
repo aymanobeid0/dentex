@@ -8,15 +8,18 @@ import { PatientFile } from "../components/PatientFile";
 import { PatientList } from "../components/PatientList";
 import { PatientRegistrationForm } from "../components/PatientRegistrationForm";
 import { usePatientsPage } from "../hooks/usePatientsPage";
+import { OldNumberLookup } from "../components/OldNumberLookup";
 export function PatientPage({
   lang,
   canRead,
+  canLookupOldNumber = false,
   canWrite,
   onExpired,
   onNavigationGuardChange,
 }: {
   lang: Lang;
   canRead: boolean;
+  canLookupOldNumber?: boolean;
   canWrite: boolean;
   onExpired: () => void;
   onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
@@ -81,6 +84,9 @@ export function PatientPage({
         returnFocus={guard.returnFocus}
       />
       <div className="content-heading">
+        {canLookupOldNumber && canRead && !creating && !id && (
+          <OldNumberLookup lang={lang} onExpired={onExpired} />
+        )}
         <ConfirmDialog
           open={archiveOpen && !!archiveAction && !guard.pending}
           direction={lang === "ar" ? "rtl" : "ltr"}

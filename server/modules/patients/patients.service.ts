@@ -10,6 +10,15 @@ export function createPatientsOperations(repository: PatientsRepository): Patien
 }
 export function createPatientsService(repository: PatientsRepository, transactions: TransactionManager<PatientsScope, ClinicMutation>) {
   return {
+    lookupOldNumber(actor: ClinicActor, oldFileNumber: string) {
+      return transactions.run(async scope => {
+        const fresh = scope.actor;
+        if (!fresh?.active || fresh.credentialVersion !== actor.credentialVersion || !fresh.roles.includes('admin')) throw new AuthorizationError();
+        const patient = await scope.repository.findOldNumber(actor.clinicId, oldFileNumber);
+        if (!patient) throw new PatientsError('not_found');
+        return patient;
+      }, { clinicId: actor.clinicId, actor });
+    },
     list(clinicId: string, input: ListPatientsInput) {
       return repository.list(clinicId, input);
     },

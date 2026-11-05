@@ -103,3 +103,14 @@ export async function archivePatient(
     throw new ApiError("uncertain");
   return receipt;
 }
+
+export const lookupOldNumber = (
+  request: ApiRequest,
+  number: string,
+  signal: AbortSignal,
+) =>
+  readJson<{ id: string; name: string; fileNumber: string }>(
+    request,
+    "/api/clinic/patients/numbering-history/" + encodeURIComponent(number),
+    { signal },
+  );
