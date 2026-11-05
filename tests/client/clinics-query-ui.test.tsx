@@ -23,6 +23,34 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 const clinic = { id: "c", name: "Existing clinic", code: "2000" };
+it.each(['ar', 'fr'] as const)('submits the exact numbering start and preserves it on rejection in %s', async lang => {
+  const posts: Record<string, string>[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (_url: string, options?: RequestInit) => {
+    if (options?.method === 'POST') {
+      posts.push(JSON.parse(String(options.body)));
+      return new Response(JSON.stringify({ error: 'duplicate_code' }), { status: 409 });
+    }
+    return new Response(JSON.stringify([clinic]));
+  }));
+  renderPatient(<ClinicsPage lang={lang} onExpired={() => {}} />);
+  const t = translations[lang].app;
+  await screen.findByText(clinic.name);
+  fireEvent.click(screen.getByRole('button', { name: t.create }));
+  const start = screen.getByLabelText(lang === 'ar' ? 'بداية أرقام ملفات المرضى' : 'Premier numéro de dossier patient');
+  expect((start as HTMLInputElement).value).toBe('1');
+  for (const [label, value] of [[t.name,'New'],[t.code,'2345'],[t.managerName,'Manager'],[t.managerUsername,'qa'],[t.managerPassword,'test-password']]) fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  for (const invalid of ['0', '-1', '1.5', 'abc', '9223372036854775808']) {
+    fireEvent.change(start, { target: { value: invalid } });
+    fireEvent.click(screen.getByRole('button', { name: t.save }));
+    expect(posts).toHaveLength(0);
+    expect(start.getAttribute('aria-invalid')).toBe('true');
+  }
+  fireEvent.change(start, { target: { value: '9007199254740993' } });
+  fireEvent.click(screen.getByRole('button', { name: t.save }));
+  await waitFor(() => expect(posts).toHaveLength(1));
+  expect(posts[0].patientFileNumberStart).toBe('9007199254740993');
+  expect((start as HTMLInputElement).value).toBe('9007199254740993');
+});
 it("keeps a clinic creation secret after a lost reply and requires explicit server review", async () => {
   let writes = 0;
   vi.stubGlobal(

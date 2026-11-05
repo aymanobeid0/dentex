@@ -48,7 +48,7 @@ export function useClinics({
     [clinicForm, setClinicForm] = useState<ClinicDraft>(blankClinic),
     [fieldErrors, setFieldErrors] = useState<
       Partial<
-        Record<keyof ClinicDraft, "required" | "codeInvalid" | "duplicate">
+        Record<keyof ClinicDraft, "required" | "codeInvalid" | "duplicate" | "numberingStartInvalid">
       >
     >({}),
     [createError, setCreateError] = useState(""),
@@ -103,6 +103,8 @@ export function useClinics({
       if (!clinicForm[key].trim()) errors[key] = "required";
     if (clinicForm.code && !/^[0-9]{4}$/.test(clinicForm.code))
       errors.code = "codeInvalid";
+    if (!/^[1-9]\d*$/.test(clinicForm.patientFileNumberStart) || clinicForm.patientFileNumberStart.length > 19 || BigInt(clinicForm.patientFileNumberStart) > 9223372036854775807n)
+      errors.patientFileNumberStart = "numberingStartInvalid";
     setFieldErrors(errors);
     setCreateError("");
     if (Object.keys(errors).length) return;

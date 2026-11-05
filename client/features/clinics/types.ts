@@ -5,6 +5,7 @@ export type ClinicDraft = {
   managerName: string;
   managerUsername: string;
   managerPassword: string;
+  patientFileNumberStart: string;
 };
 export const blankClinic: ClinicDraft = {
   name: "",
@@ -12,6 +13,7 @@ export const blankClinic: ClinicDraft = {
   managerName: "",
   managerUsername: "",
   managerPassword: "",
+  patientFileNumberStart: "1",
 };
 
 export type ClinicAdmin = {

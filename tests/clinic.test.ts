@@ -33,6 +33,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('creating a clinic', () => {
       await prisma.user.deleteMany({ where: { clinicId: c.id } });
       await prisma.rolePermission.deleteMany({ where: { role: { clinicId: c.id } } });
       await prisma.role.deleteMany({ where: { clinicId: c.id } });
+      await prisma.patient.deleteMany({ where: { clinicId: c.id } });
       await prisma.clinic.delete({ where: { id: c.id } });
     }
     await prisma.platformAdmin.deleteMany({ where: { username } });
@@ -50,12 +51,28 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('creating a clinic', () => {
     expect(manager.userRoles.map(ur => ur.role.key)).toEqual(['admin']);
     expect((await prisma.role.findMany({ where:{ clinicId:r.body.id }, select:{ key:true } })).map(role => role.key).sort()).toEqual(['admin','dentist','receptionist']);
     expect(manager.passwordHash).not.toBe('test-password');
+    const login = await request(app).post('/api/auth/clinic/login').set('Origin', origin).send({ code: r.body.code, username, password: 'test-password' });
+    const saved = await request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', login.headers['set-cookie'][0]).send({ name: 'Default numbering', phone: '21112233', gender: 'female' });
+    expect(saved.body.fileNumber).toBe('1');
 
   });
   it('rejects a clinic identity even if it has a valid signed token', async () => {
     const token = jwt.sign({ kind:'clinic', version:1 }, process.env.JWT_SECRET!, { subject:crypto.randomUUID(), expiresIn:'24h' });
     const response = await request(app).post('/api/clinics').set('Origin', origin).set('Cookie', `dentex_session=${token}`).send({ name, code, managerName:'Test', managerUsername:username, managerPassword:'test-password' });
     expect(response.status).toBe(401);
+  });
+  it('uses an exact custom start beyond Number precision for the first and subsequent patients', async () => {
+    const used = new Set((await prisma.clinic.findMany({ select: { code: true } })).map(c => c.code));
+    const customCode = Array.from({ length: 10000 }, (_, i) => String(i).padStart(4, '0')).find(c => !used.has(c))!;
+    const created = await request(app).post('/api/clinics').set('Origin', origin).set('Cookie', cookie).send({ name, code: customCode, managerName: 'Manager', managerUsername: username, managerPassword: 'test-password', patientFileNumberStart: '9007199254740993' });
+    expect(created.status).toBe(201);
+    const login = await request(app).post('/api/auth/clinic/login').set('Origin', origin).send({ code: customCode, username, password: 'test-password' });
+    const clinicCookie = login.headers['set-cookie'][0];
+    const register = () => request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', clinicCookie).send({ name: 'Custom start', phone: '20112233', gender: 'male', isChild: true });
+    const first = await register(), second = await register();
+    expect([first.body.fileNumber, second.body.fileNumber]).toEqual(['9007199254740993', '9007199254740994']);
+    expect((await request(app).get(`/api/clinic/patients/${first.body.id}`).set('Cookie', clinicCookie)).body.fileNumber).toBe('9007199254740993');
+    expect((await request(app).post('/api/clinics').set('Origin', origin).set('Cookie', clinicCookie).send({ name, code: '1000', managerName: 'Manager', managerUsername: username, managerPassword: 'test-password', patientFileNumberStart: '7' })).status).toBe(401);
   });
   it('rejects invalid codes and duplicate codes', async () => {
     const payload = { name, code:'123', managerName:'Test Manager', managerUsername:username, managerPassword:'test-password' };
@@ -79,6 +96,26 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('creating a clinic', () => {
       await prisma.$executeRawUnsafe('DROP TRIGGER IF EXISTS dentex_test_fail_manager ON users');
       await prisma.$executeRawUnsafe('DROP FUNCTION IF EXISTS dentex_test_fail_manager()');
     }
+  });
+
+  it.each(['0', '-1', '1.5', 'abc', '', '9223372036854775808', '9999999999999999999999999', 7, null])('rejects an invalid numbering start %j', async patientFileNumberStart => {
+    const result = await request(app).post('/api/clinics').set('Origin', origin).set('Cookie', cookie).send({ name, code: '1234', managerName: 'Manager', managerUsername: username, managerPassword: 'test-password', patientFileNumberStart });
+    expect(result.status).toBe(400);
+    expect(result.body).toEqual({ error: 'invalid_input' });
+  });
+  it('permits the maximum start exactly once and does not change an existing clinic sequence', async () => {
+    const used = new Set((await prisma.clinic.findMany({ select: { code: true } })).map(c => c.code));
+    const maxCode = Array.from({ length: 10000 }, (_, i) => String(i).padStart(4, '0')).find(c => !used.has(c))!;
+    const created = await request(app).post('/api/clinics').set('Origin', origin).set('Cookie', cookie).send({ name, code: maxCode, managerName: 'Manager', managerUsername: username, managerPassword: 'test-password', patientFileNumberStart: '9223372036854775807' });
+    expect(created.status).toBe(201);
+    const login = await request(app).post('/api/auth/clinic/login').set('Origin', origin).send({ code: maxCode, username, password: 'test-password' });
+    const register = (cookie: string) => request(app).post('/api/clinic/patients').set('Origin', origin).set('Cookie', cookie).send({ name: 'Boundary', phone: '22112233', gender: 'female', isChild: true });
+    const maxCookie = login.headers['set-cookie'][0];
+    expect((await register(maxCookie)).body.fileNumber).toBe('9223372036854775807');
+    const refused = await register(maxCookie);
+    expect(refused.status).toBe(409); expect(refused.body.error).toBe('numbering_exhausted');
+    const existing = await request(app).post('/api/auth/clinic/login').set('Origin', origin).send({ code: '0'+code.slice(1), username, password: 'test-password' });
+    expect((await register(existing.headers['set-cookie'][0])).body.fileNumber).toBe('2');
   });
 
 });

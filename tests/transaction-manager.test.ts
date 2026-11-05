@@ -71,7 +71,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('transaction infrastructure with
             roleIds = (await roles.list(clinicId)).map(role => role.id);
             userId = (await employees.administrators(clinicId))[0].id;
             expect(roleIds).toHaveLength(3);
-            expect(await transaction.patientNumbering.findUnique({ where: { clinicId } })).toMatchObject({ start: 1n, lastNumber: 0n });
+            expect(await transaction.patientNumbering.findUnique({ where: { clinicId } })).toMatchObject({ start: 9007199254740993n, lastNumber: 9007199254740992n });
             expect((await roles.assigned(clinicId, userId))[0].key).toBe('admin');
             throw Error('failure after manager assignment');
           },
@@ -81,7 +81,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)('transaction infrastructure with
     const roles = createRolesOperations(createRolesRepository(database));
     const service = createClinicsService(createClinicsRepository(database), createEmployeesOperations(createEmployeesRepository(database), roles), manager, async () => 'test-only-hash');
     try {
-      await expect(service.register({ name, code, managerName: 'Manager', managerUsername: name, managerPassword: 'test-password' })).rejects.toThrow('failure after manager assignment');
+      await expect(service.register({ name, code, managerName: 'Manager', managerUsername: name, managerPassword: 'test-password', patientFileNumberStart: '9007199254740993' })).rejects.toThrow('failure after manager assignment');
       expect(userId).not.toBe('');
       expect(await database.clinic.findUnique({ where: { id: clinicId } })).toBeNull();
       expect(await database.user.findUnique({ where: { id: userId } })).toBeNull();
