@@ -12,7 +12,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "../../client/features/patients/pages/PatientPage";
+import { PatientPage } from "./legacy-patient";
 import { translations } from "../../client/shared/i18n";
 import { App } from "../../client/app/App";
 afterEach(() => {
@@ -57,8 +57,7 @@ it.each(["ar", "fr"] as const)(
     expect(document.activeElement).toBe(input);
     fireEvent.change(input, { target: { value: "10" } });
     fireEvent.submit(input.closest("form")!);
-    const link = await screen.findByRole("link", { name: "Mapped patient" });
-    expect(link.getAttribute("href")).toBe("#patients/mapped");
+    await screen.findByRole("button", { name: "Mapped patient" });
     expect(screen.getByText("2")).toBeTruthy();
     expect(
       fetcher.mock.calls.filter(([url]) => url.includes("numbering-history")),
@@ -138,7 +137,7 @@ it.each(["role", "session"] as const)(
     const input = screen.getByRole("textbox", { name: t.oldNumber });
     fireEvent.change(input, { target: { value: "10" } });
     fireEvent.submit(input.closest("form")!);
-    await screen.findByRole("link", { name: "Private mapping" });
+    await screen.findByRole("button", { name: "Private mapping" });
     fireEvent.change(input, { target: { value: "11" } });
     expect(screen.queryByText("Private mapping")).toBeNull();
     fireEvent.submit(input.closest("form")!);

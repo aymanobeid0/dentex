@@ -11,11 +11,14 @@ import { Label } from "../../../ui/Label";
 import { SelectField } from "../../../ui/SelectField";
 import { ScreenReaderStatus } from "../../../ui/ScreenReaderStatus";
 import { usePatientSearch } from "../hooks/usePatientSearch";
+import type { PatientView } from "../types";
 
 export function PatientList({
+  onNavigate,
   lang,
   onExpired,
 }: {
+  onNavigate: (view: PatientView) => void;
   lang: Lang;
   onExpired: () => void;
 }) {
@@ -153,9 +156,15 @@ export function PatientList({
                   {result.items.map((patient) => (
                     <tr key={patient.id}>
                       <td>
-                        <a href={`#patients/${encodeURIComponent(patient.id)}`}>
+                        <button
+                          type="button"
+                          className="patient-link"
+                          onClick={() =>
+                            onNavigate({ kind: "file", patientId: patient.id })
+                          }
+                        >
                           {patient.name}
-                        </a>
+                        </button>
                       </td>
                       <td>
                         <bdi>{patient.fileNumber}</bdi>
@@ -172,14 +181,18 @@ export function PatientList({
                       </td>
                       <td>{patient.archived ? t.archived : t.active}</td>
                       <td>
-                        <a
+                        <button
+                          type="button"
+                          role="link"
                           className="language"
-                          href={`#patients/${encodeURIComponent(patient.id)}`}
+                          onClick={() =>
+                            onNavigate({ kind: "file", patientId: patient.id })
+                          }
                           aria-label={`${t.openFile}: ${patient.name}`}
                         >
                           <FileText size={16} aria-hidden />
                           {t.openFile}
-                        </a>
+                        </button>
                       </td>
                     </tr>
                   ))}

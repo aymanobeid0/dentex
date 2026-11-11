@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
-import { PatientPage } from "../../client/features/patients/pages/PatientPage";
+import { PatientPage } from "./legacy-patient";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();

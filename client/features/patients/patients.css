@@ -147,7 +147,7 @@
 .shell .patient-search button {
   min-height: 38px;
 }
-.patient-list a {
+.patient-list button {
   color: var(--text-strong);
   text-underline-offset: 3px;
 }
@@ -163,11 +163,11 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-.patient-list a.language {
+.patient-list button.language {
   text-decoration: none;
   white-space: nowrap;
 }
-.patient-list a:focus-visible {
+.patient-list button:focus-visible {
   outline: 1px solid var(--border-focus);
   outline-offset: 3px;
 }
@@ -186,13 +186,13 @@
   .patient-search .input-shell input {
     height: 44px;
   }
-  .patient-list a.language {
+  .patient-list button.language {
     min-height: 44px;
   }
 }
 @media (pointer: coarse) {
-  .patient-list a,
-  .patient-list a.language {
+  .patient-list button,
+  .patient-list button.language {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -213,4 +213,15 @@
 .patient-status-filter {
   max-width: 240px;
   margin-block: 16px;
+}
+
+.patient-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-align: start;
 }

@@ -1,3 +1,5 @@
+export type LoginKind = "clinic" | "platform";
+
 export type Account =
   | { kind: "platform"; username: string }
   | {

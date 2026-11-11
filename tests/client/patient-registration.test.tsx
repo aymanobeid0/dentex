@@ -11,7 +11,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "../../client/features/patients/pages/PatientPage";
+import { PatientPage } from "./legacy-patient";
 import { App } from "../../client/app/App";
 
 afterEach(() => {
@@ -138,7 +138,7 @@ it("waits for confirmation, opens the saved file and refreshes the list without 
   fireEvent(window, unload);
   expect(unload.defaultPrevented).toBe(false);
   fireEvent.click(screen.getByRole("button", { name: "Retour à la liste" }));
-  await screen.findByRole("link", { name: "Marie" });
+  await screen.findByRole("button", { name: "Marie" });
 });
 it.each(["ar", "fr"] as const)(
   "protects a draft on internal navigation and unload, then discards it (%s)",
@@ -247,12 +247,12 @@ it.each([false, true])(
       screen.getByRole("button", { name: "Actualiser la liste des patients" }),
     );
     if (pending) await waitFor(() => expect(finish).toBeTypeOf("function"));
-    else await screen.findByRole("link", { name: /Saved child/ });
+    else await screen.findByRole("button", { name: /Saved child/ });
     view.rerender(
       <PatientPage lang="fr" canRead={false} canWrite onExpired={() => {}} />,
     );
     if (pending) await act(async () => finish(result));
-    expect(screen.queryByRole("link", { name: /Saved child/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Saved child/ })).toBeNull();
     expect(
       (
         screen.getByRole("button", {
