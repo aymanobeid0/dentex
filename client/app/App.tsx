@@ -108,21 +108,31 @@ function SessionApp({
     return !!(busy || clinicBusy || pageGuard.current || clinicGuard.current);
   });
   const attempted = useRef<typeof blocker | null>(null);
+  const handled = useRef(new WeakSet<object>());
   useEffect(() => {
     if (blocker.state !== "blocked") {
       attempted.current = null;
       return;
     }
+    // Concurrent commits can replay an effect carrying a blocker which has
+    // already settled. That attempt must never proceed/reset a second time.
+    if (handled.current.has(blocker)) return;
+    handled.current.add(blocker);
     // One dialog owns its original attempt, even if the browser asks to leave
     // again before it is answered. Resetting that newer blocker would retire
     // the first dialog's proceed callback as well.
     if (attempted.current) return;
     attempted.current = blocker;
+    let settled = false;
     const proceed = () => {
+      if (settled) return;
+      settled = true;
       attempted.current = null;
       blocker.proceed();
     };
     const reset = () => {
+      if (settled) return;
+      settled = true;
       attempted.current = null;
       blocker.reset();
     };

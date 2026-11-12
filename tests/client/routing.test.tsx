@@ -514,3 +514,56 @@ it("keeps the shell when Back reaches a login URL during the same valid session"
     screen.queryByLabelText("Mot de passe", { selector: "input" }),
   ).toBeNull();
 });
+
+it("settles a retained clinic write without replaying a cancelled busy account departure", async () => {
+  window.history.replaceState(null, "", "/platform/clinics");
+  let finish!: (value: unknown) => void;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, options?: RequestInit) => {
+      if (url === "/api/auth/me")
+        return response({ kind: "platform", username: "routing-platform" });
+      if (options?.method === "POST")
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      return response([]);
+    }),
+  );
+  render(application());
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Créer un cabinet" }),
+  );
+  for (const [label, value] of [
+    ["Nom du cabinet", "Retained clinic"],
+    ["Code du cabinet", "9560"],
+    ["Nom du responsable", "QA Manager"],
+    ["Nom d’utilisateur du responsable", "qa-manager"],
+    ["Mot de passe du responsable", "synthetic-only"],
+  ]) {
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  }
+  fireEvent.click(screen.getByRole("button", { name: "Mon compte" }));
+  await screen.findByRole("heading", { name: "Mon compte" });
+  act(() => window.history.back());
+  await screen.findByLabelText("Nom du cabinet");
+  act(() => window.history.forward());
+  await screen.findByRole("heading", { name: "Mon compte" });
+  fireEvent.click(screen.getByRole("button", { name: "Se déconnecter" }));
+  await screen.findByRole("alertdialog");
+  await userEvent.keyboard("{Escape}");
+  fireEvent.click(screen.getByRole("button", { name: "Cabinets" }));
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Créer le cabinet" }),
+  );
+  await waitFor(() => expect(finish).toBeTypeOf("function"));
+  fireEvent.click(screen.getByRole("button", { name: "Mon compte" }));
+  await act(async () =>
+    finish(
+      response({ id: "created", name: "Retained clinic", code: "9560" }, 201),
+    ),
+  );
+  await screen.findByRole("button", { name: "Créer un cabinet" });
+  expect(window.location.pathname).toBe("/platform/clinics");
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+});
