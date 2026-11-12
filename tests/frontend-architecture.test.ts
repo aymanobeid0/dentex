@@ -38,6 +38,9 @@ it("accepts feature composition and rejects forbidden frontend dependency paths"
     write("client/shared/value.ts", "export const shared = 1;");
     write("client/ui/value.ts", "export const ui = 1;");
     write("client/app/App.ts", "export { value } from '../features/auth';");
+    const routerExports =
+      "export { createBrowserRouter } from 'react-router'; export { RouterProvider } from 'react-router/dom';";
+    write("client/app/router.ts", routerExports);
     const run = (json = false) =>
       spawnSync(
         process.execPath,
@@ -83,17 +86,24 @@ it("accepts feature composition and rejects forbidden frontend dependency paths"
         "no-unresolved",
       ],
       [
+        "client/app/router.ts",
+        "export * from 'react-router/nonexistent-private-subpath';",
+        "no-unresolved",
+      ],
+      [
         "client/features/auth/internal.ts",
         "export { value } from './index';",
         "no-cycles",
       ],
     ];
     for (const [file, source, rule] of cases) {
-      const original = file.endsWith("internal.ts")
-        ? "export const value = 1;"
-        : file.endsWith("App.ts")
-          ? "export { value } from '../features/auth';"
-          : "export const value = 1;";
+      const original = file.endsWith("router.ts")
+        ? routerExports
+        : file.endsWith("internal.ts")
+          ? "export const value = 1;"
+          : file.endsWith("App.ts")
+            ? "export { value } from '../features/auth';"
+            : "export const value = 1;";
       write(file, source);
       const rejected = run();
       expect(rejected.status, rule).toBeGreaterThan(0);

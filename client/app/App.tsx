@@ -350,7 +350,7 @@ function SessionApp({
       {forbidden || screen === "notFound" ? (
         <section className="card">
           <h1>{forbidden ? t.forbidden : t.notFound}</h1>
-          <button className="secondary" onClick={() => void go(defaultPath)}>
+          <button className="language" onClick={() => void go(defaultPath)}>
             {t.toDefault}
           </button>
         </section>

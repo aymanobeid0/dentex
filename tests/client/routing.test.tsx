@@ -124,11 +124,14 @@ it("distinguishes forbidden known pages from unknown URLs without reading protec
     screen.getByRole("button", { name: "Ouvrir la page d’accueil" }),
   );
   await screen.findByRole("heading", { name: "Accueil" });
-  await act(async () => {
-    window.history.pushState(null, "", "/unknown-page");
-    window.dispatchEvent(new PopStateEvent("popstate"));
-  });
+});
+
+it("shows an unknown initial URL without redirecting it to another screen", async () => {
+  window.history.replaceState(null, "", "/unknown-page");
+  vi.stubGlobal("fetch", vi.fn(async () => response(clinic)));
+  render(application());
   await screen.findByRole("heading", { name: "Page introuvable" });
+  expect(window.location.pathname).toBe("/unknown-page");
 });
 
 it("keeps the current login fields while its URL changes kind and clears the password", async () => {
@@ -388,15 +391,31 @@ it("opens the confirmed patient file after cancelling a busy departure without a
 
 it("keeps one departure decision when another history request arrives while its dialog is open", async () => {
   window.history.replaceState(null, "", "/clinic/account");
-  vi.stubGlobal("fetch", vi.fn(async (url: string) => response(url === "/api/auth/me" ? clinic : { items: [], page: 1, hasNext: false })));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) =>
+      response(
+        url === "/api/auth/me"
+          ? clinic
+          : { items: [], page: 1, hasNext: false },
+      ),
+    ),
+  );
   render(application());
   fireEvent.click(await screen.findByRole("button", { name: "Patients" }));
-  fireEvent.click(await screen.findByRole("button", { name: "Nouveau patient" }));
-  fireEvent.change(await screen.findByRole("textbox", { name: "Nom complet" }), { target: { value: "One pending decision" } });
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Nouveau patient" }),
+  );
+  fireEvent.change(
+    await screen.findByRole("textbox", { name: "Nom complet" }),
+    { target: { value: "One pending decision" } },
+  );
   fireEvent.click(screen.getByRole("button", { name: "Mon compte" }));
   await screen.findByRole("alertdialog");
   await act(async () => {
-    const moved = new Promise(resolve => window.addEventListener("popstate", resolve, { once: true }));
+    const moved = new Promise((resolve) =>
+      window.addEventListener("popstate", resolve, { once: true }),
+    );
     window.history.back();
     await moved;
   });
