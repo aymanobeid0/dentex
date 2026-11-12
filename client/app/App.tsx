@@ -113,12 +113,21 @@ function SessionApp({
       attempted.current = null;
       return;
     }
-    // A fresh POP may target the same history key after Stay/Escape. Its blocker
-    // object identifies the attempt; a destination key cannot identify it.
-    if (attempted.current === blocker) return;
+    // One dialog owns its original attempt, even if the browser asks to leave
+    // again before it is answered. Resetting that newer blocker would retire
+    // the first dialog's proceed callback as well.
+    if (attempted.current) return;
     attempted.current = blocker;
-    if (busy || clinicBusy) {
+    const proceed = () => {
+      attempted.current = null;
+      blocker.proceed();
+    };
+    const reset = () => {
+      attempted.current = null;
       blocker.reset();
+    };
+    if (busy || clinicBusy) {
+      reset();
       return;
     }
     const retainsClinic =
@@ -132,8 +141,8 @@ function SessionApp({
           ? null
           : clinicGuard.current
         : pageGuard.current;
-    if (guard) guard(blocker.proceed, blocker.reset);
-    else blocker.proceed();
+    if (guard) guard(proceed, reset);
+    else proceed();
   }, [blocker, busy, clinicBusy, platformRetained, account?.kind]);
 
   if (account) {

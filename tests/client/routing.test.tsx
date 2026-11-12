@@ -385,3 +385,23 @@ it("opens the confirmed patient file after cancelling a busy departure without a
   fireEvent.click(screen.getByRole("button", { name: "Mon compte" }));
   await screen.findByRole("alertdialog");
 });
+
+it("keeps one departure decision when another history request arrives while its dialog is open", async () => {
+  window.history.replaceState(null, "", "/clinic/account");
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => response(url === "/api/auth/me" ? clinic : { items: [], page: 1, hasNext: false })));
+  render(application());
+  fireEvent.click(await screen.findByRole("button", { name: "Patients" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Nouveau patient" }));
+  fireEvent.change(await screen.findByRole("textbox", { name: "Nom complet" }), { target: { value: "One pending decision" } });
+  fireEvent.click(screen.getByRole("button", { name: "Mon compte" }));
+  await screen.findByRole("alertdialog");
+  await act(async () => {
+    const moved = new Promise(resolve => window.addEventListener("popstate", resolve, { once: true }));
+    window.history.back();
+    await moved;
+  });
+  expect(screen.getAllByRole("alertdialog")).toHaveLength(1);
+  fireEvent.click(screen.getByRole("button", { name: "Ignorer et quitter" }));
+  await screen.findByRole("heading", { name: "Mon compte" });
+  expect(window.location.pathname).toBe("/clinic/account");
+});
