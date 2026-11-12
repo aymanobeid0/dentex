@@ -8,6 +8,7 @@ datasource db {
   provider = "postgresql"
 }
 model Clinic {
+  appointments Appointment[]
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name String
   code String @unique @db.VarChar(4)
@@ -19,6 +20,7 @@ model Clinic {
   @@map("clinics")
 }
 model Patient {
+  appointments Appointment[]
   archived Boolean @default(false)
   editVersion Int @default(1) @map("edit_version")
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -49,6 +51,9 @@ model PlatformAdmin {
   @@map("platform_admins")
 }
 model User {
+  appointments Appointment[] @relation("AppointmentDoctor")
+  createdAppointments Appointment[] @relation("AppointmentCreator")
+  appointmentChanges AppointmentChange[]
   editVersion Int @default(1) @map("edit_version")
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -114,4 +119,42 @@ model PatientNumberHistory {
   patient Patient @relation(fields: [clinicId, patientId], references: [clinicId, id], onDelete: Cascade, onUpdate: NoAction)
   @@id([clinicId, oldFileNumber])
   @@map("patient_number_history")
+}
+
+model Appointment {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  doctorId String @map("doctor_id") @db.Uuid
+  startsAt DateTime @map("starts_at") @db.Timestamptz
+  endsAt DateTime @map("ends_at") @db.Timestamptz
+  status String @default("booked") @db.VarChar(12)
+  administrativeNote String? @map("administrative_note") @db.VarChar(2000)
+  editVersion Int @default(1) @map("edit_version")
+  createdBy String @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patient Patient @relation(fields: [clinicId, patientId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  doctor User @relation("AppointmentDoctor", fields: [clinicId, doctorId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  creator User @relation("AppointmentCreator", fields: [clinicId, createdBy], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  changes AppointmentChange[]
+  @@unique([clinicId, id])
+  @@index([clinicId, startsAt])
+  @@map("appointments")
+}
+
+model AppointmentChange {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  appointmentId String @map("appointment_id") @db.Uuid
+  actorId String @map("actor_id") @db.Uuid
+  action String @db.VarChar(20)
+  before Json?
+  after Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  appointment Appointment @relation(fields: [clinicId, appointmentId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  actor User @relation(fields: [clinicId, actorId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@index([clinicId, appointmentId, createdAt])
+  @@map("appointment_changes")
 }

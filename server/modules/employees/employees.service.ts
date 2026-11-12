@@ -13,6 +13,16 @@ async function expose(user: EmployeeRecord, roles: RolesOperations): Promise<Emp
 
 export function createEmployeesOperations(repository: EmployeesRepository, roles: RolesOperations): EmployeesOperations {
   return {
+    async appointmentDoctors(clinicId) {
+      const candidates = (await repository.appointmentEmployees(clinicId)).filter(user => user.active);
+      const checked = await Promise.all(candidates.map(async user => ({ user, dentist: (await roles.assigned(clinicId, user.id)).some(role => role.key === 'dentist') })));
+      return checked.filter(item => item.dentist).map(({ user }) => ({ id: user.id, name: user.name }));
+    },
+    async appointmentDoctor(clinicId, id) {
+      const [user] = await repository.appointmentEmployees(clinicId, id);
+      if (!user) return null;
+      return { id: user.id, name: user.name, eligible: user.active && (await roles.assigned(clinicId, id)).some(role => role.key === 'dentist') };
+    },
     async authorization(actor) {
       const user = await repository.findEmployee(actor.clinicId, actor.userId);
       if (!user) return null;

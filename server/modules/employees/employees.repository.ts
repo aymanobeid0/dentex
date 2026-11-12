@@ -12,6 +12,7 @@ async function unique<T>(operation: () => Promise<T>): Promise<T> {
 export function createEmployeesRepository(database: Prisma.TransactionClient): EmployeesRepository {
   const select = { id: true, clinicId: true, name: true, username: true, active: true, passwordHash: true, credentialVersion: true, editVersion: true } as const;
   return {
+    appointmentEmployees: (clinicId, id) => database.user.findMany({ where: { clinicId, ...(id ? { id } : {}) }, select: { id: true, name: true, active: true }, orderBy: [{ name: 'asc' }, { id: 'asc' }] }),
     listEmployees: (clinicId, ids) => database.user.findMany({ where: { clinicId, ...(ids ? { id: { in: ids } } : {}) }, select, orderBy: { name: 'asc' } }),
     findEmployee: (clinicId, id) => database.user.findFirst({ where: { clinicId, id }, select }),
     findCredential: id => database.user.findUnique({ where: { id }, select }),

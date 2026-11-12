@@ -6,6 +6,8 @@ const statuses: Readonly<Record<string, number>> = {
   unauthorized: 401, invalid_credentials: 401,
   forbidden: 403, untrusted_origin: 403, admin_locked: 403,
   not_found: 404,
+  appointment_reference_not_found: 404,
+  doctor_ineligible: 409, appointment_in_past: 409, appointment_overlap: 409,
   numbering_exhausted: 409, edit_conflict: 409, patient_archived: 409, duplicate_code: 409, duplicate_username: 409, last_admin: 409, duplicate_phone: 409,
   too_many_attempts: 429,
 };

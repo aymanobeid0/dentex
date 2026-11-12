@@ -4,8 +4,10 @@
 
 **Blocked by:** 01: حجز موعد من ملف المريض مع منع التداخل
 
-Status: ready-for-agent
-Execution: not-started
+Status: ready-for-human
+Execution: in-progress
+
+استكشاف وعقود فقط بعد اكتمال01 تقنيًا؛ لا كود02. تنتظر موافقة المستخدم على [التوسعات المحددة02](../02-architecture-proposal.md) لأن إذن01 لا يشملها.
 
 قصص المواصفة: 2–3،38،42،45،48–60،66؛ و16–17،61–65.
 

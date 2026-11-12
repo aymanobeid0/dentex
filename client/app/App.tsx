@@ -13,6 +13,7 @@ import { LoginPage, Session, useIdentity, useLogout } from "../features/auth";
 import { ClinicsPage } from "../features/clinics";
 import { EmployeePage } from "../features/employees";
 import { PatientPage, type PatientView } from "../features/patients";
+import { BookingAction } from "../features/appointments";
 import { RolePermissionsPage } from "../features/roles";
 import { LanguageSwitch, translations, useLanguage } from "../shared/i18n";
 import type { NavigationGuard } from "../ui/useDraftGuard";
@@ -87,7 +88,14 @@ function SessionApp({
   const { busy, error, logout } = useLogout(expire);
   const [clinicBusy, setClinicBusy] = useState(false);
   const pageGuard = useRef<NavigationGuard | null>(null),
+    appointmentGuard = useRef<NavigationGuard | null>(null),
     clinicGuard = useRef<NavigationGuard | null>(null);
+  const registerAppointmentGuard = useCallback(
+    (guard: NavigationGuard | null) => {
+      appointmentGuard.current = guard;
+    },
+    [],
+  );
   const registerPageGuard = useCallback((guard: NavigationGuard | null) => {
     pageGuard.current = guard;
   }, []);
@@ -105,7 +113,13 @@ function SessionApp({
       location.hash === nextLocation.hash
     )
       return false;
-    return !!(busy || clinicBusy || pageGuard.current || clinicGuard.current);
+    return !!(
+      busy ||
+      clinicBusy ||
+      pageGuard.current ||
+      clinicGuard.current ||
+      appointmentGuard.current
+    );
   });
   const attempted = useRef<typeof blocker | null>(null);
   const handled = useRef(new WeakSet<object>());
@@ -150,7 +164,7 @@ function SessionApp({
         ? retainsClinic
           ? null
           : clinicGuard.current
-        : pageGuard.current;
+        : appointmentGuard.current || pageGuard.current;
     if (guard) guard(proceed, reset);
     else proceed();
   }, [blocker, busy, clinicBusy, platformRetained, account?.kind]);
@@ -317,6 +331,7 @@ function SessionApp({
     };
     if (account.kind === "platform" && clinicGuard.current)
       clinicGuard.current(leave);
+    else if (appointmentGuard.current) appointmentGuard.current(leave);
     else if (pageGuard.current) pageGuard.current(leave);
     else leave();
   };
@@ -397,6 +412,19 @@ function SessionApp({
         </>
       ) : page === "patients" ? (
         <PatientPage
+          renderAppointments={(patient) => (
+            <BookingAction
+              key={patient.id}
+              patient={patient}
+              lang={lang}
+              canWrite={
+                account.kind === "clinic" &&
+                (admin || account.permissions.includes("appointments.write"))
+              }
+              onExpired={expire}
+              onNavigationGuardChange={registerAppointmentGuard}
+            />
+          )}
           lang={lang}
           view={patientView}
           onNavigate={navigatePatient}

@@ -6,7 +6,10 @@ import type { ArchivePatientInput, EditPatientInput, ListPatientsInput, Register
 import { PatientsError } from './patients.errors';
 
 export function createPatientsOperations(repository: PatientsRepository): PatientsOperations {
-  return { initializeNumbering: (clinicId, start) => repository.initializeNumbering(clinicId, start) };
+  return {
+    initializeNumbering: (clinicId, start) => repository.initializeNumbering(clinicId, start),
+    appointmentReference: (clinicId, id) => repository.appointmentReference(clinicId, id),
+  };
 }
 export function createPatientsService(repository: PatientsRepository, transactions: TransactionManager<PatientsScope, ClinicMutation>) {
   return {

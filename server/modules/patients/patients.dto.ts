@@ -8,8 +8,13 @@ export interface Patient extends PatientReceipt {
   name: string; phone: string; gender: 'male' | 'female'; isChild: boolean;
   birthDate: string | null; address: string | null; administrativeNote: string | null;
 }
-export interface PatientsOperations { initializeNumbering(clinicId: string, start: string): Promise<void> }
+export type AppointmentPatientReference = Pick<Patient, 'id' | 'name' | 'fileNumber' | 'archived'>;
+export interface PatientsOperations {
+  initializeNumbering(clinicId: string, start: string): Promise<void>;
+  appointmentReference(clinicId: string, patientId: string): Promise<AppointmentPatientReference | null>;
+}
 export interface PatientsRepository {
+  appointmentReference(clinicId: string, patientId: string): Promise<AppointmentPatientReference | null>;
   findOldNumber(clinicId: string, oldFileNumber: string): Promise<(PatientReceipt & { name: string }) | null>;
   initializeNumbering(clinicId: string, start: string): Promise<void>;
   list(clinicId: string, input: ListPatientsInput): Promise<PatientList>;

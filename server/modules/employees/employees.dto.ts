@@ -4,6 +4,7 @@ export interface EmployeeRecord { editVersion: number; id: string; clinicId: str
 export interface Employee { editVersion: number; id: string; name: string; username: string; active: boolean; roles: Role[] }
 export interface NewEmployee { clinicId: string; name: string; username: string; passwordHash: string }
 export interface EmployeesRepository {
+  appointmentEmployees(clinicId: string, id?: string): Promise<Array<{ id: string; name: string; active: boolean }>>;
   listEmployees(clinicId: string, ids?: string[]): Promise<EmployeeRecord[]>;
   findEmployee(clinicId: string, id: string): Promise<EmployeeRecord | null>;
   findCredential(id: string): Promise<EmployeeRecord | null>;
@@ -17,6 +18,8 @@ export interface EmployeesRepository {
 }
 /** Used by auth/account and by clinic workflows bound to the current transaction. */
 export interface EmployeesOperations {
+  appointmentDoctors(clinicId: string): Promise<Array<{ id: string; name: string }>>;
+  appointmentDoctor(clinicId: string, doctorId: string): Promise<AppointmentDoctorReference | null>;
   authorization(actor: ClinicActor): Promise<ActorAccess | null>;
   credential(id: string): Promise<EmployeeRecord | null>;
   loginCredential(clinicId: string, username: string): Promise<EmployeeRecord | null>;
@@ -26,3 +29,4 @@ export interface EmployeesOperations {
   changePassword(clinicId: string, userId: string, version: number, passwordHash: string): Promise<boolean>;
 }
 export interface EmployeesScope { repository: EmployeesRepository; roles: RolesOperations; actor: ActorAccess | null }
+export interface AppointmentDoctorReference { id: string; name: string; eligible: boolean }

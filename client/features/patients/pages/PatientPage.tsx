@@ -10,7 +10,15 @@ import { PatientRegistrationForm } from "../components/PatientRegistrationForm";
 import { usePatientsPage } from "../hooks/usePatientsPage";
 import { OldNumberLookup } from "../components/OldNumberLookup";
 import type { PatientView } from "../types";
+import type { ReactNode } from "react";
+export type PatientAppointmentContext = {
+  id: string;
+  name: string;
+  fileNumber: string;
+  archived: boolean;
+};
 type Props = {
+  renderAppointments?: (patient: PatientAppointmentContext) => ReactNode;
   lang: Lang;
   canRead: boolean;
   canLookupOldNumber?: boolean;
@@ -30,6 +38,7 @@ export function PatientPage(props: Props) {
   );
 }
 function PatientFlow({
+  renderAppointments,
   view,
   onNavigate,
   lang,
@@ -302,6 +311,12 @@ function PatientFlow({
           patient && (
             <>
               <PatientFile lang={lang} t={t} patient={patient} />
+              {renderAppointments?.({
+                id: patient.id,
+                name: patient.name,
+                fileNumber: patient.fileNumber,
+                archived: patient.archived,
+              })}
               {patient.archived && <p role="status">{t.archivedHint}</p>}
               {canWrite && !patient.archived && (
                 <button
