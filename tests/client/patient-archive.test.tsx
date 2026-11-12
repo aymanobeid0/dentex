@@ -9,7 +9,7 @@ import {
   within,
 } from "@testing-library/react";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "./legacy-patient";
+import { PatientPage } from "./controlled-patient";
 import { translations } from "../../client/shared/i18n";
 import userEvent from "@testing-library/user-event";
 const patient = {

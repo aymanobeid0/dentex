@@ -1,5 +1,5 @@
 import { Disclosure } from "../../client/ui/Disclosure";
-import { App } from "../../client/app/App";
+import { application } from "./app";
 // @vitest-environment jsdom
 import "./ui-browser-apis";
 import { afterEach, expect, it, vi } from "vitest";
@@ -155,7 +155,7 @@ it.each(["ar", "fr"] as const)(
 );
 it("provides sidebar tooltips to keyboard focus and dismisses with Escape", async () => {
   const labels = {
-    dashboard: "Cabinets",
+    dashboard: "Cabinets", home: "Accueil",
     employees: "Employees",
     rolePermissions: "Roles",
     account: "Account",
@@ -178,6 +178,7 @@ it("provides sidebar tooltips to keyboard focus and dismisses with Escape", asyn
     </UiProvider>,
   );
   const user = userEvent.setup();
+  await user.tab();
   await user.tab();
   await user.tab();
   expect(await screen.findByRole("tooltip")).toBeTruthy();
@@ -225,7 +226,7 @@ it("shares mobile and sidebar disclosure controls and closes navigation after a 
         }),
       }),
   );
-  render(<App />);
+  render(application());
   const user = userEvent.setup();
   const triggers = await screen.findAllByRole("button", {
     name: "Ouvrir le menu",

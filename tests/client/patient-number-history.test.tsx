@@ -12,9 +12,9 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "./legacy-patient";
+import { PatientPage } from "./controlled-patient";
 import { translations } from "../../client/shared/i18n";
-import { App } from "../../client/app/App";
+import { application } from "./app";
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -130,7 +130,7 @@ it.each(["role", "session"] as const)(
     );
     localStorage.setItem("dentex-lang", "fr");
     window.history.replaceState(null, "", "#patients");
-    render(<App />);
+    render(application());
     fireEvent.click(
       await screen.findByRole("button", { name: t.oldNumberLookup }),
     );

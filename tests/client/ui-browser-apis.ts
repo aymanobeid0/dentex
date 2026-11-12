@@ -1,4 +1,6 @@
-import { beforeAll, afterAll, vi } from "vitest";
+import { beforeAll, afterAll, beforeEach, vi } from "vitest";
+
+beforeEach(() => window.history.replaceState(null, "", "/"));
 
 // jsdom has no scrolling layout; Radix still exercises real focus/keyboard code.
 const original = Object.getOwnPropertyDescriptor(

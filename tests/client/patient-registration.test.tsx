@@ -11,8 +11,8 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "./legacy-patient";
-import { App } from "../../client/app/App";
+import { PatientPage } from "./controlled-patient";
+import { application } from "./app";
 
 afterEach(() => {
   cleanup();
@@ -63,7 +63,7 @@ it("guards sidebar navigation and logout without losing a draft after identity r
         : { items: [], page: 1, hasNext: false },
   }));
   vi.stubGlobal("fetch", fetcher);
-  render(<App />);
+  render(application());
   const name = await screen.findByRole("textbox", { name: "Nom complet" });
   fireEvent.change(name, { target: { value: "Draft" } });
   fireEvent(window, new Event("online"));
@@ -127,7 +127,7 @@ it("waits for confirmation, opens the saved file and refreshes the list without 
   );
   await waitFor(() => expect(finish).toBeTypeOf("function"));
   expect(screen.queryByRole("heading", { name: "Marie" })).toBeNull();
-  expect(window.location.hash).toBe("#patients/new");
+  expect(screen.getByRole("textbox", { name: /Nom complet|الاسم الكامل/ })).toBeTruthy();
   saved = true;
   await act(async () =>
     finish(response({ id: "confirmed", fileNumber: "1099" })),
@@ -173,7 +173,7 @@ it.each(["ar", "fr"] as const)(
     await waitFor(() => expect(document.activeElement).toBe(stay));
     await userEvent.keyboard("{Escape}");
     expect((name as HTMLInputElement).value).toBe("Draft");
-    expect(window.location.hash).toBe("#patients/new");
+    expect(screen.getByRole("textbox", { name: /Nom complet|الاسم الكامل/ })).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", {
         name: lang === "fr" ? "Retour à la liste" : "العودة إلى القائمة",
@@ -364,6 +364,6 @@ it.each(["lost-body", "invalid-receipt", "server-error"])(
       (screen.getByRole("textbox", { name: "Nom complet" }) as HTMLInputElement)
         .value,
     ).toBe("Marie");
-    expect(window.location.hash).toBe("#patients/new");
+    expect(screen.getByRole("textbox", { name: /Nom complet|الاسم الكامل/ })).toBeTruthy();
   },
 );

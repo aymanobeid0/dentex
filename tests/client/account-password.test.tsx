@@ -5,7 +5,7 @@ import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderPatient } from "./render-patient";
 import { AccountPassword } from "../../client/features/account/components/AccountPassword";
 import { translations } from "../../client/shared/i18n";
-import { App } from "../../client/app/App";
+import { application } from "./app";
 import { render, act } from "@testing-library/react";
 afterEach(() => {
   cleanup();
@@ -109,6 +109,7 @@ const identity = {
   permissions: ["employees.manage"],
 };
 it("protects account secrets during navigation and logout, while identity updates do not overwrite them", async () => {
+  window.history.replaceState(null, "", "/clinic/account");
   localStorage.setItem("dentex-lang", "fr");
   vi.stubGlobal(
     "matchMedia",
@@ -127,7 +128,7 @@ it("protects account secrets during navigation and logout, while identity update
       );
     }),
   );
-  render(<App />);
+  render(application());
   const t = translations.fr;
   fireEvent.click(
     await screen.findByRole("button", { name: t.accountPassword.title }),
@@ -157,6 +158,7 @@ it("protects account secrets during navigation and logout, while identity update
 });
 
 it("ignores a late password success after the session has expired", async () => {
+  window.history.replaceState(null, "", "/clinic/account");
   localStorage.setItem("dentex-lang", "fr");
   vi.stubGlobal(
     "matchMedia",
@@ -175,7 +177,7 @@ it("ignores a late password success after the session has expired", async () => 
       );
     }),
   );
-  render(<App />);
+  render(application());
   const t = translations.fr;
   fireEvent.click(
     await screen.findByRole("button", { name: t.accountPassword.title }),
