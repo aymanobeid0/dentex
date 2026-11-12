@@ -83,7 +83,7 @@ export function RolePermissionsPage({
         error ? (
           <div role="alert">
             {t[error]}{" "}
-            <button className="language" onClick={load}>
+            <button className="ui-button" onClick={load}>
               {t.retry}
             </button>
           </div>

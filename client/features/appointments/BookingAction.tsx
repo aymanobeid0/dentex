@@ -45,7 +45,7 @@ export function BookingAction(props: Props) {
       {props.canWrite && (
         <button
           ref={trigger}
-          className="language patient-back"
+          className="ui-button patient-back"
           disabled={props.patient.archived}
           onClick={() => {
             setSaved(false);
@@ -166,6 +166,7 @@ function BookingDialog({
   return (
     <>
       <Modal
+        size="wide"
         open
         onOpenChange={(value) => {
           if (!value) guard.requestLeave(onClose);
@@ -214,6 +215,7 @@ function BookingDialog({
           <div className="field">
             <Label htmlFor={`${id}-date`}>{t.date}</Label>
             <input
+              className="ui-input"
               id={`${id}-date`}
               type="date"
               required
@@ -225,6 +227,7 @@ function BookingDialog({
           <div className="field">
             <Label htmlFor={`${id}-time`}>{t.time}</Label>
             <input
+              className="ui-input"
               id={`${id}-time`}
               type="time"
               step="60"
@@ -238,6 +241,7 @@ function BookingDialog({
           <div className="field">
             <Label htmlFor={`${id}-duration`}>{t.duration}</Label>
             <input
+              className="ui-input"
               id={`${id}-duration`}
               type="number"
               min="5"
@@ -252,6 +256,7 @@ function BookingDialog({
           <div className="field wide">
             <Label htmlFor={`${id}-note`}>{t.note}</Label>
             <textarea
+              className="ui-textarea"
               id={`${id}-note`}
               maxLength={2000}
               value={draft.note}
@@ -275,7 +280,7 @@ function BookingDialog({
         </form>
         {canWrite && (
           <button
-            className="language"
+            className="ui-button"
             disabled={
               !doctors.online || doctors.isFetching || mutation.isPending
             }

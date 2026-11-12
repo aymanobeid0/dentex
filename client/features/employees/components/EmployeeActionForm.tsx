@@ -71,7 +71,7 @@ export function EmployeeActionForm({
           </button>
           <button
             type="button"
-            className="language"
+            className="ui-button"
             disabled={busy}
             onClick={cancelAction}
           >

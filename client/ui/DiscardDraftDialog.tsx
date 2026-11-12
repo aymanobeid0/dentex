@@ -44,7 +44,7 @@ export function DiscardDraftDialog({
           <AlertDialog.Description>{description}</AlertDialog.Description>
           <div className="draft-dialog-actions">
             <AlertDialog.Cancel asChild>
-              <button className="language" onClick={onStay}>
+              <button className="ui-button" onClick={onStay}>
                 <Undo2 size={16} aria-hidden />
                 {stay}
               </button>

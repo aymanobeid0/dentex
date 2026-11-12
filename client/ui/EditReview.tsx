@@ -30,7 +30,7 @@ export function EditReview({
       </p>
       <button
         type="button"
-        className="language"
+        className="ui-button"
         disabled={busy}
         onClick={onReview}
       >
@@ -48,7 +48,7 @@ export function EditReview({
           <div className="form-actions">
             <button
               type="button"
-              className="language"
+              className="ui-button"
               disabled={busy}
               onClick={() => onAccept(false)}
             >
@@ -56,7 +56,7 @@ export function EditReview({
             </button>
             <button
               type="button"
-              className="language"
+              className="ui-button"
               disabled={busy}
               onClick={() => onAccept(true)}
             >

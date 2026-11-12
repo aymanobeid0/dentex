@@ -128,6 +128,7 @@ export function PatientRegistrationForm({
               {t.administrativeNote} <small>({t.optional})</small>
             </span>
             <textarea
+              className="ui-textarea"
               id="patient-note"
               maxLength={2000}
               rows={3}

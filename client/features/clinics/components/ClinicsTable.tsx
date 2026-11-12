@@ -1,3 +1,4 @@
+import { IconButton } from "../../../ui/IconButton";
 import { UsersRound } from "lucide-react";
 import type { useClinics } from "../hooks/useClinics";
 type Props = Pick<
@@ -16,7 +17,7 @@ export function ClinicsTable({
       {loadError ? (
         <div role="alert">
           {t.network}{" "}
-          <button className="language" onClick={loadClinics}>
+          <button className="ui-button" onClick={loadClinics}>
             {t.retry}
           </button>
         </div>
@@ -42,13 +43,13 @@ export function ClinicsTable({
                     <bdi>{c.code}</bdi>
                   </td>
                   <td>
-                    <button
-                      className="language"
+                    <IconButton
+                      label={t.manageAdmins}
+                      tone="primary"
                       onClick={() => setAdminClinic(c)}
                     >
                       <UsersRound size={15} aria-hidden="true" />
-                      {t.manageAdmins}
-                    </button>
+                    </IconButton>
                   </td>
                 </tr>
               ))}

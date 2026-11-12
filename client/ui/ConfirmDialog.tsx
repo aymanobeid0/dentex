@@ -53,7 +53,7 @@ export function ConfirmDialog({
           {children}
           <div className="draft-dialog-actions">
             <AlertDialog.Cancel asChild>
-              <button className="language" disabled={busy} onClick={onCancel}>
+              <button className="ui-button" disabled={busy} onClick={onCancel}>
                 {cancel}
               </button>
             </AlertDialog.Cancel>

@@ -78,7 +78,7 @@ export function ClinicAdmins({
           <div className="content-heading">
             <h1>{t.title}</h1>
             <button
-              className="language"
+              className="ui-button"
               onClick={() => state.guard.requestLeave(onBack)}
               disabled={busy || externalBusy}
             >

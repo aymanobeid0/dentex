@@ -1,6 +1,4 @@
-.draft-dialog:has(.booking-form) {
-  width: min(640px, calc(100vw - 32px));
-}
+
 .booking-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -16,43 +14,8 @@
 .booking-form .wide {
   grid-column: 1 / -1;
 }
-.booking-form input,
-.booking-form textarea {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-}
-.booking-form input:focus,
-.booking-form textarea:focus {
-  outline: none;
-  border-color: var(--border-focus);
-}
-.booking-form textarea {
-  min-height: 80px;
-  resize: vertical;
-}
 @media (max-width: 480px) {
   .booking-form {
     grid-template-columns: minmax(0, 1fr);
   }
-  .booking-form input,
-  .booking-form button,
-  .booking-form .ui-select {
-    min-height: 44px;
-  }
-}
-.booking-form input[dir="ltr"] {
-  text-align: start;
-}
-body:has(.booking-form) .ui-select-content {
-  z-index: 102;
-}
-body:has([role="alertdialog"]) .draft-dialog:has(.booking-form) {
-  pointer-events: none;
 }

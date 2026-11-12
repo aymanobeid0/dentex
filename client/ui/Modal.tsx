@@ -10,6 +10,7 @@ export function Modal({
   close,
   direction,
   children,
+  size = "default",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,19 +20,24 @@ export function Modal({
   close: string;
   direction: "rtl" | "ltr";
   children: ReactNode;
+  size?: "default" | "wide";
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="draft-dialog-overlay" />
-        <Dialog.Content className="draft-dialog" dir={direction}>
+        <Dialog.Content
+          className="draft-dialog"
+          data-size={size}
+          dir={direction}
+        >
           <Dialog.Title>{title}</Dialog.Title>
           <Dialog.Description>{description}</Dialog.Description>
           {children}
           <div className="draft-dialog-actions">
             <Dialog.Close asChild>
-              <button className="language">{close}</button>
+              <button className="ui-button">{close}</button>
             </Dialog.Close>
           </div>
         </Dialog.Content>

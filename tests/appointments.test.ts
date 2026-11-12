@@ -373,9 +373,11 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
           results.filter((result) => result.status === "rejected"),
         ).toHaveLength(1);
         const rejected = results.find((result) => result.status === "rejected");
-        expect(
+        // Either exclusion rejection or a deadlock victim must leave one row.
+        // The HTTP case below separately verifies 23P01 -> private 409.
+        expect(["23P01", "40P01"]).toContain(
           rejected?.reason.meta.driverAdapterError.cause.originalCode,
-        ).toBe("23P01");
+        );
       },
     );
     it.each(["attended", "absent", "cancelled"])(

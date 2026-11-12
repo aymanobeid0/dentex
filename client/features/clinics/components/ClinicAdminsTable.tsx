@@ -1,3 +1,4 @@
+import { IconButton } from "../../../ui/IconButton";
 import { KeyRound } from "lucide-react";
 import type { useClinicAdmins } from "../hooks/useClinicAdmins";
 type Props = Pick<
@@ -17,7 +18,7 @@ export function ClinicAdminsTable({
       {loadingError ? (
         <div role="alert">
           {t.error}{" "}
-          <button className="language" onClick={load}>
+          <button className="ui-button" onClick={load}>
             {t.retry}
           </button>
         </div>
@@ -43,18 +44,28 @@ export function ClinicAdminsTable({
                   <td>
                     <bdi>{admin.username}</bdi>
                   </td>
-                  <td>{admin.active ? t.active : t.inactive}</td>
                   <td>
-                    <button
-                      className="language"
+                    <span
+                      className={
+                        "badge " +
+                        (admin.active ? "badge-success" : "badge-neutral")
+                      }
+                    >
+                      <span className="badge-dot" aria-hidden />
+                      {admin.active ? t.active : t.inactive}
+                    </span>
+                  </td>
+                  <td>
+                    <IconButton
+                      label={t.reset}
+                      tone="warning"
                       onClick={() => {
                         setSelected(admin);
                         setSaved(false);
                       }}
                     >
                       <KeyRound size={15} aria-hidden="true" />
-                      {t.reset}
-                    </button>
+                    </IconButton>
                   </td>
                 </tr>
               ))}

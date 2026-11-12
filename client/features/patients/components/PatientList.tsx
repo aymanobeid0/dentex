@@ -1,3 +1,4 @@
+import { nameInitials } from "../../../ui/nameInitials";
 import {
   ArrowLeft,
   ArrowRight,
@@ -52,52 +53,58 @@ export function PatientList({
       : t.resultsShown.replace("{count}", String(result.items.length));
   return (
     <section className="card patient-list" aria-label={t.title}>
-      <form className="patient-search" role="search" onSubmit={submit}>
-        <Label className="field" htmlFor="patient-search">
-          <span>{t.searchLabel}</span>
-          <span className="input-shell">
+      <div className="patient-toolbar">
+        <form className="patient-search" role="search" onSubmit={submit}>
+          <Label className="field" htmlFor="patient-search">
+            <span>{t.searchLabel}</span>
+            <span className="input-shell">
+              <Search size={16} aria-hidden />
+              <input
+                id="patient-search"
+                type="search"
+                maxLength={200}
+                value={draft}
+                onChange={(event) => change(event.target.value)}
+                onCompositionStart={compositionStart}
+                onCompositionEnd={(event) =>
+                  compositionEnd(event.currentTarget.value)
+                }
+              />
+            </span>
+          </Label>
+          <button className="primary action" disabled={searchPending}>
             <Search size={16} aria-hidden />
-            <input
-              id="patient-search"
-              type="search"
-              maxLength={200}
-              value={draft}
-              onChange={(event) => change(event.target.value)}
-              onCompositionStart={compositionStart}
-              onCompositionEnd={(event) =>
-                compositionEnd(event.currentTarget.value)
-              }
-            />
-          </span>
-        </Label>
-        <button className="primary action" disabled={searchPending}>
-          <Search size={16} aria-hidden />
-          {t.search}
-        </button>
-        {(draft || request.q) && (
-          <button className="language" type="button" onClick={clear}>
-            {t.clearSearch}
+            {t.search}
           </button>
-        )}
-      </form>
-      <Label className="field patient-status-filter" htmlFor="patient-status">
-        <span id="patient-status-label">{t.statusFilter}</span>
-        <SelectField
-          placeholder={t.active}
-          id="patient-status"
-          labelledBy="patient-status-label"
-          direction={lang === "ar" ? "rtl" : "ltr"}
-          value={request.status}
-          onValueChange={(value) =>
-            changeStatus(value as "active" | "archived" | "all")
-          }
-          options={[
-            { value: "active", label: t.active },
-            { value: "archived", label: t.archived },
-            { value: "all", label: t.allStatuses },
-          ]}
-        />
-      </Label>
+          {(draft || request.q) && (
+            <button className="ui-button" type="button" onClick={clear}>
+              {t.clearSearch}
+            </button>
+          )}
+          <Label
+            className="field patient-status-filter"
+            htmlFor="patient-status"
+          >
+            <span id="patient-status-label">{t.statusFilter}</span>
+            <SelectField
+              placeholder={t.active}
+              id="patient-status"
+              labelledBy="patient-status-label"
+              direction={lang === "ar" ? "rtl" : "ltr"}
+              value={request.status}
+              onValueChange={(value) =>
+                changeStatus(value as "active" | "archived" | "all")
+              }
+              options={[
+                { value: "active", label: t.active },
+                { value: "archived", label: t.archived },
+                { value: "all", label: t.allStatuses },
+              ]}
+            />
+          </Label>
+        </form>
+      </div>
+
       <ScreenReaderStatus>{status}</ScreenReaderStatus>
       {stale && (
         <p className="patient-search-feedback" role="status">
@@ -114,7 +121,7 @@ export function PatientList({
           <p>{t[error]}</p>
           {error !== "denied" && (
             <button
-              className="language"
+              className="ui-button"
               onClick={() => load(request.q, request.page)}
             >
               <RefreshCw size={16} aria-hidden />
@@ -158,16 +165,30 @@ export function PatientList({
                       <td>
                         <button
                           type="button"
-                          className="patient-link"
+                          className="ui-link patient-link row-name-cell"
                           onClick={() =>
                             onNavigate({ kind: "file", patientId: patient.id })
                           }
                         >
-                          {patient.name}
+                          <span className="row-avatar" aria-hidden>
+                            {nameInitials(patient.name)}
+                          </span>
+                          <span>{patient.name}</span>
+                          <span
+                            className={
+                              "status-dot " +
+                              (patient.archived
+                                ? "status-dot-archived"
+                                : "status-dot-active")
+                            }
+                            aria-hidden
+                          />
                         </button>
                       </td>
                       <td>
-                        <bdi>{patient.fileNumber}</bdi>
+                        <bdi className="badge badge-neutral">
+                          {patient.fileNumber}
+                        </bdi>
                       </td>
                       <td>
                         <bdi dir="ltr">{patient.phone}</bdi>
@@ -179,19 +200,30 @@ export function PatientList({
                           t.no
                         )}
                       </td>
-                      <td>{patient.archived ? t.archived : t.active}</td>
+                      <td>
+                        <span
+                          className={
+                            "badge " +
+                            (patient.archived
+                              ? "badge-neutral"
+                              : "badge-success")
+                          }
+                        >
+                          <span className="badge-dot" aria-hidden />
+                          {patient.archived ? t.archived : t.active}
+                        </span>
+                      </td>
                       <td>
                         <button
                           type="button"
                           role="link"
-                          className="language"
+                          className="icon-btn hover-primary"
                           onClick={() =>
                             onNavigate({ kind: "file", patientId: patient.id })
                           }
                           aria-label={`${t.openFile}: ${patient.name}`}
                         >
                           <FileText size={16} aria-hidden />
-                          {t.openFile}
                         </button>
                       </td>
                     </tr>
@@ -202,7 +234,7 @@ export function PatientList({
           )}
           <nav className="patient-pagination" aria-label={t.pages}>
             <button
-              className="language"
+              className="ui-button"
               disabled={loading || result.page === 1}
               onClick={() => load(request.q, request.page - 1)}
             >
@@ -213,7 +245,7 @@ export function PatientList({
               {t.page} <bdi>{result.page}</bdi>
             </span>
             <button
-              className="language"
+              className="ui-button"
               disabled={loading || !result.hasNext}
               onClick={() => load(request.q, request.page + 1)}
             >

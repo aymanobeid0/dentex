@@ -1,6 +1,10 @@
-.patient-form,
-.patient-file {
+.patient-form {
   max-width: 850px;
+}
+.card.patient-file {
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
 }
 .patient-form h2 {
   display: flex;
@@ -13,8 +17,8 @@
   display: block;
   color: var(--text-muted);
   font-size: 14px;
-  line-height: 1.7;
-  margin: 8px 0 16px;
+  line-height: 1.6;
+  margin: 6px 0 12px;
 }
 .patient-fields {
   border: 0;
@@ -22,8 +26,7 @@
   margin: 0;
   min-width: 0;
 }
-.patient-grid,
-.patient-data {
+.patient-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0 24px;
@@ -32,33 +35,25 @@
   color: var(--text-muted);
   font-weight: 400;
 }
-.patient-form select,
-.patient-form textarea {
-  font: inherit;
-  width: 100%;
-  min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: var(--bg);
-  color: var(--text);
+
+.patient-child-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 0;
+  margin-bottom: 16px;
 }
-.patient-form select {
-  height: 44px;
-}
-.patient-form textarea {
-  resize: vertical;
-}
-.patient-form select:focus,
-.patient-form textarea:focus {
-  border-color: var(--border-focus);
-  outline: 0;
+.patient-child-box .patient-hint {
+  margin: 4px 0 0;
+  font-size: 13px;
 }
 .patient-check {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 32px;
+  font-weight: 600;
+  color: var(--text-strong);
 }
 .patient-check input {
   accent-color: var(--primary);
@@ -69,20 +64,43 @@
 }
 .patient-identity {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 16px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 20px;
+  padding: 20px 24px;
+}
+.patient-identity-meta {
+  flex: 1;
+  min-width: 180px;
+}
+.patient-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .patient-identity h2 {
   font-size: 20px;
-  margin: 0 0 4px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
   overflow-wrap: anywhere;
 }
-.patient-identity span,
-.patient-data dt {
-  color: var(--text-muted);
-  font-size: 14px;
+.patient-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.patient-file-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-inline-start: auto;
 }
 .patient-avatar {
   display: grid;
@@ -92,21 +110,73 @@
   flex: none;
   border-radius: 50%;
   background: var(--bg-active);
+  color: var(--neutral-soft-fg);
+  font-size: 18px;
+  font-weight: 600;
 }
 .patient-child {
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: var(--primary-soft-bg);
-  color: var(--primary-soft-fg) !important;
+  font-weight: 600;
 }
 .patient-data {
-  margin: 20px 0 0;
-  gap: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.patient-data-item {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  border-inline-start: 1px solid var(--border-soft);
+  animation: surface-enter var(--dur-slow) var(--ease-out) backwards;
+}
+.patient-data-item:nth-child(1) {
+  animation-delay: 20ms;
+}
+.patient-data-item:nth-child(2) {
+  animation-delay: 45ms;
+}
+.patient-data-item:nth-child(3) {
+  animation-delay: 70ms;
+}
+.patient-data-item:nth-child(4) {
+  animation-delay: 95ms;
+}
+.patient-data-item:nth-child(5) {
+  animation-delay: 120ms;
+}
+.patient-data-item:nth-child(6) {
+  animation-delay: 145ms;
+}
+.patient-data-item:nth-child(3n + 1) {
+  border-inline-start: 0;
+}
+.patient-data-item:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+.patient-data dt {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 .patient-data dd {
   margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+.patient-archived-banner {
+  max-width: 100%;
+  padding: 12px 16px;
+  margin: 0 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--warning-soft-border);
+  background: var(--warning-soft-bg);
+  color: var(--warning-soft-fg);
+  font-size: 13px;
+  font-weight: 500;
 }
 .patient-back {
   margin-top: 16px;
@@ -117,42 +187,45 @@
   gap: 16px;
   color: var(--text-muted);
 }
-@media (max-width: 760px) {
-  .patient-grid,
-  .patient-data {
-    grid-template-columns: 1fr;
-  }
-  .patient-form select {
-    min-height: 44px;
-  }
-}
-.patient-form .field-error {
-  color: var(--danger-soft-fg);
+.patient-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
 .patient-search {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  flex: 1;
+  min-width: 280px;
+  margin: 0;
 }
 .patient-search .field {
   flex: 1;
   min-width: 180px;
   margin: 0;
 }
-.patient-search .input-shell input {
-  height: 36px;
+.patient-status-filter {
+  width: 210px;
+  margin: 0;
 }
-.shell .patient-search button {
-  min-height: 38px;
-}
-.patient-list button {
+.patient-list .patient-link {
   color: var(--text-strong);
+  text-decoration: none;
+  font-weight: 600;
+}
+.patient-list .patient-link:hover {
+  text-decoration: underline;
   text-underline-offset: 3px;
 }
 .patient-list td:first-child {
-  min-width: 160px;
+  min-width: 180px;
   max-width: 320px;
   overflow-wrap: anywhere;
 }
@@ -163,11 +236,8 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-.patient-list button.language {
-  text-decoration: none;
-  white-space: nowrap;
-}
-.patient-list button:focus-visible {
+
+.patient-list .patient-link:focus-visible {
   outline: 1px solid var(--border-focus);
   outline-offset: 3px;
 }
@@ -179,24 +249,70 @@
   flex-wrap: wrap;
   margin-top: 20px;
 }
-@media (max-width: 760px) {
-  .patient-search .field {
-    flex-basis: 100%;
-  }
-  .patient-search .input-shell input {
-    height: 44px;
-  }
-  .patient-list button.language {
-    min-height: 44px;
-  }
+.old-number-lookup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
 }
-@media (pointer: coarse) {
-  .patient-list button,
-  .patient-list button.language {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    min-width: 44px;
+.lookup-form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lookup-form-row .field {
+  flex: 1;
+  min-width: 180px;
+  margin: 0;
+}
+.lookup-result-card {
+  padding: 12px 14px;
+  border: 1px solid var(--primary-soft-border);
+  border-radius: 8px;
+  background: var(--primary-tint);
+}
+.lookup-result-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--primary);
+}
+.lookup-result-name {
+  margin: 0;
+  font-weight: 700;
+}
+.lookup-result-name a {
+  color: var(--text-strong);
+  text-decoration: none;
+}
+.lookup-result-name a:hover {
+  text-decoration: underline;
+}
+.lookup-result-number {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+@media (max-width: 760px) {
+  .patient-grid,
+  .patient-data {
+    grid-template-columns: 1fr;
+  }
+  .patient-data-item {
+    border-inline-start: 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .patient-data-item:nth-last-child(-n + 3) {
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .patient-data-item:last-child {
+    border-bottom: 0;
+  }
+  .patient-search .field,
+  .patient-status-filter {
+    flex-basis: 100%;
+    width: 100%;
   }
 }
 .patient-search-feedback {
@@ -210,18 +326,12 @@
 .patient-review li {
   margin-block: 8px;
 }
-.patient-status-filter {
-  max-width: 240px;
-  margin-block: 16px;
-}
 
-.patient-link {
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--text-strong);
-  font: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-align: start;
+.patient-search .patient-status-filter {
+  flex: 0 1 210px;
+}
+@media (max-width: 760px) {
+  .patient-search .patient-status-filter {
+    flex-basis: 100%;
+  }
 }

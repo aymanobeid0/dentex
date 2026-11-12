@@ -1,5 +1,7 @@
-/* Central stylesheet order; feature rules remain owned by their modules. */
+/* Composition only. Ownership is defined in docs/ui-components.md. */
 @import "../shared/styles/base.css";
+@import "../ui/components.css";
+@import "../ui/primitives.css";
 @import "layout/layout.css";
 @import "../features/auth/auth.css";
 @import "../shared/styles/forms.css";
@@ -7,6 +9,5 @@
 @import "../features/roles/roles.css";
 @import "../features/account/account.css";
 @import "../features/patients/patients.css";
-@import "../ui/primitives.css";
-
 @import "../features/appointments/appointments.css";
+@import "../ui/motion.css";

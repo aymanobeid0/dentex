@@ -4,6 +4,7 @@ import { Session, SessionProvider } from "../../client/features/auth";
 import { createSessionRequest } from "../../client/shared/api/request";
 import { RequestContext } from "../../client/shared/api/RequestProvider";
 import { notifyManager } from "@tanstack/react-query";
+import { UiProvider } from "../../client/ui/UiProvider";
 
 // Keep query notifications in act's microtask queue when a test controls timers.
 notifyManager.setScheduler(queueMicrotask);
@@ -26,7 +27,9 @@ export function renderPatient(ui: ReactNode, options?: RenderOptions) {
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <SessionProvider session={session}>
-        <RequestContext value={transport.request}>{children}</RequestContext>
+        <UiProvider direction="ltr">
+          <RequestContext value={transport.request}>{children}</RequestContext>
+        </UiProvider>
       </SessionProvider>
     );
   }

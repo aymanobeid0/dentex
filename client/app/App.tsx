@@ -183,7 +183,7 @@ function SessionApp({
         <LanguageSwitch />
         <p role="alert">{t.network}</p>
         <button
-          className="language"
+          className="ui-button"
           onClick={() => void session.refresh().catch(() => {})}
         >
           {t.retry}
@@ -226,7 +226,7 @@ function SessionApp({
           <LanguageSwitch />
           <h1>{t.notFound}</h1>
           <button
-            className="language"
+            className="ui-button"
             onClick={() => void go(paths.clinicLogin)}
           >
             {t.toClinic}
@@ -380,7 +380,7 @@ function SessionApp({
       ) : forbidden || screen === "notFound" ? (
         <section className="card">
           <h1>{forbidden ? t.forbidden : t.notFound}</h1>
-          <button className="language" onClick={() => void go(defaultPath)}>
+          <button className="ui-button" onClick={() => void go(defaultPath)}>
             {t.toDefault}
           </button>
         </section>

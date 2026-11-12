@@ -121,12 +121,17 @@
   --radius-pill: 999px;
 
   /* ---------- Sizes ---------- */
-  --btn-h-sm: 28px;
-  --btn-h: 32px;
-  --btn-h-lg: 36px;
-  --icon-btn: 30px;
+  --btn-h-sm: 32px;
+  --btn-h: 36px;
+  --control-h: 36px;
+  --z-overlay: 100;
+  --z-dialog: 101;
+  --z-popover: 110;
+  --z-tooltip: 120;
+  --btn-h-lg: 40px;
+  --icon-btn: var(--control-h);
   --input-h: 36px;
-  --input-h-lg: 40px;     /* login, onboarding, modal fields */
+  --input-h-lg: 42px;     /* login, onboarding, modal fields */
   --touch-min: 44px;      /* tablet / phone controls */
   --nav-item-h: 34px;
   --sidebar-w: 232px;
@@ -141,8 +146,12 @@
   --overlay: rgba(20,20,20,.38);
 
   /* ---------- Motion ---------- */
-  --dur: 150ms;
-  --ease: ease;
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --dur-slow: 240ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease: var(--ease-out);
 }
 
 /* =========================================================
@@ -190,22 +199,6 @@
   --danger-soft-fg: #FCA5A5;
 }
 
-/* =========================================================
-   Base
-   ========================================================= */
-html { font-family: var(--font-sans); color: var(--text); background: var(--bg); }
-body { margin: 0; font-size: var(--fs-13); }
-button, input, select, textarea { font-family: inherit; }
-.num { font-variant-numeric: tabular-nums; }
-.ltr { direction: ltr; unicode-bidi: isolate; }
 
-/* Interaction defaults */
-.btn { transition: filter var(--dur) var(--ease); }
-.btn:hover:not(:disabled) { filter: brightness(.95); }
-.btn:active:not(:disabled) { filter: brightness(.9); }
-.btn:focus-visible, .nav-item:focus-visible, [role="tab"]:focus-visible {
-  outline: 1px solid var(--border-focus); outline-offset: 2px;
-}
-.field:focus-within { border-color: var(--border-focus); background: var(--bg); outline: none; }
-.field:hover { border-color: var(--border-hover); }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media (max-width: 1194px) { :root { --control-h: 40px; } }
+@media (max-width: 760px) { :root { --control-h: 44px; } }

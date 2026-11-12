@@ -22,6 +22,8 @@
 
 ### UI implementation
 
+قبل تعديل مكوّن أو CSS أو مراجعة تطابق واجهة، اقرأ `docs/ui-components.md`: هو المرجع الموحد لملكية التنسيق والأبعاد والحالات والطبقات والحركة. عدّل المظهر عند مالكه المشترك، وشغّل `npm run check:ui-styles`؛ لا تضف override في ميزة لتجاوز مكوّن مشترك. أثبت القياسات والمطابقة بالمتصفح باللغتين والمقاسات المطلوبة، ولا تعتبر اختبارات الوظائف وحدها تدقيقًا بصريًا.
+
 Before implementing or changing any screen, read `docs/ui-contract.md`, `DESIGN.md`, and the relevant screen reference. `login-preview.html` is the user-approved login visual baseline. Follow its refined neutral borders, Lucide icons, autofill treatment, and bilingual behavior. Implement screen content against the backend contract in `docs/ui-contract.md`; distinguish approved scope from proposals. Verify the complete UI-to-API flow and both languages before closing a ticket. Report blocked visual verification honestly.
 
 ### UI primitives

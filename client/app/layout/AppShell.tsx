@@ -1,3 +1,4 @@
+import { IconButton } from "../../ui/IconButton";
 import { LogOut, Menu } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { LanguageSwitch, translations, type Lang } from "../../shared/i18n";
@@ -81,10 +82,14 @@ export function AppShell({
             </span>
             <div>
               <LanguageSwitch />
-              <button className="language" onClick={onLogout} disabled={busy}>
+              <IconButton
+                label={t.logout}
+                tone="danger"
+                onClick={onLogout}
+                disabled={busy}
+              >
                 <LogOut size={16} aria-hidden="true" />
-                {t.logout}
-              </button>
+              </IconButton>
             </div>
           </header>
           <main className="content">{children}</main>

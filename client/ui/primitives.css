@@ -21,6 +21,13 @@
   border-radius: 4px;
   background: var(--bg);
   color: var(--bg);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.ui-checkbox:active:not(:disabled) {
+  transform: scale(0.92);
 }
 .ui-checkbox[data-state="checked"] {
   background: var(--primary);
@@ -42,14 +49,24 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  height: 44px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
+  height: var(--control-h);
+  padding: 0 12px;
+  border: 1px solid var(--border-control);
   border-radius: 8px;
   background: var(--bg);
   color: var(--text);
   font: inherit;
+  font-size: 13px;
   text-align: start;
+  box-shadow: var(--shadow-btn);
+  transition:
+    border-color var(--dur) var(--ease-out),
+    background-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+.ui-select:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
 }
 .ui-select > span:first-child {
   min-width: 0;
@@ -60,9 +77,10 @@
 .ui-select:focus-visible {
   outline: 0;
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-tint);
 }
 .ui-select-content {
-  z-index: 40;
+  z-index: var(--z-popover);
   min-width: var(--radix-select-trigger-width);
   max-height: var(--radix-select-content-available-height);
   overflow: hidden;
@@ -73,22 +91,24 @@
   color: var(--text);
   box-shadow: var(--shadow-menu);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 14px;
+  animation: popper-enter var(--dur) var(--ease-out);
 }
 .ui-select-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 36px;
+  min-height: 34px;
   padding: 6px 10px;
   border-radius: 6px;
   outline: 0;
   cursor: pointer;
   user-select: none;
+  transition: background-color var(--dur-fast) var(--ease-out);
 }
 .ui-select-item[data-highlighted] {
-  background: var(--bg-active);
+  background: var(--bg-hover);
 }
 .ui-select-scroll {
   display: flex;
@@ -96,16 +116,22 @@
   justify-content: center;
   min-height: 24px;
 }
+[data-radix-popper-content-wrapper]:has(.ui-tooltip) {
+  pointer-events: none !important;
+}
 .ui-tooltip {
-  z-index: 50;
+  z-index: var(--z-tooltip);
   max-width: 260px;
   padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--text-strong);
   color: var(--bg);
-  font: 14px/1.6 var(--font-sans);
+  font: 13px/1.5 var(--font-sans);
   box-shadow: var(--shadow-menu);
+  pointer-events: none;
+  user-select: none;
+  animation: popper-enter var(--dur-fast) var(--ease-out);
 }
 .ui-tooltip-arrow {
   fill: var(--text-strong);
@@ -113,32 +139,41 @@
 .draft-dialog-overlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
-  background: color-mix(in srgb, var(--text) 35%, transparent);
+  z-index: var(--z-overlay);
+  background: var(--overlay, rgba(20, 20, 20, 0.38));
+  backdrop-filter: blur(2px);
+  animation: overlay-enter var(--dur) var(--ease-out);
 }
 .draft-dialog {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 101;
-  width: min(440px, calc(100vw - 32px));
+  z-index: var(--z-dialog);
+  width: min(460px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
   overflow: auto;
   box-sizing: border-box;
   padding: 24px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--bg);
   color: var(--text);
-  font: 15px/1.6 var(--font-sans);
+  font: 14px/1.6 var(--font-sans);
   box-shadow: var(--shadow-dialog);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: dialog-enter var(--dur-slow) var(--ease-out);
 }
 .draft-dialog h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
 }
 .draft-dialog p {
+  margin: 0;
   color: var(--text-3);
 }
 .draft-dialog-actions {
@@ -146,6 +181,9 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 @media (pointer: coarse) {
   .choice-field,
@@ -154,3 +192,8 @@
     min-height: 44px;
   }
 }
+body:has([role="alertdialog"]) [role="dialog"] {
+  pointer-events: none;
+}
+
+.draft-dialog[data-size="wide"] { width: min(640px, calc(100vw - 32px)); }

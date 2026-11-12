@@ -57,7 +57,7 @@ export function AdminPasswordForm({
             {t.save}
           </button>
           <button
-            className="language"
+            className="ui-button"
             type="button"
             disabled={busy}
             onClick={cancel}

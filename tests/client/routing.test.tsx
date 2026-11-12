@@ -350,14 +350,16 @@ it("opens the confirmed patient file after cancelling a busy departure without a
       return response(
         url === "/api/auth/me"
           ? clinic
-          : {
-              id: "confirmed",
-              name: "Confirmed patient",
-              phone: "+22246108834",
-              fileNumber: "7",
-              gender: "female",
-              isChild: false,
-            },
+          : url.startsWith("/api/clinic/patients?")
+            ? { items: [], page: 1, hasNext: false }
+            : {
+                id: "confirmed",
+                name: "Confirmed patient",
+                phone: "+22246108834",
+                fileNumber: "7",
+                gender: "female",
+                isChild: false,
+              },
       );
     }),
   );
@@ -384,7 +386,11 @@ it("opens the confirmed patient file after cancelling a busy departure without a
   await screen.findByRole("heading", { name: "Confirmed patient" });
   expect(window.location.pathname).toBe("/clinic/patients/confirmed");
   expect(screen.queryByRole("alertdialog")).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Nouveau patient" }));
+  expect(screen.queryByRole("button", { name: "Nouveau patient" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Retour à la liste" }));
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Nouveau patient" }),
+  );
   fireEvent.change(
     await screen.findByRole("textbox", { name: "Nom complet" }),
     { target: { value: "New protected draft" } },

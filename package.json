@@ -14,6 +14,7 @@
     "start": "node dist-server/server/index.js",
     "admin:production": "node dist-server/scripts/platform-admin.js",
     "check:architecture": "eslint server && depcruise server --config .dependency-cruiser.cjs",
+    "check:ui-styles": "node scripts/check-ui-styles.mjs",
     "check:frontend-architecture": "depcruise client --config .dependency-cruiser.frontend.cjs"
   },
   "dependencies": {
