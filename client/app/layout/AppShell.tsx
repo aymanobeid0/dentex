@@ -6,7 +6,7 @@ import type { Page } from "../navigation";
 import { AppSidebar } from "./AppSidebar";
 type Props = {
   lang: Lang;
-  page: Page;
+  page: Page | null;
   onNavigate: (page: Page) => void;
   kind: "clinic" | "platform";
   canManageEmployees: boolean;
@@ -33,15 +33,17 @@ export function AppShell({
     () => window.matchMedia("(max-width: 760px)").matches,
   );
   const title =
-    page === "patients"
-      ? t.patients
-      : page === "rolePermissions"
-        ? t.rolePermissions
-        : page === "employees"
-          ? t.employees
-          : kind === "platform" && page === "clinics"
-            ? t.dashboard
-            : t.account;
+    page === "home"
+      ? t.home
+      : page === "patients"
+        ? t.patients
+        : page === "rolePermissions"
+          ? t.rolePermissions
+          : page === "employees"
+            ? t.employees
+            : kind === "platform" && page === "clinics"
+              ? t.dashboard
+              : t.account;
   return (
     <Disclosure
       open={!collapsed}

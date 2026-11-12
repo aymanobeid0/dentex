@@ -8,7 +8,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { App } from "../../client/app/App";
+import { application } from "./app";
 import { translations } from "../../client/shared/i18n";
 afterEach(() => {
   cleanup();
@@ -42,7 +42,7 @@ it("does not authenticate a malformed successful clinic login response", async (
         ),
     ),
   );
-  render(<App />);
+  render(application());
   const t = translations.fr.app;
   fireEvent.change(await screen.findByLabelText(t.code), {
     target: { value: "2000" },
@@ -79,7 +79,7 @@ it.each([408, 500])(
         );
       }),
     );
-    render(<App />);
+    render(application());
     const t = translations.fr.app;
     fireEvent.change(await screen.findByLabelText(t.code), {
       target: { value: "2000" },
@@ -118,7 +118,7 @@ it("does not confirm logout before a204 and never queues another logout after re
       );
     }),
   );
-  render(<App />);
+  render(application());
   const t = translations.fr.app;
   const logout = await screen.findByRole("button", { name: t.logout });
   fireEvent.click(logout);
@@ -142,7 +142,8 @@ it("does not confirm logout before a204 and never queues another logout after re
   fireEvent.click(screen.getByRole("button", { name: t.logout }));
   await waitFor(() => expect(writes).toBe(2));
   finish(new Response(null, { status: 204 }));
-  await screen.findByLabelText(t.code);
+  await screen.findByRole("heading", { name: t.title });
+  expect(window.location.pathname).toBe("/platform/login");
 });
 it("sends only one login while confirmation is pending and never replays it after a lost reply", async () => {
   localStorage.setItem("dentex-lang", "fr");
@@ -164,7 +165,7 @@ it("sends only one login while confirmation is pending and never replays it afte
       });
     }),
   );
-  render(<App />);
+  render(application());
   const t = translations.fr.app;
   fireEvent.change(await screen.findByLabelText(t.code), {
     target: { value: "2000" },
