@@ -1,3 +1,6 @@
+export type PatientView =
+  { kind: "list" } | { kind: "new" } | { kind: "file"; patientId: string };
+
 export type Patient = {
   archived: boolean;
   editVersion: number;

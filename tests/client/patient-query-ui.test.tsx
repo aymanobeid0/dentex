@@ -82,14 +82,14 @@ it("refreshes the visible list every15 seconds without clearing the displayed ro
   );
   render(<App />);
   await advance(50);
-  expect(screen.getByRole("link", { name: "Original patient" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Original patient" })).toBeTruthy();
   name = "pending";
   await advance(15000);
   expect(finish).toBeTypeOf("function");
-  expect(screen.getByRole("link", { name: "Original patient" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Original patient" })).toBeTruthy();
   await act(async () => finish(response(list("Updated patient"))));
   await advance(50);
-  expect(screen.getByRole("link", { name: "Updated patient" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Updated patient" })).toBeTruthy();
 });
 
 it("updates only the open patient file and keeps it readable offline", async () => {
@@ -138,7 +138,7 @@ it("never resurfaces cached rows after a permission rejection, including during 
   );
   render(<App />);
   await advance(50);
-  expect(screen.getByRole("link", { name: "Private patient" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Private patient" })).toBeTruthy();
   denied = true;
   await advance(15050);
   expect(screen.queryByText("Private patient")).toBeNull();
@@ -174,7 +174,7 @@ it("pauses list polling while hidden/offline and revalidates only the current se
   fireEvent(document, new Event("visibilitychange"));
   await advance(30000);
   expect(reads()).toHaveLength(before);
-  expect(screen.getByRole("link", { name: "Visible patient" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Visible patient" })).toBeTruthy();
   expect(
     screen.getByText(translations.fr.patients.staleData),
   ).toBeTruthy();
@@ -263,7 +263,7 @@ it("keeps same-search rows after bounded transient retries and explicitly warns 
   await advance(50);
   fail = true;
   await advance(18100);
-  expect(screen.getByRole("link", { name: "Loaded patient" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Loaded patient" })).toBeTruthy();
   expect(
     screen.getByText(translations.fr.patients.staleData),
   ).toBeTruthy();
@@ -322,15 +322,15 @@ it("shares one initial read and one poll between simultaneous consumers of the s
   vi.stubGlobal("fetch", fetcher);
   renderPatient(
     <>
-      <PatientList lang="fr" onExpired={() => {}} />
-      <PatientList lang="fr" onExpired={() => {}} />
+      <PatientList onNavigate={() => {}} lang="fr" onExpired={() => {}} />
+      <PatientList onNavigate={() => {}} lang="fr" onExpired={() => {}} />
     </>,
   );
   await advance(50);
   expect(fetcher).toHaveBeenCalledTimes(1);
   await advance(15050);
   expect(fetcher).toHaveBeenCalledTimes(2);
-  expect(screen.getAllByRole("link", { name: "Shared patient" })).toHaveLength(
+  expect(screen.getAllByRole("button", { name: "Shared patient" })).toHaveLength(
     2,
   );
 });
@@ -361,7 +361,7 @@ it("does not reveal another cached search while rechecking access after a403", a
   });
   await advance(350);
   expect(
-    screen.getByRole("link", { name: "Private cached search" }),
+    screen.getByRole("button", { name: "Private cached search" }),
   ).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Effacer la recherche" }));
   await advance(50);

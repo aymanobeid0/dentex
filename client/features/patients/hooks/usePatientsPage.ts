@@ -12,6 +12,7 @@ import {
   useRegistrationDraftGuard,
   type NavigationGuard,
 } from "./useRegistrationDraftGuard";
+import type { PatientView } from "../types";
 type Form = {
   name: string;
   phone: string;
@@ -74,17 +75,17 @@ const blank: Form = {
   administrativeNote: "",
   isChild: false,
 };
-const selectedFile = () =>
-  window.location.hash === "#patients/new"
-    ? ""
-    : (/^#patients\/([^/]+)$/.exec(window.location.hash)?.[1] ?? "");
 export function usePatientsPage({
+  view,
+  onNavigate,
   lang,
   canRead,
   canWrite,
   onExpired,
   onNavigationGuardChange,
 }: {
+  view: PatientView;
+  onNavigate: (view: PatientView) => void;
   lang: Lang;
   canRead: boolean;
   canWrite: boolean;
@@ -95,11 +96,10 @@ export function usePatientsPage({
   const [uncertain, setUncertain] = useState(false);
   const availability = useReadAvailability();
   const t = translations[lang].patients;
-  const [creating, setCreating] = useState(
-    () => window.location.hash === "#patients/new" || (!canRead && canWrite),
-  );
-  const [id, setId] = useState(selectedFile),
-    [form, setForm] = useState<Form>(blank);
+  const creating =
+    view.kind === "new" || (!canRead && canWrite && view.kind === "list");
+  const id = view.kind === "file" ? view.patientId : "";
+  const [form, setForm] = useState<Form>(blank);
   const file = usePatientFile(id, canRead && !creating, onExpired);
   const { loading } = file;
   const edit = usePatientEdit(id, canRead && !!file.patient, onExpired);
@@ -192,62 +192,15 @@ export function usePatientsPage({
     },
     onNavigationGuardChange,
   );
-  const currentHash = useRef(window.location.hash);
   useEffect(() => {
-    const changed = () => {
-      const target = window.location.hash;
-      if (target === currentHash.current) return;
-      window.history.replaceState(
-        null,
-        "",
-        currentHash.current || window.location.pathname,
-      );
-      guard.requestLeave(() => {
-        window.history.replaceState(
-          null,
-          "",
-          target || window.location.pathname,
-        );
-        currentHash.current = target;
-        setId(selectedFile());
-        setCreating(target === "#patients/new");
-        setError("");
-        setReceipt("");
-        setEditing(null);
-        setEditIssue(null);
-        setArchiveAction(null);
-        setArchiveOpen(false);
-        setArchiveIssue("");
-        setArchiveReviewed(false);
-        setForm(blank);
-        setFieldErrors({});
-      });
-    };
-    window.addEventListener("hashchange", changed);
-    return () => window.removeEventListener("hashchange", changed);
-  }, [guard.requestLeave]);
-  useEffect(() => {
-    if (id && !loading) heading.current?.focus();
-  }, [id, loading]);
+    if (creating || (id && !loading)) heading.current?.focus();
+  }, [id, loading, creating]);
   useEffect(() => {
     if (!busy && fieldErrors.phone === "duplicate")
       document.getElementById("patient-phone")?.focus();
   }, [busy, fieldErrors.phone]);
   function newPatient() {
-    guard.requestLeave(() => {
-      window.location.hash = "patients/new";
-      currentHash.current = "#patients/new";
-      setCreating(true);
-      setId("");
-      setForm(blank);
-      setFieldErrors({});
-      setReceipt("");
-      setSavedEdit(false);
-      setError("");
-      heading.current?.focus();
-      setEditing(null);
-      setEditIssue(null);
-    });
+    onNavigate({ kind: "new" });
   }
   function startEditing() {
     if (!patient || patient.archived || !canRead || !canWrite || busy) return;
@@ -435,8 +388,7 @@ export function usePatientsPage({
       setForm(blank);
       setFieldErrors({});
       if (canRead) {
-        window.location.hash = `patients/${created.id}`;
-        setId(created.id);
+        onNavigate({ kind: "file", patientId: created.id });
       } else setReceipt(created.fileNumber);
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
@@ -512,8 +464,6 @@ export function usePatientsPage({
     archiveReviewed,
     acknowledgeArchiveReview,
     archiveBlocked,
-    backToList: () => {
-      window.location.hash = "patients";
-    },
+    backToList: () => onNavigate({ kind: "list" }),
   };
 }

@@ -41,7 +41,7 @@ it("waits 300ms after the last character and updates the table without submittin
   vi.useFakeTimers();
   const fetcher = vi.fn().mockImplementation(async () => empty());
   vi.stubGlobal("fetch", fetcher);
-  render(<PatientList lang="fr" onExpired={() => {}} />);
+  render(<PatientList onNavigate={() => {}} lang="fr" onExpired={() => {}} />);
   await act(async () => {});
   const input = screen.getByRole("searchbox");
   fireEvent.change(input, { target: { value: "M" } });
@@ -70,7 +70,7 @@ it.each([200, 500])(
       )
       .mockResolvedValue(listed("Latest patient"));
     vi.stubGlobal("fetch", fetcher);
-    render(<PatientList lang="fr" onExpired={() => {}} />);
+    render(<PatientList onNavigate={() => {}} lang="fr" onExpired={() => {}} />);
     await act(async () => {});
     const input = screen.getByRole("searchbox");
     input.focus();
@@ -88,7 +88,7 @@ it.each([200, 500])(
     await advance(299);
     expect(fetcher).toHaveBeenCalledTimes(2);
     await advance(1);
-    expect(screen.getByRole("link", { name: "Latest patient" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Latest patient" })).toBeTruthy();
     expect(document.activeElement).toBe(input);
     expect(screen.getByRole("status").textContent).toContain("1");
   },
@@ -108,7 +108,7 @@ it("ignores a response whose JSON finishes after the query changes", async () =>
     })
     .mockResolvedValue(listed("New result"));
   vi.stubGlobal("fetch", fetcher);
-  render(<PatientList lang="ar" onExpired={() => {}} />);
+  render(<PatientList onNavigate={() => {}} lang="ar" onExpired={() => {}} />);
   await act(async () => {});
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Old" } });
   await advance(300);
@@ -122,13 +122,13 @@ it("ignores a response whose JSON finishes after the query changes", async () =>
     });
   });
   expect(screen.queryByText("Wrong old result")).toBeNull();
-  expect(screen.getByRole("link", { name: "New result" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "New result" })).toBeTruthy();
 });
 it("submits immediately with Enter and does not send the scheduled request again", async () => {
   vi.useFakeTimers();
   const fetcher = vi.fn().mockImplementation(async () => empty());
   vi.stubGlobal("fetch", fetcher);
-  render(<PatientList lang="fr" onExpired={() => {}} />);
+  render(<PatientList onNavigate={() => {}} lang="fr" onExpired={() => {}} />);
   await act(async () => {});
   fireEvent.change(screen.getByRole("searchbox"), {
     target: { value: "Marie" },
@@ -148,7 +148,7 @@ it("waits for composition to finish and clears the query immediately", async () 
   vi.useFakeTimers();
   const fetcher = vi.fn().mockImplementation(async () => empty());
   vi.stubGlobal("fetch", fetcher);
-  render(<PatientList lang="ar" onExpired={() => {}} />);
+  render(<PatientList onNavigate={() => {}} lang="ar" onExpired={() => {}} />);
   await act(async () => {});
   const input = screen.getByRole("searchbox");
   fireEvent.compositionStart(input);
@@ -169,7 +169,7 @@ it("cleans up the debounce and in-flight request when the list unmounts", async 
   vi.useFakeTimers();
   const fetcher = vi.fn().mockImplementation(() => new Promise(() => {}));
   vi.stubGlobal("fetch", fetcher);
-  const view = render(<PatientList lang="fr" onExpired={() => {}} />);
+  const view = render(<PatientList onNavigate={() => {}} lang="fr" onExpired={() => {}} />);
   const signal = fetcher.mock.calls[0][1].signal as AbortSignal;
   fireEvent.change(screen.getByRole("searchbox"), {
     target: { value: "Marie" },

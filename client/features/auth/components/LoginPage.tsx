@@ -1,13 +1,17 @@
 import { Building2 } from "lucide-react";
 import { LanguageSwitch } from "../../../shared/i18n";
 import { useLogin } from "../hooks/useLogin";
-import type { Account } from "../types";
+import type { Account, LoginKind } from "../types";
 import { LoginForm } from "./LoginForm";
 export function LoginPage({
+  kind,
+  onKindChange,
   passwordChanged,
   onAuthenticated,
   onLoggedIn,
 }: {
+  kind: LoginKind;
+  onKindChange: (kind: LoginKind) => void;
   passwordChanged: boolean;
   onAuthenticated: (account: Account) => void;
   onLoggedIn: () => void;
@@ -28,7 +32,13 @@ export function LoginPage({
     loginKind,
     setLoginKind,
     login,
-  } = useLogin({ passwordChanged, onAuthenticated, onLoggedIn });
+  } = useLogin({
+    kind,
+    onKindChange,
+    passwordChanged,
+    onAuthenticated,
+    onLoggedIn,
+  });
   const language = <LanguageSwitch />;
   return (
     <div className="login-page">

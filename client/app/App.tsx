@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "../../design-tokens.css";
 import { AccountPage } from "../features/account";
-import { LoginPage, Session, useIdentity, useLogout } from "../features/auth";
+import {
+  LoginPage,
+  Session,
+  useIdentity,
+  useLogout,
+  type LoginKind,
+} from "../features/auth";
 import { ClinicsPage } from "../features/clinics";
 import { EmployeePage } from "../features/employees";
 import { PatientPage } from "../features/patients";
@@ -11,6 +17,8 @@ import { AppProviders } from "./AppProviders";
 import { AppShell } from "./layout/AppShell";
 import type { Page } from "./navigation";
 import "./styles.css";
+import type { NavigationGuard } from "../ui/useDraftGuard";
+import { useLegacyPatientNavigation } from "./useLegacyPatientNavigation";
 export function App() {
   const [session, setSession] = useState(
     () => new Session((next) => setSession(next)),
@@ -42,16 +50,20 @@ function SessionApp({
   const expire = () => session.replace(null);
   const { busy, error, logout } = useLogout(expire);
   const [page, setPage] = useState<Page>("clinics");
+  const [loginKind, setLoginKind] = useState<LoginKind>("clinic");
   const [clinicBusy, setClinicBusy] = useState(false);
-  const navigationGuard = useRef<((leave: () => void) => void) | null>(null);
+  const navigationGuard = useRef<NavigationGuard | null>(null);
   const registerNavigationGuard = useCallback(
-    (guard: ((leave: () => void) => void) | null) => {
+    (guard: NavigationGuard | null) => {
       navigationGuard.current = guard;
     },
     [],
   );
-  const navigate = (leave: () => void) =>
-    navigationGuard.current ? navigationGuard.current(leave) : leave();
+  const navigate: NavigationGuard = (leave, stay) =>
+    navigationGuard.current ? navigationGuard.current(leave, stay) : leave();
+  const patients = useLegacyPatientNavigation(navigate, () => {
+    if (account?.kind === "clinic") setPage("patients");
+  });
   const admin = account?.kind === "clinic" && account.roles.includes("admin");
   const canManageEmployees =
     account?.kind === "clinic" &&
@@ -68,17 +80,6 @@ function SessionApp({
       setPage(
         window.location.hash.startsWith("#patients") ? "patients" : "account",
       );
-  }, [account?.kind]);
-  useEffect(() => {
-    const open = () => {
-      if (
-        account?.kind === "clinic" &&
-        window.location.hash.startsWith("#patients")
-      )
-        navigate(() => setPage("patients"));
-    };
-    window.addEventListener("hashchange", open);
-    return () => window.removeEventListener("hashchange", open);
   }, [account?.kind]);
   useEffect(() => {
     if (
@@ -118,6 +119,8 @@ function SessionApp({
   if (!account)
     return (
       <LoginPage
+        kind={loginKind}
+        onKindChange={setLoginKind}
         passwordChanged={passwordChanged}
         onAuthenticated={(next) => session.replace(next)}
         onLoggedIn={() => setPasswordChanged(false)}
@@ -164,6 +167,8 @@ function SessionApp({
       account.kind === "clinic" &&
       (canReadPatients || canWritePatients) ? (
         <PatientPage
+          view={patients.view}
+          onNavigate={patients.onNavigate}
           lang={lang}
           canRead={canReadPatients}
           canWrite={canWritePatients}
