@@ -255,6 +255,8 @@
     "active": "نشط",
     "allStatuses": "كل الملفات",
     "statusFilter": "حالة الملف",
+    "activeStatusHint": "ملف المريض نشط",
+    "archivedStatusHint": "ملف المريض مؤرشف",
     "archivedHint": "هذا الملف مؤرشف. استعده قبل تعديل بياناته.",
     "archiveUncertain": "تعذر الاتصال أو تأكيد تغيير حالة الملف. حاول لاحقًا؛ قد تكون العملية نُفذت بالفعل.",
     "acceptCurrentStatus": "راجعت الحالة الحالية؛ إغلاق المراجعة",

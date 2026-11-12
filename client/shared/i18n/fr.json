@@ -255,6 +255,8 @@
     "active": "Actif",
     "allStatuses": "Tous les dossiers",
     "statusFilter": "État du dossier",
+    "activeStatusHint": "Le dossier du patient est actif",
+    "archivedStatusHint": "Le dossier du patient est archivé",
     "archivedHint": "Ce dossier est archivé. Restaurez-le avant de modifier ses informations.",
     "archiveUncertain": "Connexion ou confirmation du changement d’état impossible. Réessayez plus tard ; l’opération peut déjà avoir été effectuée.",
     "acceptCurrentStatus": "J’ai vérifié l’état actuel ; fermer la vérification",

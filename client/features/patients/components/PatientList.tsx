@@ -1,4 +1,5 @@
 import { nameInitials } from "../../../ui/nameInitials";
+import { Hint } from "../../../ui/Hint";
 import {
   ArrowLeft,
   ArrowRight,
@@ -155,7 +156,6 @@ export function PatientList({
                     <th scope="col">{t.number}</th>
                     <th scope="col">{t.phone}</th>
                     <th scope="col">{t.child}</th>
-                    <th scope="col">{t.statusFilter}</th>
                     <th scope="col">{t.openFile}</th>
                   </tr>
                 </thead>
@@ -163,27 +163,51 @@ export function PatientList({
                   {result.items.map((patient) => (
                     <tr key={patient.id}>
                       <td>
-                        <button
-                          type="button"
-                          className="ui-link patient-link row-name-cell"
-                          onClick={() =>
-                            onNavigate({ kind: "file", patientId: patient.id })
-                          }
-                        >
+                        <div className="row-name-cell">
                           <span className="row-avatar" aria-hidden>
                             {nameInitials(patient.name)}
                           </span>
-                          <span>{patient.name}</span>
-                          <span
-                            className={
-                              "status-dot " +
-                              (patient.archived
-                                ? "status-dot-archived"
-                                : "status-dot-active")
+                          <button
+                            type="button"
+                            className="ui-link patient-link"
+                            onClick={() =>
+                              onNavigate({
+                                kind: "file",
+                                patientId: patient.id,
+                              })
                             }
-                            aria-hidden
-                          />
-                        </button>
+                          >
+                            <span>{patient.name}</span>
+                          </button>
+                          <Hint
+                            text={
+                              patient.archived
+                                ? t.archivedStatusHint
+                                : t.activeStatusHint
+                            }
+                          >
+                            <span
+                              className="status-indicator"
+                              role="img"
+                              tabIndex={0}
+                              aria-label={
+                                patient.archived
+                                  ? t.archivedStatusHint
+                                  : t.activeStatusHint
+                              }
+                            >
+                              <span
+                                className={
+                                  "status-dot " +
+                                  (patient.archived
+                                    ? "status-dot-archived"
+                                    : "status-dot-active")
+                                }
+                                aria-hidden
+                              />
+                            </span>
+                          </Hint>
+                        </div>
                       </td>
                       <td>
                         <bdi className="badge badge-neutral">
@@ -199,19 +223,6 @@ export function PatientList({
                         ) : (
                           t.no
                         )}
-                      </td>
-                      <td>
-                        <span
-                          className={
-                            "badge " +
-                            (patient.archived
-                              ? "badge-neutral"
-                              : "badge-success")
-                          }
-                        >
-                          <span className="badge-dot" aria-hidden />
-                          {patient.archived ? t.archived : t.active}
-                        </span>
                       </td>
                       <td>
                         <button
