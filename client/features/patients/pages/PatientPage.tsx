@@ -366,12 +366,6 @@ function PatientFlow({
           {t.backToList}
         </button>
       )}
-      {id && canWrite && (
-        <button className="language patient-back" onClick={newPatient}>
-          <ArrowLeft size={16} className="directional" aria-hidden />
-          {t.back}
-        </button>
-      )}
     </section>
   );
 }
