@@ -6,11 +6,11 @@
 
 ## التقدم والاعتماديات
 
-التنفيذ: 0/3. لا تذكرة بدأت. التصنيف ready-for-agent لا يعني أن تذكرة ذات حواجز أصبحت متاحة أو أن التنفيذ مأذون بمجرد النشر.
+التنفيذ: 0/3 مكتملة؛01 قيد التنفيذ بالتكليف الصريح في2026-11-11 عبر implement-spec.02 ثم03 تنتظران الحواجز التقنية؛ يبقى اعتماد الفحص البشري مستقلًا عن اكتمال التنفيذ.
 
 | الرقم | التذكرة | Blocked by | Status | Execution | جاهزية الاعتماديات |
 | --- | --- | --- | --- | --- | --- |
-| 01 | [تهيئة عقود العرض والتنقل وحراسة المسودات](issues/01-prepare-navigation-and-draft-interfaces.md) | لا شيء | ready-for-agent | not-started | لا حواجز؛ البداية بتكليف تنفيذ لاحق |
+| 01 | [تهيئة عقود العرض والتنقل وحراسة المسودات](issues/01-prepare-navigation-and-draft-interfaces.md) | لا شيء | ready-for-agent | in-progress | منفذ جديد علىcodex/routing-01 |
 | 02 | [تشغيل التوجيه الموحد والرئيسية والروابط المحمية](issues/02-unified-browser-routing.md) | 01 | ready-for-agent | not-started | تنتظر01 |
 | 03 | [فتح الروابط المباشرة وتحديثها في نسخة الإنتاج](issues/03-production-deep-links.md) | 02 | ready-for-agent | not-started | تنتظر02 |
 
