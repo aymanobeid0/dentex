@@ -67,10 +67,8 @@ it.each(["ar", "fr"] as const)(
     const link = await screen.findByRole("button", { name: "Marie" });
     expect(screen.getByText("+22262112233").getAttribute("dir")).toBe("ltr");
     expect(
-      screen.getByText(lang === "ar" ? "طفل" : "Enfant", {
-        selector: "span.patient-child",
-      }),
-    ).toBeTruthy();
+      screen.queryByRole('columnheader', { name: lang === "ar" ? "طفل" : "Enfant", exact: true }),
+    ).toBeNull();
     expect(container.querySelector("section")?.getAttribute("dir")).toBe(
       lang === "ar" ? "rtl" : "ltr",
     );
@@ -79,6 +77,7 @@ it.each(["ar", "fr"] as const)(
     );
     fireEvent.click(link);
     expect(await screen.findByRole("heading", { name: "Marie" })).toBeTruthy();
+    expect(screen.getByText(lang === 'ar' ? 'طفل' : 'Enfant', { selector: 'span.patient-child' })).toBeTruthy();
   },
 );
 it("prevents repeated searches, clears stale results on failure, and retries the same search", async () => {

@@ -155,7 +155,6 @@ export function PatientList({
                     <th scope="col">{t.name}</th>
                     <th scope="col">{t.number}</th>
                     <th scope="col">{t.phone}</th>
-                    <th scope="col">{t.child}</th>
                     <th scope="col">{t.openFile}</th>
                   </tr>
                 </thead>
@@ -216,13 +215,6 @@ export function PatientList({
                       </td>
                       <td>
                         <bdi dir="ltr">{patient.phone}</bdi>
-                      </td>
-                      <td>
-                        {patient.isChild ? (
-                          <span className="patient-child">{t.child}</span>
-                        ) : (
-                          t.no
-                        )}
                       </td>
                       <td>
                         <button
