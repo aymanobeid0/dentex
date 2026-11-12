@@ -9,21 +9,36 @@ import { PatientList } from "../components/PatientList";
 import { PatientRegistrationForm } from "../components/PatientRegistrationForm";
 import { usePatientsPage } from "../hooks/usePatientsPage";
 import { OldNumberLookup } from "../components/OldNumberLookup";
-export function PatientPage({
+import type { PatientView } from "../types";
+type Props = {
+  lang: Lang;
+  canRead: boolean;
+  canLookupOldNumber?: boolean;
+  canWrite: boolean;
+  view: PatientView;
+  onNavigate: (view: PatientView) => void;
+  onExpired: () => void;
+  onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
+};
+export function PatientPage(props: Props) {
+  const { view } = props;
+  return (
+    <PatientFlow
+      key={view.kind === "file" ? `file:${view.patientId}` : view.kind}
+      {...props}
+    />
+  );
+}
+function PatientFlow({
+  view,
+  onNavigate,
   lang,
   canRead,
   canLookupOldNumber = false,
   canWrite,
   onExpired,
   onNavigationGuardChange,
-}: {
-  lang: Lang;
-  canRead: boolean;
-  canLookupOldNumber?: boolean;
-  canWrite: boolean;
-  onExpired: () => void;
-  onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
-}) {
+}: Props) {
   const {
     t,
     creating,
@@ -64,6 +79,8 @@ export function PatientPage({
     acknowledgeArchiveReview,
     archiveBlocked,
   } = usePatientsPage({
+    view,
+    onNavigate,
     lang,
     canRead,
     canWrite,
@@ -85,7 +102,11 @@ export function PatientPage({
       />
       <div className="content-heading">
         {canLookupOldNumber && canRead && !creating && !id && (
-          <OldNumberLookup lang={lang} onExpired={onExpired} />
+          <OldNumberLookup
+            lang={lang}
+            onExpired={onExpired}
+            onNavigate={onNavigate}
+          />
         )}
         <ConfirmDialog
           open={archiveOpen && !!archiveAction && !guard.pending}
@@ -208,9 +229,15 @@ export function PatientPage({
               <ul>
                 {review.data.map((item) => (
                   <li key={item.id}>
-                    <a href={`#patients/${item.id}`}>
+                    <button
+                      type="button"
+                      className="patient-link"
+                      onClick={() =>
+                        onNavigate({ kind: "file", patientId: item.id })
+                      }
+                    >
                       {item.name} — <bdi>{item.fileNumber}</bdi>
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -296,7 +323,11 @@ export function PatientPage({
           )
         )
       ) : canRead && !creating ? (
-        <PatientList lang={lang} onExpired={onExpired} />
+        <PatientList
+          lang={lang}
+          onExpired={onExpired}
+          onNavigate={onNavigate}
+        />
       ) : canWrite ? (
         <PatientRegistrationForm
           lang={lang}

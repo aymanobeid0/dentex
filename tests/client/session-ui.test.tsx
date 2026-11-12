@@ -9,7 +9,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { App } from "../../client/app/App";
+import { application } from "./app";
 
 const account = (name = "First user", clinic = "one") => ({
   kind: "clinic",
@@ -47,7 +47,7 @@ it("refreshes the displayed identity while visible and online", async () => {
     vi.fn(async () => response(account(name))),
   );
   vi.useFakeTimers();
-  render(<App />);
+  render(application());
   await act(async () => {
     await vi.advanceTimersByTimeAsync(50);
   });
@@ -100,7 +100,7 @@ it("does not expose a previous clinic after logout, a second login, and late JSO
     };
   });
   vi.stubGlobal("fetch", fetcher);
-  render(<App />);
+  render(application());
   await waitFor(() => expect(finishBody).toBeTypeOf("function"));
   const oldBody = finishBody;
   const signal = oldSignal;
@@ -142,7 +142,7 @@ it("expires the shared session from an unmigrated screen without retrying its 40
     ),
   );
   vi.stubGlobal("fetch", fetcher);
-  render(<App />);
+  render(application());
   await screen.findByLabelText("Code du cabinet");
   expect(screen.queryByText("Clinic one")).toBeNull();
   expect(
@@ -157,7 +157,7 @@ it("keeps loaded identity with an offline warning and stops hidden/offline polli
   const fetcher = vi.fn(async () => response(account(name)));
   vi.stubGlobal("fetch", fetcher);
   vi.useFakeTimers();
-  render(<App />);
+  render(application());
   await act(async () => {
     await vi.advanceTimersByTimeAsync(50);
   });
@@ -197,7 +197,7 @@ it.each([401, 403, 409, 400])(
     const fetcher = vi.fn(async () => response(null, status));
     vi.stubGlobal("fetch", fetcher);
     vi.useFakeTimers();
-    render(<App />);
+    render(application());
     await act(async () => {
       await vi.advanceTimersByTimeAsync(6000);
     });
@@ -214,7 +214,7 @@ it("limits transient read retries and recovers the displayed account", async () 
     .mockResolvedValue(response(account()));
   vi.stubGlobal("fetch", fetcher);
   vi.useFakeTimers();
-  render(<App />);
+  render(application());
   await act(async () => {
     await vi.advanceTimersByTimeAsync(3100);
   });
@@ -234,7 +234,7 @@ it("shows an uncertain login result without success, retry, or a queued write on
       return response(null, 401);
     }),
   );
-  render(<App />);
+  render(application());
   await screen.findByLabelText("Code du cabinet");
   fillLogin();
   expect(
@@ -255,7 +255,7 @@ it("shows unavailable identity rather than a login form when booting offline", a
   vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
   const fetcher = vi.fn();
   vi.stubGlobal("fetch", fetcher);
-  render(<App />);
+  render(application());
   expect(screen.getByRole("alert").textContent).toContain("Connexion");
   expect(screen.queryByLabelText("Code du cabinet")).toBeNull();
   expect(fetcher).not.toHaveBeenCalled();
@@ -269,7 +269,7 @@ it("preserves an existing registration draft when identity polling changes an un
     vi.fn(async () => response({ ...account(), permissions })),
   );
   vi.useFakeTimers();
-  render(<App />);
+  render(application());
   await act(async () => {
     await vi.advanceTimersByTimeAsync(50);
   });

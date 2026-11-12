@@ -11,8 +11,8 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "../../client/features/patients/pages/PatientPage";
-import { App } from "../../client/app/App";
+import { PatientPage } from "./controlled-patient";
+import { application } from "./app";
 
 afterEach(() => {
   cleanup();
@@ -63,7 +63,7 @@ it("guards sidebar navigation and logout without losing a draft after identity r
         : { items: [], page: 1, hasNext: false },
   }));
   vi.stubGlobal("fetch", fetcher);
-  render(<App />);
+  render(application());
   const name = await screen.findByRole("textbox", { name: "Nom complet" });
   fireEvent.change(name, { target: { value: "Draft" } });
   fireEvent(window, new Event("online"));
@@ -127,7 +127,7 @@ it("waits for confirmation, opens the saved file and refreshes the list without 
   );
   await waitFor(() => expect(finish).toBeTypeOf("function"));
   expect(screen.queryByRole("heading", { name: "Marie" })).toBeNull();
-  expect(window.location.hash).toBe("#patients/new");
+  expect(screen.getByRole("textbox", { name: /Nom complet|الاسم الكامل/ })).toBeTruthy();
   saved = true;
   await act(async () =>
     finish(response({ id: "confirmed", fileNumber: "1099" })),
@@ -138,7 +138,7 @@ it("waits for confirmation, opens the saved file and refreshes the list without 
   fireEvent(window, unload);
   expect(unload.defaultPrevented).toBe(false);
   fireEvent.click(screen.getByRole("button", { name: "Retour à la liste" }));
-  await screen.findByRole("link", { name: "Marie" });
+  await screen.findByRole("button", { name: "Marie" });
 });
 it.each(["ar", "fr"] as const)(
   "protects a draft on internal navigation and unload, then discards it (%s)",
@@ -173,7 +173,7 @@ it.each(["ar", "fr"] as const)(
     await waitFor(() => expect(document.activeElement).toBe(stay));
     await userEvent.keyboard("{Escape}");
     expect((name as HTMLInputElement).value).toBe("Draft");
-    expect(window.location.hash).toBe("#patients/new");
+    expect(screen.getByRole("textbox", { name: /Nom complet|الاسم الكامل/ })).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", {
         name: lang === "fr" ? "Retour à la liste" : "العودة إلى القائمة",
@@ -247,12 +247,12 @@ it.each([false, true])(
       screen.getByRole("button", { name: "Actualiser la liste des patients" }),
     );
     if (pending) await waitFor(() => expect(finish).toBeTypeOf("function"));
-    else await screen.findByRole("link", { name: /Saved child/ });
+    else await screen.findByRole("button", { name: /Saved child/ });
     view.rerender(
       <PatientPage lang="fr" canRead={false} canWrite onExpired={() => {}} />,
     );
     if (pending) await act(async () => finish(result));
-    expect(screen.queryByRole("link", { name: /Saved child/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Saved child/ })).toBeNull();
     expect(
       (
         screen.getByRole("button", {
@@ -364,6 +364,6 @@ it.each(["lost-body", "invalid-receipt", "server-error"])(
       (screen.getByRole("textbox", { name: "Nom complet" }) as HTMLInputElement)
         .value,
     ).toBe("Marie");
-    expect(window.location.hash).toBe("#patients/new");
+    expect(screen.getByRole("textbox", { name: /Nom complet|الاسم الكامل/ })).toBeTruthy();
   },
 );

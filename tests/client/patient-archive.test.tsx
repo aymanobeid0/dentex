@@ -9,7 +9,7 @@ import {
   within,
 } from "@testing-library/react";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "../../client/features/patients/pages/PatientPage";
+import { PatientPage } from "./controlled-patient";
 import { translations } from "../../client/shared/i18n";
 import userEvent from "@testing-library/user-event";
 const patient = {
@@ -210,7 +210,7 @@ it("filters shared phone results through Radix and starts each filter from page 
   renderPatient(
     <PatientPage lang="fr" canRead canWrite onExpired={() => {}} />,
   );
-  await screen.findByRole("link", { name: "Active contact" });
+  await screen.findByRole("button", { name: "Active contact" });
   fireEvent.change(screen.getByRole("searchbox"), {
     target: { value: "78112233" },
   });
@@ -222,11 +222,11 @@ it("filters shared phone results through Radix and starts each filter from page 
   screen.getByRole("combobox", { name: t.statusFilter }).focus();
   await user.keyboard("{ArrowDown}");
   await user.click(screen.getByRole("option", { name: t.archived }));
-  await screen.findByRole("link", { name: "Archived contact" });
+  await screen.findByRole("button", { name: "Archived contact" });
   expect(queries.at(-1)).toContain("q=78112233");
   expect(queries.at(-1)).toContain("status=archived");
   expect(queries.at(-1)).toContain("page=1");
-  expect(screen.queryByRole("link", { name: "Active contact" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Active contact" })).toBeNull();
 });
 it("hides patient data immediately when a manual review is denied before the identity refresh", async () => {
   window.history.replaceState(null, "", "#patients/archive-patient");

@@ -1,17 +1,21 @@
 import { useMutation } from "@tanstack/react-query";
 import { useReadAvailability } from "../../../shared/query/useReadAvailability";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ApiError } from "../../../shared/api/request";
 import { useApi } from "../../../shared/api/RequestProvider";
 import { translations, useLanguage } from "../../../shared/i18n";
 import { loginAccount } from "../api";
 import { loginFailure } from "../login-errors";
-import type { Account } from "../types";
+import type { Account, LoginKind } from "../types";
 export function useLogin({
+  kind: loginKind,
+  onKindChange,
   passwordChanged,
   onAuthenticated,
   onLoggedIn,
 }: {
+  kind: LoginKind;
+  onKindChange: (kind: LoginKind) => void;
   passwordChanged: boolean;
   onAuthenticated: (account: Account) => void;
   onLoggedIn: () => void;
@@ -35,8 +39,11 @@ export function useLogin({
     [error, setError] = useState("");
   const [username, setUsername] = useState(""),
     [password, setPassword] = useState(""),
-    [loginCode, setLoginCode] = useState(""),
-    [loginKind, setLoginKind] = useState<"clinic" | "platform">("clinic");
+    [loginCode, setLoginCode] = useState("");
+  useEffect(() => {
+    setPassword("");
+    setError("");
+  }, [loginKind]);
   async function login(e: FormEvent) {
     e.preventDefault();
     if (sending.current || busy || !availability.online) return;
@@ -86,7 +93,7 @@ export function useLogin({
     loginCode,
     setLoginCode,
     loginKind,
-    setLoginKind,
+    setLoginKind: onKindChange,
     login,
   };
 }

@@ -2,7 +2,7 @@ import { renderPatient as render } from "./render-patient";
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
-import { PatientPage } from "../../client/features/patients/pages/PatientPage";
+import { PatientPage } from "./controlled-patient";
 
 afterEach(() => {
   cleanup();
@@ -64,8 +64,7 @@ it.each(["ar", "fr"] as const)(
         name: lang === "ar" ? "بحث" : "Rechercher",
       }),
     );
-    const link = await screen.findByRole("link", { name: "Marie" });
-    expect(link.getAttribute("href")).toBe("#patients/saved");
+    const link = await screen.findByRole("button", { name: "Marie" });
     expect(screen.getByText("+22262112233").getAttribute("dir")).toBe("ltr");
     expect(
       screen.getByText(lang === "ar" ? "طفل" : "Enfant", {
@@ -78,8 +77,7 @@ it.each(["ar", "fr"] as const)(
     expect(fetcher.mock.calls[1][0]).toBe(
       "/api/clinic/patients?q=Marie&page=1",
     );
-    window.location.hash = "patients/saved";
-    fireEvent(window, new HashChangeEvent("hashchange"));
+    fireEvent.click(link);
     expect(await screen.findByRole("heading", { name: "Marie" })).toBeTruthy();
   },
 );
@@ -117,7 +115,7 @@ it("prevents repeated searches, clears stale results on failure, and retries the
   render(
     <PatientPage lang="fr" canRead canWrite={false} onExpired={() => {}} />,
   );
-  await screen.findByRole("link", { name: "Old patient" });
+  await screen.findByRole("button", { name: "Old patient" });
   fireEvent.change(screen.getByRole("searchbox"), {
     target: { value: "missing" },
   });

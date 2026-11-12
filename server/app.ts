@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import { resolve } from 'node:path';
 import { createPrismaClient } from './database';
 import { configureTrustedProxies } from './proxy';
 import { createServices } from './infrastructure/application';
@@ -45,5 +46,16 @@ app.use('/api/clinic/account', accountRouter(createAccountController(services.ac
 app.use('/api/clinic/employees', employeesRouter(createEmployeesController(services.employees)));
 app.use('/api/clinic/patients', patientsRouter(createPatientsController(services.patients)));
 app.use('/api', () => { throw new ApplicationError('not_found'); });
-if (process.env.NODE_ENV === 'production') app.use(express.static('dist'));
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('dist'));
+  app.use((req, res, next) => {
+    if (!['GET', 'HEAD'].includes(req.method) || !req.accepts('html')) { next(); return; }
+    let path: string;
+    try { path = decodeURIComponent(req.path); } catch { next(); return; }
+    // Vite assets (including extensionless misses) and file-like paths must
+    // retain their missing-resource response instead of receiving index.html.
+    if (path === '/assets' || path.startsWith('/assets/') || path.split('/').some((part) => part.includes('.'))) { next(); return; }
+    res.sendFile(resolve('dist/index.html'));
+  });
+}
 app.use(errorHandler);

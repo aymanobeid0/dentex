@@ -50,10 +50,10 @@ export function ClinicsPage({
     adminGuard.current = guard;
   }, []);
   const leave = useCallback<NavigationGuard>(
-    (next) =>
+    (next, stay) =>
       adminGuard.current
-        ? adminGuard.current(next)
-        : state.guard.requestLeave(next),
+        ? adminGuard.current(next, stay)
+        : state.guard.requestLeave(next, stay),
     [state.guard.requestLeave],
   );
   useEffect(() => {

@@ -2,7 +2,7 @@ import "./ui-browser-apis";
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { App } from "../../client/app/App";
+import { application } from "./app";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -29,7 +29,7 @@ it.each([
         }),
       ),
     );
-    render(<App />);
+    render(application());
     fireEvent.change(await screen.findByLabelText("Code du cabinet"), {
       target: { value: "0001" },
     });

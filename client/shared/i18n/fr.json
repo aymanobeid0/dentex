@@ -57,7 +57,11 @@
     "uncertain": "Connexion au serveur ou confirmation de la demande impossible. Réessayez plus tard.",
     "staleIdentity": "Connexion au serveur ou actualisation du compte impossible. Réessayez plus tard ; les données affichées peuvent être anciennes.",
     "patientFileNumberStart": "Premier numéro de dossier patient",
-    "numberingStartInvalid": "Saisissez un entier de 1 à 9223372036854775807."
+    "numberingStartInvalid": "Saisissez un entier de 1 à 9223372036854775807.",
+    "home": "Accueil",
+    "forbidden": "Accès non autorisé",
+    "notFound": "Page introuvable",
+    "toDefault": "Ouvrir la page d’accueil"
   },
   "employees": {
     "title": "Personnel",

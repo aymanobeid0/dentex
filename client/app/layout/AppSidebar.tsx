@@ -1,5 +1,6 @@
 import {
   Building2,
+  House,
   Menu,
   PanelLeftClose,
   ShieldCheck,
@@ -11,6 +12,7 @@ import { DisclosureContent, DisclosureTrigger } from "../../ui/Disclosure";
 import { Hint } from "../../ui/Hint";
 import type { Page } from "../navigation";
 type Labels = {
+  home: string;
   dashboard: string;
   employees: string;
   rolePermissions: string;
@@ -20,7 +22,7 @@ type Labels = {
 };
 type Props = {
   collapsed: boolean;
-  page: Page;
+  page: Page | null;
   onNavigate: (page: Page) => void;
   kind: "clinic" | "platform";
   canManageEmployees: boolean;
@@ -41,6 +43,12 @@ export function AppSidebar({
   labels: t,
 }: Props) {
   const items = [
+    {
+      page: "home" as const,
+      visible: kind === "clinic",
+      label: t.home,
+      Icon: House,
+    },
     {
       page: "clinics" as const,
       visible: kind === "platform",

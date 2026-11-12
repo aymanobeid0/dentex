@@ -9,7 +9,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { App } from "../../client/app/App";
+import { application } from "./app";
 
 afterEach(() => {
   cleanup();
@@ -40,7 +40,7 @@ it("guards a retained creation secret when logging out from the account screen",
       );
     }),
   );
-  render(<App />);
+  render(application());
   fireEvent.click(
     await screen.findByRole("button", { name: "Créer un cabinet" }),
   );
@@ -61,7 +61,7 @@ it("guards a retained creation secret when logging out from the account screen",
   fireEvent.click(
     await screen.findByRole("button", { name: "Ignorer et quitter" }),
   );
-  await screen.findByLabelText("Code du cabinet");
+  await screen.findByRole("heading", { name: "Connexion administrateur" });
   expect(logouts).toBe(1);
   expect(Object.keys(localStorage)).toEqual(["dentex-lang"]);
 });
@@ -86,10 +86,10 @@ it("does not show a late clinic list from a retired platform session", async () 
       return new Promise<Response>((resolve) => (finish = resolve));
     }),
   );
-  render(<App />);
+  render(application());
   await waitFor(() => expect(finish).toBeTypeOf("function"));
   fireEvent.click(screen.getByRole("button", { name: "Se déconnecter" }));
-  await screen.findByLabelText("Code du cabinet");
+  await screen.findByRole("heading", { name: "Connexion administrateur" });
   expect(signal?.aborted).toBe(true);
   await act(async () =>
     finish(
@@ -118,7 +118,7 @@ it("retains a clinic creation draft and loaded list across account navigation", 
         : [{ id: "one", name: "Existing clinic", code: "2000" }],
   }));
   vi.stubGlobal("fetch", fetch);
-  render(<App />);
+  render(application());
   await screen.findByText("Existing clinic");
   fireEvent.click(screen.getByRole("button", { name: "Créer un cabinet" }));
   fireEvent.change(screen.getByLabelText("Nom du cabinet"), {

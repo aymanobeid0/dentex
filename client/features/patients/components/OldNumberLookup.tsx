@@ -10,11 +10,14 @@ import { useDisplayedQuery } from "../../../shared/query/useDisplayedQuery";
 import { translations, type Lang } from "../../../shared/i18n";
 import { lookupOldNumber } from "../api";
 import { usePatientReadFailure } from "../queries";
+import type { PatientView } from "../types";
 
 function LookupContent({
+  onNavigate,
   lang,
   onExpired,
 }: {
+  onNavigate: (view: PatientView) => void;
   lang: Lang;
   onExpired: () => void;
 }) {
@@ -96,7 +99,7 @@ function LookupContent({
           disabled={!query.online || query.isFetching}
         >
           <Search size={16} aria-hidden />
-        {t.search}
+          {t.search}
         </button>
       </form>
       {query.stale && <p role="status">{t.staleData}</p>}
@@ -112,9 +115,16 @@ function LookupContent({
             {t.number}: <bdi>{query.data.fileNumber}</bdi>
           </p>
           <p>
-            <a href={`#patients/${encodeURIComponent(query.data.id)}`}>
+            <button
+              type="button"
+              className="patient-link"
+              onClick={() => {
+                if (query.data)
+                  onNavigate({ kind: "file", patientId: query.data.id });
+              }}
+            >
               {query.data.name}
-            </a>
+            </button>
           </p>
         </div>
       )}
@@ -123,9 +133,11 @@ function LookupContent({
 }
 
 export function OldNumberLookup({
+  onNavigate,
   lang,
   onExpired,
 }: {
+  onNavigate: (view: PatientView) => void;
   lang: Lang;
   onExpired: () => void;
 }) {
@@ -146,7 +158,13 @@ export function OldNumberLookup({
         </button>
       }
     >
-      {open && <LookupContent lang={lang} onExpired={onExpired} />}
+      {open && (
+        <LookupContent
+          lang={lang}
+          onExpired={onExpired}
+          onNavigate={onNavigate}
+        />
+      )}
     </Modal>
   );
 }

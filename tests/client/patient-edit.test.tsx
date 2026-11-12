@@ -3,7 +3,7 @@ import "./ui-browser-apis";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderPatient } from "./render-patient";
-import { PatientPage } from "../../client/features/patients/pages/PatientPage";
+import { PatientPage } from "./controlled-patient";
 import { translations } from "../../client/shared/i18n";
 
 const patient = {
