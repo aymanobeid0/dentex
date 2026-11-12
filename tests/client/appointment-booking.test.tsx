@@ -71,7 +71,7 @@ async function fill(lang: "ar" | "fr" = "fr") {
   fireEvent.change(screen.getByLabelText(t.time), {
     target: { value: "10:00" },
   });
-  expect(screen.getByLabelText(t.time).getAttribute("type")).toBe("text");
+  expect(screen.getByLabelText(t.time).getAttribute("type")).toBe("time");
   expect(screen.getByLabelText(t.time).getAttribute("dir")).toBe("ltr");
   fireEvent.change(screen.getByLabelText(t.note), {
     target: { value: "Keep this draft" },

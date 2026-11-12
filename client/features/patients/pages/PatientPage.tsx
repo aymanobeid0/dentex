@@ -177,7 +177,7 @@ function PatientFlow({
         <h1 ref={heading} tabIndex={-1}>
           {id ? t.file : t.title}
         </h1>
-        {canWrite && !creating && (
+        {canWrite && !creating && !id && (
           <button className="language" onClick={newPatient}>
             <UserPlus size={16} aria-hidden />
             {t.new}

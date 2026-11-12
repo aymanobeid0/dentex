@@ -294,7 +294,7 @@
   "appointments": {
     "book": "Prendre rendez-vous",
     "title": "Nouveau rendez-vous",
-    "hint": "Heure de la clinique — Mauritanie, au format 24 heures.",
+    "hint": "Heure de la clinique — Mauritanie.",
     "doctor": "Médecin",
     "choose": "Choisir le médecin",
     "date": "Date",

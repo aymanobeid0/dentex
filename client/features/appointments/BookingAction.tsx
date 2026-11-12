@@ -226,12 +226,9 @@ function BookingDialog({
             <Label htmlFor={`${id}-time`}>{t.time}</Label>
             <input
               id={`${id}-time`}
-              type="text"
-              inputMode="numeric"
+              type="time"
+              step="60"
               dir="ltr"
-              placeholder="HH:MM"
-              pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
-              maxLength={5}
               required
               value={draft.time}
               onChange={(event) => change("time", event.target.value)}
