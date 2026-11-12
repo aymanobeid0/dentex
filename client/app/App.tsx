@@ -174,13 +174,12 @@ function SessionApp({
     );
 
   const legacy = /^#patients(?:\/(new|[^/]+))?$/.exec(location.hash);
-  if (legacy)
-    return (
-      <Navigate
-        replace
-        to={legacy[1] ? `${paths.patients}/${legacy[1]}` : paths.patients}
-      />
-    );
+  const legacyTarget = legacy
+    ? legacy[1]
+      ? `${paths.patients}/${legacy[1]}`
+      : paths.patients
+    : null;
+  if (legacyTarget && !account) return <Navigate replace to={legacyTarget} />;
   if (!account) {
     if (!isLogin && screen !== "notFound") {
       if (!intent.ended && screen !== "root")
@@ -226,9 +225,9 @@ function SessionApp({
     );
   }
   const defaultPath = account.kind === "platform" ? paths.clinics : paths.home;
-  if (screen === "root" || isLogin)
-    return <Navigate replace to={intent.destination ?? defaultPath} />;
-  intent.destination = null;
+  const landingTarget =
+    screen === "root" || isLogin ? (intent.destination ?? defaultPath) : null;
+  if (!landingTarget) intent.destination = null;
   const admin = account.kind === "clinic" && account.roles.includes("admin");
   const canManageEmployees =
     account.kind === "clinic" &&
@@ -262,10 +261,14 @@ function SessionApp({
       !canRead &&
       !(screen === "patients" && canWrite)) ||
     (screen === "patientNew" && !canWrite);
-  if (!forbidden && screen === "platformRoot")
-    return <Navigate replace to={paths.clinics} />;
-  if (!forbidden && screen === "patients" && !canRead && canWrite)
-    return <Navigate replace to={paths.patientNew} />;
+  const redirectPath =
+    legacyTarget ??
+    landingTarget ??
+    (!forbidden && screen === "platformRoot"
+      ? paths.clinics
+      : !forbidden && screen === "patients" && !canRead && canWrite
+        ? paths.patientNew
+        : null);
   const page =
     screen === "clinicAccount" || screen === "platformAccount"
       ? "account"
@@ -341,13 +344,15 @@ function SessionApp({
         <ClinicsPage
           lang={lang}
           onExpired={expire}
-          active={!forbidden && screen === "clinics"}
+          active={!redirectPath && !forbidden && screen === "clinics"}
           externalBusy={busy}
           onBusyChange={setClinicBusy}
           onNavigationGuardChange={registerClinicGuard}
         />
       )}
-      {forbidden || screen === "notFound" ? (
+      {redirectPath ? (
+        <Navigate replace to={redirectPath} />
+      ) : forbidden || screen === "notFound" ? (
         <section className="card">
           <h1>{forbidden ? t.forbidden : t.notFound}</h1>
           <button className="language" onClick={() => void go(defaultPath)}>

@@ -8,6 +8,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { application } from "./app";
 import userEvent from "@testing-library/user-event";
@@ -128,7 +129,10 @@ it("distinguishes forbidden known pages from unknown URLs without reading protec
 
 it("shows an unknown initial URL without redirecting it to another screen", async () => {
   window.history.replaceState(null, "", "/unknown-page");
-  vi.stubGlobal("fetch", vi.fn(async () => response(clinic)));
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => response(clinic)),
+  );
   render(application());
   await screen.findByRole("heading", { name: "Page introuvable" });
   expect(window.location.pathname).toBe("/unknown-page");
@@ -423,4 +427,90 @@ it("keeps one departure decision when another history request arrives while its 
   fireEvent.click(screen.getByRole("button", { name: "Ignorer et quitter" }));
   await screen.findByRole("heading", { name: "Mon compte" });
   expect(window.location.pathname).toBe("/clinic/account");
+});
+
+it("keeps the sidebar collapsed when a writer-only account opens patient registration", async () => {
+  window.history.replaceState(null, "", "/clinic/account");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      response({
+        ...clinic,
+        roles: ["dentist"],
+        permissions: ["patients.write"],
+      }),
+    ),
+  );
+  render(application());
+  await screen.findByRole("heading", { name: "Mon compte" });
+  fireEvent.click(
+    within(screen.getByRole("complementary")).getByRole("button", {
+      name: "Réduire le menu",
+    }),
+  );
+  expect(
+    within(screen.getByRole("complementary"))
+      .getByRole("button", { name: "Ouvrir le menu" })
+      .getAttribute("aria-expanded"),
+  ).toBe("false");
+  fireEvent.click(screen.getByRole("button", { name: "Patients" }));
+  await screen.findByRole("textbox", { name: "Nom complet" });
+  expect(window.location.pathname).toBe("/clinic/patients/new");
+  expect(
+    within(screen.getByRole("complementary"))
+      .getByRole("button", { name: "Ouvrir le menu" })
+      .getAttribute("aria-expanded"),
+  ).toBe("false");
+});
+
+it("keeps the shell when Back reaches a login URL during the same valid session", async () => {
+  window.history.replaceState(null, "", "/platform/login");
+  let loggedIn = false;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => {
+      if (url.endsWith("/login")) loggedIn = true;
+      return response(
+        loggedIn ? clinic : { error: "unauthorized" },
+        loggedIn ? 200 : 401,
+      );
+    }),
+  );
+  render(application());
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Connexion au cabinet" }),
+  );
+  fireEvent.change(await screen.findByLabelText("Code du cabinet"), {
+    target: { value: "9876" },
+  });
+  fireEvent.change(screen.getByLabelText("Nom d’utilisateur"), {
+    target: { value: "routing-user" },
+  });
+  fireEvent.change(
+    screen.getByLabelText("Mot de passe", { selector: "input" }),
+    { target: { value: "synthetic-only" } },
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+  await screen.findByRole("heading", { name: "Accueil" });
+  fireEvent.click(
+    within(screen.getByRole("complementary")).getByRole("button", {
+      name: "Réduire le menu",
+    }),
+  );
+  await act(async () => {
+    const moved = new Promise((resolve) =>
+      window.addEventListener("popstate", resolve, { once: true }),
+    );
+    window.history.back();
+    await moved;
+  });
+  await waitFor(() => expect(window.location.pathname).toBe("/clinic"));
+  expect(
+    within(screen.getByRole("complementary"))
+      .getByRole("button", { name: "Ouvrir le menu" })
+      .getAttribute("aria-expanded"),
+  ).toBe("false");
+  expect(
+    screen.queryByLabelText("Mot de passe", { selector: "input" }),
+  ).toBeNull();
 });
