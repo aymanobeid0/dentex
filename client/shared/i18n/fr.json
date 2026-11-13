@@ -401,7 +401,15 @@
     "filtersShort": "Filtres",
     "bookCompact": "Réserver",
     "patientNameSearch": "Rechercher un patient par nom",
-    "matchingPatients": "Résultats de recherche des patients"
+    "matchingPatients": "Résultats de recherche des patients",
+    "bookingResult": "Résultat de la réservation",
+    "resultSuccess": "Rendez-vous confirmé",
+    "resultFailure": "Rendez-vous non réservé",
+    "resultUncertain": "Confirmation impossible",
+    "requestedBooking": "Demande de réservation — brouillon conservé",
+    "viewDayAppointments": "Voir la liste des rendez-vous du jour",
+    "remainingAppointments": "autres rendez-vous",
+    "bookAt": "Réserver à"
   },
   "dateTime": {
     "chooseDate": "Choisir une date",

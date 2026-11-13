@@ -4,7 +4,7 @@
 
 **Blocked by:** 02: عرض مواعيد اليوم وملف المريض والحجز العام
 
-Status: ready-for-human
+Status: closed
 Execution: complete
 
 قصص المواصفة: 15،18،25–44،53،57؛ و60–66.
@@ -41,3 +41,6 @@ Execution: complete
 
 
 الطلب الحالي: [PR #13](https://github.com/aymanobeid0/dentex/pull/13)، مفتوح للمراجعة دون دمج. [التحقق الطازج](../pr-spec-audit.md).
+
+
+2026-11-13: أُغلقت بعد دمج[PR #13](https://github.com/aymanobeid0/dentex/pull/13) فيmain عند19510ee وسحبها محليًا بطلب المستخدم. Execution: complete.

@@ -4,7 +4,7 @@
 
 **Blocked by:** 01: حجز موعد من ملف المريض مع منع التداخل
 
-Status: ready-for-human
+Status: closed
 Execution: complete
 
 اكتملت تقنيًا بعد موافقة المستخدم «أعتمد مقترح02 كما هو». [التحقق](../02-verification.md) و[المراجعة](../02-review.md) مرجعا الأدلة؛ تنتظر فحص المستخدم قبل PR.
@@ -39,3 +39,6 @@ Execution: complete
 
 
 الطلب الحالي: [PR #13](https://github.com/aymanobeid0/dentex/pull/13)، مفتوح للمراجعة دون دمج. [التحقق الطازج](../pr-spec-audit.md).
+
+
+2026-11-13: أُغلقت بعد دمج[PR #13](https://github.com/aymanobeid0/dentex/pull/13) فيmain عند19510ee وسحبها محليًا بطلب المستخدم. Execution: complete.

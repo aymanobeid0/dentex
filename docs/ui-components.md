@@ -54,3 +54,12 @@
 توجيه المستخدم2026-11-13: محددات التاريخ والوقت في الحجز وإعادة الجدولة وفلتر المواعيد مخصصة، بدل الحقول الطبيعية السابقة. تملكDateField/TimeField فيui السلوك والمظهر عبرDialog وSelect الحاليين، مع قيمةYYYY-MM-DD وHH:mm دون تغيير العقود. يفتح التقويم بمقاسcompact360px، والوقت بنظام24ساعة ودقة دقيقة واحدة. تفوضModal التركيز الأولي عبرonOpenAutoFocus إلى محتواها، مع بقاء الحصر والإرجاع لدىRadix. [الدليل الحالي](../.scratch/appointments/date-time-picker-verification.md).
 
 بتوجيه المستخدم2026-11-13، اختيار الطبيب في نافذة الحجز عبرSelectField المشتركة منRadix، مع إزالة بطاقات الأطباء وأنماطها غير المستخدمة. [التحقق](../.scratch/appointments/doctor-dropdown-verification.md).
+
+
+متابعة2026-11-13: نتيجة الحجز عبر Modal الحالية مع زر إغلاق علوي وملخص في ui-result-*. تملك بطاقة اليوم ui-day-agenda-* المظهر في components.css، وتملك الميزة تقسيم2:1 والتكيف. تفوض Modal اختيار إرجاع التركيز عبر onCloseAutoFocus إلى المستهلك، مع بقاء سلوك Radix الافتراضي لبقية النوافذ. البطاقة والنافذة الجديدتان تحلان محل البانر الدائم والعرض الكامل لليوم في التوجيه السابق. [التذكرة06](../.scratch/appointments/issues/06-booking-result-and-day-summary.md).
+
+
+متابعة07 — 2026-11-13: تملك ui-calendar-hour وui-calendar-slot مظهر الخانات التفاعلية في اليوم، وتملك ui-calendar-count العدد القابل للضغط في الأسبوع والشهر، مع رموز الأبعاد والتركيز نفسها. عناصر button أصلية مناسبة، وتفتح Modal القائمة من العدد؛ لا تطبيق يدوي بديل لتركيز Radix. التوجيه الجديد يحل محل شبكة ساعات الأسبوع والملخصات الاسمية في الشهر. [التذكرة07](../.scratch/appointments/issues/07-calendar-hour-booking-and-period-counts.md).
+
+
+فاصل ساعات اليوم — 2026-11-13: تملك ui-calendar-hour حدًا منطقيًا border-inline-end بسماكة1px منvar(--border)، متصلًا بفاصل الترويسة، ليفصل الساعات عن المواعيد فيRTL وLTR. يظل التنسيق فيclient/ui/components.css دون override فيالميزة.

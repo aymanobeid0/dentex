@@ -7,8 +7,15 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from "react";
-import { CalendarPlus, Check, UserRound } from "lucide-react";
+import {
+  CalendarPlus,
+  Check,
+  UserRound,
+  CircleCheck,
+  CircleAlert,
+} from "lucide-react";
 import { translations, type Lang } from "../../shared/i18n";
 import { ApiError } from "../../shared/api/request";
 import { Modal } from "../../ui/Modal";
@@ -18,6 +25,20 @@ import { DiscardDraftDialog } from "../../ui/DiscardDraftDialog";
 import { useDraftGuard, type NavigationGuard } from "../../ui/useDraftGuard";
 import { useBooking } from "./queries";
 import { PatientPicker } from "./PatientPicker";
+import { appointmentDate, appointmentTime } from "./AppointmentTable";
+
+const bookingDayFormats = {
+  ar: new Intl.DateTimeFormat("ar-MR-u-nu-latn", {
+    weekday: "long",
+    calendar: "gregory",
+    timeZone: "Africa/Nouakchott",
+  }),
+  fr: new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    calendar: "gregory",
+    timeZone: "Africa/Nouakchott",
+  }),
+};
 
 type PatientContext = {
   id: string;
@@ -53,8 +74,7 @@ const emptyDraft = () => ({
 });
 export function BookingAction(props: Props) {
   // The closed action owns no navigation guard or polling subscription.
-  const [open, setOpen] = useState(false),
-    [saved, setSaved] = useState(false);
+  const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null),
     wasOpen = useRef(false);
   useLayoutEffect(() => {
@@ -71,7 +91,6 @@ export function BookingAction(props: Props) {
           aria-label={t.book}
           disabled={props.patient?.archived}
           onClick={() => {
-            setSaved(false);
             setOpen(true);
           }}
         >
@@ -80,40 +99,45 @@ export function BookingAction(props: Props) {
           <span className="ui-text-mobile">{t.bookCompact}</span>
         </button>
       )}
-      {saved && (
-        <p role="status" className="success">
-          {t.saved}
-        </p>
-      )}
-      {open && (
-        <BookingDialog
-          {...props}
-          onClose={() => setOpen(false)}
-          onSaved={() => {
-            setSaved(true);
-            setOpen(false);
-          }}
-        />
-      )}
+      {open && <BookingDialog {...props} onClose={() => setOpen(false)} />}
     </>
   );
 }
-function BookingDialog({
+export function BookingDialog({
   patient,
   lang,
   canWrite,
   onExpired,
   onNavigationGuardChange,
   onClose,
-  onSaved,
   renderPatientRegistration,
   canRegisterPatient,
-}: Props & { onClose: () => void; onSaved: () => void }) {
+  initialSchedule,
+  returnFocus,
+}: Props & {
+  onClose: () => void;
+  initialSchedule?: { date: string; time: string };
+  returnFocus?: RefObject<HTMLElement | null>;
+}) {
   const t = translations[lang].appointments,
     direction = lang === "ar" ? "rtl" : "ltr",
     id = useId();
-  const [draft, setDraft] = useState(emptyDraft),
+  const [draft, setDraft] = useState(() => ({
+      ...emptyDraft(),
+      ...initialSchedule,
+    })),
     [issue, setIssue] = useState<keyof typeof t | "">("");
+  const [result, setResult] = useState<{
+    kind: "saved" | "failed" | "uncertain";
+    message: keyof typeof t;
+    patient: PatientContext;
+    doctorName: string;
+    startsAt: string;
+    endsAt: string;
+    note: string;
+  } | null>(null);
+  const resultReturnFocus = useRef<HTMLElement | null>(null);
+  const saved = result?.kind === "saved";
   const [chosen, setChosen] = useState<PatientContext | undefined>(patient);
   const [registering, setRegistering] = useState(false);
   const registrationGuard = useRef<NavigationGuard | null>(null),
@@ -128,16 +152,22 @@ function BookingDialog({
     wasRegistering.current = registering;
   }, [registering]);
   const submitting = useRef(false);
-  const { doctors, mutation } = useBooking(!registering, canWrite, onExpired);
-  const dirty = !!(
-    (!patient && chosen) ||
-    draft.doctorId ||
-    draft.date ||
-    draft.time ||
-    draft.note ||
-    draft.duration !== "30" ||
-    issue === "uncertain"
+  const { doctors, mutation } = useBooking(
+    !registering && !saved,
+    canWrite,
+    onExpired,
   );
+  const dirty =
+    !saved &&
+    !!(
+      (!patient && chosen) ||
+      draft.doctorId ||
+      draft.date !== (initialSchedule?.date || "") ||
+      draft.time !== (initialSchedule?.time || "") ||
+      draft.note ||
+      draft.duration !== "30" ||
+      issue === "uncertain"
+    );
   const guard = useDraftGuard(dirty, mutation.isPending, () =>
     setDraft(emptyDraft()),
   );
@@ -173,8 +203,20 @@ function BookingDialog({
     if (blocked || submitting.current) return;
     submitting.current = true;
     setIssue("");
+    resultReturnFocus.current = document.activeElement as HTMLElement;
+    const startsAt = draft.date + "T" + draft.time + ":00.000Z";
+    const summary = {
+      patient: chosen!,
+      doctorName: doctors.data!.find((doctor) => doctor.id === draft.doctorId)!
+        .name,
+      startsAt,
+      endsAt: new Date(
+        Date.parse(startsAt) + Number(draft.duration) * 60000,
+      ).toISOString(),
+      note: draft.note,
+    };
     try {
-      await mutation.mutateAsync({
+      const receipt = await mutation.mutateAsync({
         patientId: chosen!.id,
         doctorId: draft.doctorId,
         date: draft.date,
@@ -183,13 +225,20 @@ function BookingDialog({
         administrativeNote: draft.note,
       });
       guard.release();
-      onSaved();
+      setResult({
+        ...summary,
+        kind: "saved",
+        message: "saved",
+        startsAt: receipt.startsAt,
+        endsAt: receipt.endsAt,
+      });
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       if (error instanceof ApiError && error.status === 401) {
         onExpired();
         return;
       }
+      let message: keyof typeof t;
       if (
         !(error instanceof ApiError) ||
         error.kind === "uncertain" ||
@@ -197,7 +246,7 @@ function BookingDialog({
         error.status >= 500 ||
         error.status === 408
       )
-        setIssue("uncertain");
+        message = "uncertain";
       else {
         const messages: Record<string, keyof typeof t> = {
           appointment_overlap: "overlap",
@@ -209,8 +258,14 @@ function BookingDialog({
           forbidden: "denied",
           untrusted_origin: "denied",
         };
-        setIssue(messages[error.code || ""] || "failed");
+        message = messages[error.code || ""] || "failed";
       }
+      setIssue(message);
+      setResult({
+        ...summary,
+        kind: message === "uncertain" ? "uncertain" : "failed",
+        message,
+      });
     } finally {
       submitting.current = false;
     }
@@ -251,7 +306,15 @@ function BookingDialog({
             </footer>
           ) : undefined
         }
-        open
+        open={!saved}
+        onCloseAutoFocus={
+          returnFocus
+            ? (event) => {
+                event.preventDefault();
+                if (!saved) returnFocus.current?.focus();
+              }
+            : undefined
+        }
         onOpenChange={(value) => {
           if (!value) requestLeave(onClose);
         }}
@@ -389,7 +452,7 @@ function BookingDialog({
                 disabled={mutation.isPending}
               />
             </div>
-            {issue && (
+            {issue && !result && (
               <p className="error wide" role="alert">
                 {t[issue]}
               </p>
@@ -411,6 +474,107 @@ function BookingDialog({
           )}
         </div>
       </Modal>
+      {result && (
+        <Modal
+          open
+          headerIcon={
+            saved ? (
+              <CircleCheck size={18} aria-hidden />
+            ) : (
+              <CircleAlert size={18} aria-hidden />
+            )
+          }
+          title={
+            saved
+              ? t.resultSuccess
+              : result.kind === "uncertain"
+                ? t.resultUncertain
+                : t.resultFailure
+          }
+          description={t.hint}
+          close={t.close}
+          direction={direction}
+          trigger={<button hidden>{t.bookingResult}</button>}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (saved) returnFocus?.current?.focus();
+            else {
+              const control = resultReturnFocus.current;
+              if (!control?.isConnected || control.matches(":disabled"))
+                document.getElementById(`${id}-note`)?.focus();
+              else control.focus();
+            }
+          }}
+          onOpenChange={(value) => {
+            if (value) return;
+            if (saved) onClose();
+            else {
+              setResult(null);
+            }
+          }}
+        >
+          <div className="ui-dialog-body">
+            <p
+              className="ui-result-message"
+              data-tone={saved ? "success" : "danger"}
+              role={saved ? "status" : "alert"}
+            >
+              {t[result.message]}
+            </p>
+            {!saved && (
+              <p className="ui-result-caption">{t.requestedBooking}</p>
+            )}
+            <dl className="ui-result-facts">
+              <div>
+                <dt>{t.patient}</dt>
+                <dd>{result.patient.name}</dd>
+              </div>
+              <div>
+                <dt>{t.fileNumber}</dt>
+                <dd>
+                  <bdi>{result.patient.fileNumber}</bdi>
+                </dd>
+              </div>
+              <div>
+                <dt>{t.doctor}</dt>
+                <dd>{result.doctorName}</dd>
+              </div>
+              <div>
+                <dt>{t.date}</dt>
+                <dd>
+                  <bdi>
+                    {bookingDayFormats[lang].format(new Date(result.startsAt))}
+                    {" - "}
+                    {appointmentDate(result.startsAt, lang)}
+                  </bdi>
+                </dd>
+              </div>
+              <div>
+                <dt>{t.timeRange}</dt>
+                <dd>
+                  <bdi dir="ltr">
+                    {appointmentTime(result.startsAt, lang)} –{" "}
+                    {appointmentTime(result.endsAt, lang)}
+                  </bdi>
+                </dd>
+              </div>
+              {saved && (
+                <div>
+                  <dt>{t.status}</dt>
+                  <dd>{t.booked}</dd>
+                </div>
+              )}
+              {result.note && (
+                <div>
+                  <dt>{t.note}</dt>
+                  <dd>{result.note}</dd>
+                </div>
+              )}
+            </dl>
+            <p className="ui-result-caption">{t.hint}</p>
+          </div>
+        </Modal>
+      )}
       <DiscardDraftDialog
         open={!!guard.pending}
         direction={direction}

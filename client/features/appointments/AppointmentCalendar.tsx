@@ -141,8 +141,10 @@ export function AppointmentCalendar({
   header,
   doctorChoices,
   onDateChange,
+  onBookSlot,
   emptyMessage,
   showGrid = true,
+  dayPage,
 }: {
   date: string;
   view: "day" | "week" | "month";
@@ -153,8 +155,15 @@ export function AppointmentCalendar({
   header?: ReactNode;
   doctorChoices?: { id: string; name: string }[];
   onDateChange?: (date: string) => void;
+  onBookSlot?: (date: string, time: string) => void;
   emptyMessage?: string;
   showGrid?: boolean;
+  dayPage?: {
+    page: number;
+    total: number;
+    hasNext: boolean;
+    onChange: (page: number) => void;
+  };
 }) {
   const t = translations[lang].appointments,
     days = view === "day" ? [date] : calendarDays(date, view),
@@ -164,7 +173,7 @@ export function AppointmentCalendar({
     agendaOpener = useRef<HTMLElement | null>(null),
     timeline = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
-    if (view !== "month" && showGrid && timeline.current) {
+    if (view === "day" && showGrid && timeline.current) {
       const first = items.length
         ? Math.min(...items.map((item) => minute(item.startsAt)))
         : 9 * 60;
@@ -224,13 +233,13 @@ export function AppointmentCalendar({
   const miniMonth = date.slice(0, 7);
   const grid = (
     <>
-      {view === "month" ? (
+      {view !== "day" ? (
         <div
           className="ui-calendar-scroll"
-          data-view="month"
+          data-view={view}
           role="region"
           tabIndex={0}
-          aria-label={t.monthCalendar}
+          aria-label={view === "week" ? t.weekCalendar : t.monthCalendar}
         >
           <table className="ui-calendar-table appointment-month-table">
             <thead>
@@ -246,7 +255,8 @@ export function AppointmentCalendar({
               {Array.from({ length: days.length / 7 }, (_, week) => (
                 <tr key={week}>
                   {days.slice(week * 7, week * 7 + 7).map((day) => {
-                    const inside = day.slice(0, 7) === miniMonth,
+                    const inside =
+                        view === "week" || day.slice(0, 7) === miniMonth,
                       bookings = inside ? byDay.get(day) || [] : [];
                     return (
                       <td
@@ -257,7 +267,11 @@ export function AppointmentCalendar({
                         <div className="appointment-month-cell">
                           <div className="ui-calendar-cell-heading appointment-month-day-header">
                             <button
-                              className="ui-calendar-day"
+                              className={
+                                view === "week"
+                                  ? "ui-calendar-day ui-calendar-week-date"
+                                  : "ui-calendar-day"
+                              }
                               type="button"
                               data-today={day === today}
                               aria-label={appointmentDate(day, lang)}
@@ -266,29 +280,30 @@ export function AppointmentCalendar({
                                 inside ? choose(day, true) : onDateChange?.(day)
                               }
                             >
-                              <bdi>{Number(day.split("-").at(-1))}</bdi>
+                              <bdi>
+                                {view === "week"
+                                  ? appointmentDate(day, lang)
+                                  : Number(day.split("-").at(-1))}
+                              </bdi>
                             </button>
-                            {bookings.length > 2 && (
-                              <button
-                                type="button"
-                                className="ui-calendar-more"
-                                aria-haspopup="dialog"
-                                aria-label={`+${bookings.length - 2} ${t.more}`}
-                                onClick={() => choose(day, true)}
-                              >
-                                <bdi dir="ltr">+{bookings.length - 2}</bdi>
-                              </button>
-                            )}
                           </div>
-                          {bookings.slice(0, 2).map((item) => (
-                            <Event
-                              key={item.id}
-                              item={item}
-                              lang={lang}
-                              onOpen={onOpen}
-                              compact
-                            />
-                          ))}
+                          {inside && (
+                            <button
+                              type="button"
+                              className="ui-calendar-count"
+                              aria-haspopup="dialog"
+                              aria-label={
+                                t.total +
+                                ": " +
+                                bookings.length +
+                                " · " +
+                                appointmentDate(day, lang)
+                              }
+                              onClick={() => choose(day, true)}
+                            >
+                              <bdi>{bookings.length}</bdi>
+                            </button>
+                          )}
                         </div>
                       </td>
                     );
@@ -334,9 +349,20 @@ export function AppointmentCalendar({
             ))}
             <div className="appointment-week-axis">
               {Array.from({ length: 24 }, (_, hour) => (
-                <div className="ui-week-hour" key={hour}>
+                <button
+                  type="button"
+                  className="ui-week-hour ui-calendar-hour"
+                  key={hour}
+                  disabled={!onBookSlot}
+                  aria-label={
+                    t.bookAt + " " + String(hour).padStart(2, "0") + ":00"
+                  }
+                  onClick={() =>
+                    onBookSlot?.(date, String(hour).padStart(2, "0") + ":00")
+                  }
+                >
                   <bdi>{String(hour).padStart(2, "0")}:00</bdi>
-                </div>
+                </button>
               ))}
             </div>
             {columns.map((column) => (
@@ -347,11 +373,22 @@ export function AppointmentCalendar({
                 data-selected={selected === column.key}
               >
                 {Array.from({ length: 24 }, (_, hour) => (
-                  <div
-                    aria-hidden
-                    className="ui-week-rule"
+                  <button
+                    type="button"
+                    className="ui-week-rule ui-calendar-slot"
                     key={hour}
                     style={{ top: hour * 80 }}
+                    disabled={!onBookSlot}
+                    aria-label={
+                      t.bookAt +
+                      " " +
+                      String(hour).padStart(2, "0") +
+                      ":00 · " +
+                      column.title
+                    }
+                    onClick={() =>
+                      onBookSlot?.(date, String(hour).padStart(2, "0") + ":00")
+                    }
                   />
                 ))}
                 {weekLayout(column.items).map((entry) =>
@@ -403,18 +440,87 @@ export function AppointmentCalendar({
           {header}
           <div className="appointment-calendar-booking">{bookingAction}</div>
         </div>
-        {showGrid ? grid : <p role="status">{emptyMessage}</p>}
-        <div className="ui-calendar-legend">
-          {Object.entries(statusKey).map(([status, key]) => (
-            <span key={status}>
-              <i data-tone={statusTone[status as AppointmentRow["status"]]} />
-              {t[key]}
-            </span>
-          ))}
+        <div className="appointment-day-layout" data-view={view}>
+          <div className="appointment-day-timeline">
+            {showGrid ? grid : <p role="status">{emptyMessage}</p>}
+          </div>
+          {view === "day" && (
+            <aside
+              className="appointment-day-summary"
+              aria-label={t.dayAppointments}
+            >
+              <button
+                type="button"
+                className="ui-day-agenda-card"
+                aria-label={t.viewDayAppointments}
+                aria-haspopup="dialog"
+                disabled={!showGrid || !items.length}
+                onClick={() => choose(date, true)}
+              >
+                <span className="ui-day-agenda-heading">
+                  <CalendarDays size={18} aria-hidden />
+                  <strong>{t.dayAppointments}</strong>
+                  <span className="badge badge-neutral">
+                    {dayPage?.total ?? items.length}
+                  </span>
+                </span>
+                <span className="ui-day-agenda-date">
+                  <bdi>{appointmentDate(date, lang)}</bdi>
+                </span>
+                {showGrid && items.length ? (
+                  <span className="ui-day-agenda-preview">
+                    {items.slice(0, 4).map((item) => (
+                      <span
+                        className="ui-day-agenda-entry"
+                        key={item.id}
+                        data-tone={statusTone[item.status]}
+                        data-cancelled={item.status === "cancelled"}
+                      >
+                        <bdi dir="ltr">
+                          {appointmentTime(item.startsAt, lang)} –{" "}
+                          {appointmentTime(item.endsAt, lang)}
+                        </bdi>
+                        <strong>{item.patient.name}</strong>
+                        <span>{item.doctor.name}</span>
+                        <span>{t[statusKey[item.status]]}</span>
+                      </span>
+                    ))}
+                    <span className="ui-day-agenda-more">
+                      {(dayPage?.total ?? items.length) > 4 && (
+                        <span>
+                          <bdi>+{(dayPage?.total ?? items.length) - 4}</bdi>{" "}
+                          {t.remainingAppointments}
+                        </span>
+                      )}
+                      <span>{t.viewDayAppointments}</span>
+                    </span>
+                  </span>
+                ) : (
+                  <span className="ui-calendar-empty">
+                    {emptyMessage || t.noAppointments}
+                  </span>
+                )}
+              </button>
+            </aside>
+          )}
         </div>
+        {view === "day" && (
+          <div className="ui-calendar-legend">
+            {Object.entries(statusKey).map(([status, key]) => (
+              <span key={status}>
+                <i data-tone={statusTone[status as AppointmentRow["status"]]} />
+                {t[key]}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       <Modal
         open={agendaOpen}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          agendaOpener.current?.focus();
+        }}
         onOpenChange={(value) => {
           setAgendaOpen(value);
           if (!value)
@@ -474,6 +580,32 @@ export function AppointmentCalendar({
               </div>
             )}
           </section>
+          {view === "day" &&
+            dayPage &&
+            (dayPage.page > 1 || dayPage.hasNext) && (
+              <nav
+                className="appointment-pagination"
+                aria-label={t.dayAppointments}
+              >
+                <button
+                  className="ui-button"
+                  disabled={dayPage.page === 1}
+                  onClick={() => dayPage.onChange(dayPage.page - 1)}
+                >
+                  {t.previous}
+                </button>
+                <span>
+                  {t.page} <bdi>{dayPage.page}</bdi>
+                </span>
+                <button
+                  className="ui-button"
+                  disabled={!dayPage.hasNext}
+                  onClick={() => dayPage.onChange(dayPage.page + 1)}
+                >
+                  {t.next}
+                </button>
+              </nav>
+            )}
         </div>
       </Modal>
     </div>

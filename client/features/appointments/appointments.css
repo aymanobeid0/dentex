@@ -242,3 +242,19 @@
   position: relative;
   min-width: 0;
 }
+
+.appointment-day-layout[data-view="day"] {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+.appointment-day-timeline,
+.appointment-day-summary {
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .appointment-day-layout[data-view="day"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

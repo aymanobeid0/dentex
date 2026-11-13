@@ -401,7 +401,15 @@
     "filtersShort": "تصفية",
     "bookCompact": "حجز موعد",
     "patientNameSearch": "ابحث باسم المريض",
-    "matchingPatients": "نتائج البحث عن المريض"
+    "matchingPatients": "نتائج البحث عن المريض",
+    "bookingResult": "نتيجة الحجز",
+    "resultSuccess": "تم تأكيد الموعد",
+    "resultFailure": "لم يتم حجز الموعد",
+    "resultUncertain": "تعذر التأكد من الحجز",
+    "requestedBooking": "تفاصيل طلب الحجز — المسودة محفوظة",
+    "viewDayAppointments": "عرض قائمة مواعيد اليوم",
+    "remainingAppointments": "مواعيد أخرى",
+    "bookAt": "حجز موعد الساعة"
   },
   "dateTime": {
     "chooseDate": "اختر التاريخ",
