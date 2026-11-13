@@ -14,3 +14,5 @@
 - استورد الحزم المحددة والمكونات المشتركة دون إنشاء barrel يجلب جميع الحزم، ولا تستخدم خصائص preview دون حاجة معتمدة.
 
 مصدر التطبيق: `.scratch/live-search-radix/spec.md`. مصادر المكتبة: https://www.radix-ui.com/primitives ومرجع كل primitive. سجل الحصر والاختبارات والفحص الفعلي وحدوده في [.scratch/live-search-radix/verification.md](../.scratch/live-search-radix/verification.md).
+
+اختيار التاريخ والوقت2026-11-13: يستخدمDateField/TimeField مكوناتDialog وSelect الحالية عبرui؛ شبكة الأيام بعناصرHTML وأدوارgrid وحركة لوحة المفاتيح المثبتة باللغتين. لا استبدال لإدارة التركيز أو الإغلاق الخاصة بـRadix. [الدليل](../.scratch/appointments/date-time-picker-verification.md).

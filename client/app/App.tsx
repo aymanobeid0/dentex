@@ -12,8 +12,15 @@ import { AccountPage } from "../features/account";
 import { LoginPage, Session, useIdentity, useLogout } from "../features/auth";
 import { ClinicsPage } from "../features/clinics";
 import { EmployeePage } from "../features/employees";
-import { PatientPage, type PatientView } from "../features/patients";
-import { BookingAction } from "../features/appointments";
+import {
+  PatientPage,
+  PatientRegistrationPanel,
+  type PatientView,
+} from "../features/patients";
+import {
+  AppointmentsPage,
+  PatientAppointments,
+} from "../features/appointments";
 import { RolePermissionsPage } from "../features/roles";
 import { LanguageSwitch, translations, useLanguage } from "../shared/i18n";
 import type { NavigationGuard } from "../ui/useDraftGuard";
@@ -262,7 +269,14 @@ function SessionApp({
   const canWrite =
     account.kind === "clinic" &&
     (admin || account.permissions.includes("patients.write"));
+  const canReadAppointments =
+    account.kind === "clinic" &&
+    (admin || account.permissions.includes("appointments.read"));
+  const canWriteAppointments =
+    account.kind === "clinic" &&
+    (admin || account.permissions.includes("appointments.write"));
   const clinicScreen = [
+    "appointments",
     "home",
     "clinicAccount",
     "patients",
@@ -284,7 +298,10 @@ function SessionApp({
     ((screen === "patients" || screen === "patientFile") &&
       !canRead &&
       !(screen === "patients" && canWrite)) ||
-    (screen === "patientNew" && !canWrite);
+    (screen === "patientNew" && !canWrite) ||
+    (screen === "appointments" &&
+      !canReadAppointments &&
+      !canWriteAppointments);
   const redirectPath =
     legacyTarget ??
     landingTarget ??
@@ -302,6 +319,7 @@ function SessionApp({
             screen === "clinics" ||
             screen === "employees" ||
             screen === "rolePermissions" ||
+            screen === "appointments" ||
             screen === "patients"
           ? screen
           : null;
@@ -352,6 +370,7 @@ function SessionApp({
       canManageEmployees={canManageEmployees}
       isAdmin={admin}
       canAccessPatients={canRead || canWrite}
+      canAccessAppointments={canReadAppointments || canWriteAppointments}
       busy={busy || clinicBusy}
       onLogout={guardedLogout}
     >
@@ -413,14 +432,12 @@ function SessionApp({
       ) : page === "patients" ? (
         <PatientPage
           renderAppointments={(patient) => (
-            <BookingAction
+            <PatientAppointments
               key={patient.id}
               patient={patient}
               lang={lang}
-              canWrite={
-                account.kind === "clinic" &&
-                (admin || account.permissions.includes("appointments.write"))
-              }
+              canWrite={canWriteAppointments}
+              canRead={canRead && canReadAppointments}
               onExpired={expire}
               onNavigationGuardChange={registerAppointmentGuard}
             />
@@ -433,6 +450,23 @@ function SessionApp({
           canLookupOldNumber={admin}
           onExpired={expire}
           onNavigationGuardChange={registerPageGuard}
+        />
+      ) : page === "appointments" ? (
+        <AppointmentsPage
+          lang={lang}
+          canRead={canReadAppointments}
+          canWrite={canWriteAppointments}
+          canRegisterPatient={canWrite}
+          renderPatientRegistration={(callbacks) => (
+            <PatientRegistrationPanel
+              {...callbacks}
+              lang={lang}
+              canWrite={canWrite}
+              onExpired={expire}
+            />
+          )}
+          onExpired={expire}
+          onNavigationGuardChange={registerAppointmentGuard}
         />
       ) : page === "employees" ? (
         <EmployeePage

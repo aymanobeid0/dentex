@@ -2,6 +2,7 @@ export const paths = {
   home: "/clinic",
   clinicAccount: "/clinic/account",
   patients: "/clinic/patients",
+  appointments: "/clinic/appointments",
   patientNew: "/clinic/patients/new",
   employees: "/clinic/employees",
   rolePermissions: "/clinic/roles",
@@ -20,4 +21,10 @@ export const routeDefinitions = [
 export type Screen =
   keyof typeof paths | "root" | "platformRoot" | "patientFile" | "notFound";
 export type Page =
-  "home" | "clinics" | "account" | "employees" | "rolePermissions" | "patients";
+  | "home"
+  | "clinics"
+  | "account"
+  | "employees"
+  | "rolePermissions"
+  | "patients"
+  | "appointments";

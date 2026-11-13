@@ -16,6 +16,10 @@
 
 ## التنظيم والملكية
 
+موافقة محددة2026-11-12: أجاب المستخدم «أعتمد مقترح03 كما هو» على [تركيب التسجيل داخل الحجز](../.scratch/appointments/03-architecture-proposal.md). تعلنpatients مكوّنPatientRegistrationPanel ونوعRegisteredPatientForAppointment، وتقبل المواعيدrenderPatientRegistration يركبهapp. يبقى نموذج التسجيل وHTTP وhook داخلpatients، وتبقى مسودة الحجز فيappointments وحراسة التسجيل والمسودة منسقة في النافذة. لا اعتماد بين الميزات أو تغيير خادم أو صلاحيات أو مخطط أو فحوص. يسجل الإذن قبل تطبيق03 ولا يثبت اكتمالها.
+
+موافقة محددة2026-11-12: «أعتمد مقترح02 كما هو» تشمل [تركيب02](../.scratch/appointments/02-architecture-proposal.md): مسارapp `/clinic/appointments` وحراسته تحت العرض أو الإدارة، وإعلان AppointmentsPage وPatientAppointments، وتركيب القسم عبرrenderAppointments المعتمدة، ونافذة حجز مشتركة لاختيار المريض المحدود أو مريض الملف. تملكapp التوجيه والتنسيق وتملكappointments الطلبات والمسودات؛ لا استيراد بين الميزات أو مخزن عام أو تخفيف فحص أو اعتماد جديد. لا إذن ضمني لتوسعات03–05.
+
 موافقة محددة2026-11-12: أجاب المستخدم «موافق» على [مقترح المواعيد01](../.scratch/appointments/01-architecture-proposal.md). تعلن المرضى PatientAppointmentContext بالهوية والاسم ورقم الملف والأرشفة، وتقبل PatientPage فتحة renderAppointments اختيارية. يركّب app عبرها إجراء الحجز المعلن من appointments، وتملك المواعيد طلباتها ومسودتها وحراستها. لا اعتماد بين الميزتين أو طلبات أعمال داخلapp أو مسار متصفح جديد أو تخفيف للفحص. يقتصر التطبيق هنا على01، ولا تعني الموافقة إنجاز الكود.
 
 ```text

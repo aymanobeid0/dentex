@@ -1,28 +1,95 @@
-import type { ActorAccess } from '../../shared/actor';
-import type { ArchivePatientInput, EditPatientInput, ListPatientsInput, RegisterPatientInput } from './patients.schemas';
+import type { ActorAccess } from "../../shared/actor";
+import type {
+  ArchivePatientInput,
+  EditPatientInput,
+  ListPatientsInput,
+  RegisterPatientInput,
+} from "./patients.schemas";
 
-export interface PatientReceipt { id: string; fileNumber: string }
+export interface PatientReceipt {
+  id: string;
+  fileNumber: string;
+}
 export interface Patient extends PatientReceipt {
   archived: boolean;
   editVersion: number;
-  name: string; phone: string; gender: 'male' | 'female'; isChild: boolean;
-  birthDate: string | null; address: string | null; administrativeNote: string | null;
+  name: string;
+  phone: string;
+  gender: "male" | "female";
+  isChild: boolean;
+  birthDate: string | null;
+  address: string | null;
+  administrativeNote: string | null;
 }
-export type AppointmentPatientReference = Pick<Patient, 'id' | 'name' | 'fileNumber' | 'archived'>;
+export type AppointmentPatientReference = Pick<
+  Patient,
+  "id" | "name" | "fileNumber" | "archived"
+>;
+export type AppointmentPatientSummary = AppointmentPatientReference & {
+  phone: string;
+};
 export interface PatientsOperations {
+  searchAppointmentPatients(
+    clinicId: string,
+    input: { q: string; page: number },
+  ): Promise<{
+    items: AppointmentPatientSummary[];
+    page: number;
+    hasNext: boolean;
+  }>;
+  appointmentReferences(
+    clinicId: string,
+    patientIds: readonly string[],
+    q?: string,
+  ): Promise<AppointmentPatientSummary[]>;
   initializeNumbering(clinicId: string, start: string): Promise<void>;
-  appointmentReference(clinicId: string, patientId: string): Promise<AppointmentPatientReference | null>;
+  appointmentReference(
+    clinicId: string,
+    patientId: string,
+  ): Promise<AppointmentPatientReference | null>;
 }
 export interface PatientsRepository {
-  appointmentReference(clinicId: string, patientId: string): Promise<AppointmentPatientReference | null>;
-  findOldNumber(clinicId: string, oldFileNumber: string): Promise<(PatientReceipt & { name: string }) | null>;
+  appointmentReferences(
+    clinicId: string,
+    patientIds: readonly string[],
+    input: ListPatientsInput,
+  ): Promise<AppointmentPatientSummary[]>;
+  appointmentReference(
+    clinicId: string,
+    patientId: string,
+  ): Promise<AppointmentPatientReference | null>;
+  findOldNumber(
+    clinicId: string,
+    oldFileNumber: string,
+  ): Promise<(PatientReceipt & { name: string }) | null>;
   initializeNumbering(clinicId: string, start: string): Promise<void>;
   list(clinicId: string, input: ListPatientsInput): Promise<PatientList>;
-  insert(clinicId: string, input: RegisterPatientInput): Promise<PatientReceipt>;
+  insert(
+    clinicId: string,
+    input: RegisterPatientInput,
+  ): Promise<PatientReceipt>;
   find(clinicId: string, id: string): Promise<Patient | null>;
-  replaceDetails(clinicId: string, id: string, input: EditPatientInput): Promise<PatientReceipt & { editVersion: number }>;
-  setArchived(clinicId: string, id: string, input: ArchivePatientInput): Promise<PatientReceipt & { editVersion: number; archived: boolean }>;
+  replaceDetails(
+    clinicId: string,
+    id: string,
+    input: EditPatientInput,
+  ): Promise<PatientReceipt & { editVersion: number }>;
+  setArchived(
+    clinicId: string,
+    id: string,
+    input: ArchivePatientInput,
+  ): Promise<PatientReceipt & { editVersion: number; archived: boolean }>;
 }
-export type PatientSummary = Pick<Patient, 'id' | 'fileNumber' | 'name' | 'phone' | 'isChild' | 'archived'>;
-export interface PatientList { items: PatientSummary[]; page: number; hasNext: boolean }
-export interface PatientsScope { repository: PatientsRepository; actor: ActorAccess | null }
+export type PatientSummary = Pick<
+  Patient,
+  "id" | "fileNumber" | "name" | "phone" | "isChild" | "archived"
+>;
+export interface PatientList {
+  items: PatientSummary[];
+  page: number;
+  hasNext: boolean;
+}
+export interface PatientsScope {
+  repository: PatientsRepository;
+  actor: ActorAccess | null;
+}

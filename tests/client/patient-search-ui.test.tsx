@@ -67,7 +67,9 @@ it.each(["ar", "fr"] as const)(
     const link = await screen.findByRole("button", { name: "Marie" });
     expect(screen.getByText("+22262112233").getAttribute("dir")).toBe("ltr");
     expect(
-      screen.queryByRole('columnheader', { name: lang === "ar" ? "طفل" : "Enfant", exact: true }),
+      screen.queryByRole("columnheader", {
+        name: lang === "ar" ? "طفل" : "Enfant",
+      }),
     ).toBeNull();
     expect(container.querySelector("section")?.getAttribute("dir")).toBe(
       lang === "ar" ? "rtl" : "ltr",
@@ -77,7 +79,11 @@ it.each(["ar", "fr"] as const)(
     );
     fireEvent.click(link);
     expect(await screen.findByRole("heading", { name: "Marie" })).toBeTruthy();
-    expect(screen.getByText(lang === 'ar' ? 'طفل' : 'Enfant', { selector: 'span.patient-child' })).toBeTruthy();
+    expect(
+      screen.getByText(lang === "ar" ? "طفل" : "Enfant", {
+        selector: "span.patient-child",
+      }),
+    ).toBeTruthy();
   },
 );
 it("prevents repeated searches, clears stale results on failure, and retries the same search", async () => {
@@ -192,24 +198,22 @@ it("uses server pagination and resets to page one for a new search", async () =>
   expect((screen.getByRole("searchbox") as HTMLInputElement).value).toBe("");
 });
 it("removes a previously loaded list when read permission is lost", async () => {
-  const fetcher = vi
-    .fn()
-    .mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        items: [
-          {
-            id: "saved",
-            name: "Private patient",
-            phone: "+22262112233",
-            fileNumber: "42",
-            isChild: false,
-          },
-        ],
-        page: 1,
-        hasNext: false,
-      }),
-    });
+  const fetcher = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      items: [
+        {
+          id: "saved",
+          name: "Private patient",
+          phone: "+22262112233",
+          fileNumber: "42",
+          isChild: false,
+        },
+      ],
+      page: 1,
+      hasNext: false,
+    }),
+  });
   vi.stubGlobal("fetch", fetcher);
   const { rerender } = render(
     <PatientPage lang="fr" canRead canWrite={false} onExpired={() => {}} />,

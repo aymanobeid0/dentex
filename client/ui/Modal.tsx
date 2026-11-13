@@ -1,5 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import type { ReactNode } from "react";
+import { IconButton } from "./IconButton";
 
 export function Modal({
   open,
@@ -11,6 +13,9 @@ export function Modal({
   direction,
   children,
   size = "default",
+  headerIcon,
+  footer,
+  onOpenAutoFocus,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,7 +25,10 @@ export function Modal({
   close: string;
   direction: "rtl" | "ltr";
   children: ReactNode;
-  size?: "default" | "wide";
+  size?: "default" | "wide" | "compact";
+  headerIcon?: ReactNode;
+  footer?: ReactNode;
+  onOpenAutoFocus?: (event: Event) => void;
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -30,16 +38,43 @@ export function Modal({
         <Dialog.Content
           className="draft-dialog"
           data-size={size}
+          data-framed={!!headerIcon}
           dir={direction}
+          onOpenAutoFocus={onOpenAutoFocus}
+          onEscapeKeyDown={(event) => {
+            // Let an expanded editable combobox consume Escape before the dialog.
+            if (
+              event.target instanceof HTMLElement &&
+              event.target.closest('[role="combobox"][aria-expanded="true"]')
+            )
+              event.preventDefault();
+          }}
         >
-          <Dialog.Title>{title}</Dialog.Title>
-          <Dialog.Description>{description}</Dialog.Description>
+          {headerIcon ? (
+            <header className="ui-dialog-header">
+              <span className="ui-dialog-title-icon">{headerIcon}</span>
+              <Dialog.Title>{title}</Dialog.Title>
+              <Dialog.Close asChild>
+                <IconButton label={close}>
+                  <X size={16} aria-hidden />
+                </IconButton>
+              </Dialog.Close>
+            </header>
+          ) : (
+            <Dialog.Title>{title}</Dialog.Title>
+          )}
+          <Dialog.Description className={headerIcon ? "ui-sr-only" : undefined}>
+            {description}
+          </Dialog.Description>
           {children}
-          <div className="draft-dialog-actions">
-            <Dialog.Close asChild>
-              <button className="ui-button">{close}</button>
-            </Dialog.Close>
-          </div>
+          {footer ||
+            (!headerIcon && (
+              <div className="draft-dialog-actions">
+                <Dialog.Close asChild>
+                  <button className="ui-button">{close}</button>
+                </Dialog.Close>
+              </div>
+            ))}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

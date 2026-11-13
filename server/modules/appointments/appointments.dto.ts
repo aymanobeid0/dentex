@@ -20,9 +20,65 @@ export interface NewAppointment {
   administrativeNote: string | null;
 }
 export interface AppointmentsRepository {
-  overlaps(input: NewAppointment): Promise<boolean>;
+  patientIds(clinicId: string, filter: AppointmentFilter): Promise<string[]>;
+  list(
+    clinicId: string,
+    filter: AppointmentFilter,
+    page: number | undefined,
+    descending?: boolean,
+  ): Promise<{ items: AppointmentRecord[]; total: number }>;
+  find(clinicId: string, id: string): Promise<AppointmentRecord | null>;
+  changes(clinicId: string, id: string): Promise<AppointmentChange[]>;
+  overlaps(input: NewAppointment & { excludeId?: string }): Promise<boolean>;
+  replace(
+    clinicId: string,
+    previous: AppointmentRecord,
+    next: AppointmentRecord,
+    actorId: string,
+    action: string,
+    cancellationReason?: string | null,
+  ): Promise<AppointmentSnapshot>;
   insert(input: NewAppointment): Promise<AppointmentReceipt>;
 }
+export type AppointmentStatus = "booked" | "attended" | "absent" | "cancelled";
+export interface AppointmentFilter {
+  startsAt?: Date;
+  before?: Date;
+  doctorId?: string;
+  status?: AppointmentStatus;
+  patientIds?: string[];
+}
+export interface AppointmentRecord {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  startsAt: string;
+  endsAt: string;
+  status: AppointmentStatus;
+  editVersion: number;
+  administrativeNote: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+export interface AppointmentChange {
+  id: string;
+  actorId: string;
+  action: string;
+  createdAt: string;
+  before: unknown;
+  after: unknown;
+}
+export type AppointmentSnapshot = Pick<
+  AppointmentRecord,
+  | "id"
+  | "patientId"
+  | "doctorId"
+  | "startsAt"
+  | "endsAt"
+  | "status"
+  | "editVersion"
+  | "administrativeNote"
+>;
 export interface AppointmentsScope {
   repository: AppointmentsRepository;
   patients: PatientsOperations;

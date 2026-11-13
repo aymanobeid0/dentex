@@ -1,3 +1,4 @@
+import { chooseDate, chooseTime } from "./date-time-helpers";
 // @vitest-environment jsdom
 import "./ui-browser-apis";
 import { afterEach, it, expect, vi } from "vitest";
@@ -60,19 +61,19 @@ async function fill(lang: "ar" | "fr" = "fr") {
     user = userEvent.setup();
   await user.click(screen.getByRole("button", { name: t.book }));
   await waitFor(() =>
-    expect(screen.getByRole("combobox").getAttribute("disabled")).toBeNull(),
+    expect(
+      screen.getByRole("combobox", { name: t.doctor }).hasAttribute("disabled"),
+    ).toBe(false),
   );
   await waitFor(() => expect(screen.queryByText(t.loading)).toBeNull());
-  screen.getByRole("combobox").focus();
-  await user.keyboard("{Enter}{End}{Enter}");
-  fireEvent.change(screen.getByLabelText(t.date), {
-    target: { value: "2090-01-01" },
-  });
-  fireEvent.change(screen.getByLabelText(t.time), {
-    target: { value: "10:00" },
-  });
-  expect(screen.getByLabelText(t.time).getAttribute("type")).toBe("time");
-  expect(screen.getByLabelText(t.time).getAttribute("dir")).toBe("ltr");
+  screen.getByRole("combobox", { name: t.doctor }).focus();
+  await user.keyboard("{Enter}{Home}{Enter}");
+  await chooseDate(user, t.date, "2090-01-01", lang);
+  await chooseTime(user, t.time, "10:00", lang);
+  expect(screen.getByLabelText(t.time).getAttribute("type")).toBe("button");
+  expect((screen.getByLabelText(t.time) as HTMLButtonElement).value).toBe(
+    "10:00",
+  );
   fireEvent.change(screen.getByLabelText(t.note), {
     target: { value: "Keep this draft" },
   });

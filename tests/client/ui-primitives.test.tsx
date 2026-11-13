@@ -136,8 +136,18 @@ it.each(["ar", "fr"] as const)(
         ok: true,
         json: async () => ({
           roles: [
-            { id: "a", key: "dentist", editVersion: 1, permissions: ["patients.read"] },
-            { id: "b", key: "receptionist", editVersion: 1, permissions: ["patients.write"] },
+            {
+              id: "a",
+              key: "dentist",
+              editVersion: 1,
+              permissions: ["patients.read"],
+            },
+            {
+              id: "b",
+              key: "receptionist",
+              editVersion: 1,
+              permissions: ["patients.write"],
+            },
           ],
           permissions: ["patients.read", "patients.write"],
         }),
@@ -155,7 +165,9 @@ it.each(["ar", "fr"] as const)(
 );
 it("provides sidebar tooltips to keyboard focus and dismisses with Escape", async () => {
   const labels = {
-    dashboard: "Cabinets", home: "Accueil",
+    appointments: "Rendez-vous",
+    dashboard: "Cabinets",
+    home: "Accueil",
     employees: "Employees",
     rolePermissions: "Roles",
     account: "Account",
@@ -212,19 +224,17 @@ it("shares mobile and sidebar disclosure controls and closes navigation after a 
   window.matchMedia = vi.fn(() => ({ matches: true }) as MediaQueryList);
   vi.stubGlobal(
     "fetch",
-    vi
-      .fn()
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          kind: "clinic",
-          username: "qa",
-          name: "QA",
-          clinic: { name: "QA" },
-          roles: ["admin"],
-          permissions: [],
-        }),
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        kind: "clinic",
+        username: "qa",
+        name: "QA",
+        clinic: { name: "QA" },
+        roles: ["admin"],
+        permissions: [],
       }),
+    }),
   );
   render(application());
   const user = userEvent.setup();
