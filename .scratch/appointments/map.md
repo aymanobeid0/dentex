@@ -34,3 +34,22 @@
 ## الطلب المفتوح — 2026-11-13
 
 فُتح [PR #13](https://github.com/aymanobeid0/dentex/pull/13) إلىmain منcodex/appointments-01، غير مسودة، بعد رفع التنفيذ9e79d20. طلب المستخدم الرفع واعتمد تعديل العرض45 و51 صراحة؛ لا بند منشور معلوم غير منفذ تقنيًا. الحالة ready-for-human/complete باقية للمراجعة. لا دمج أو نشر أو اعتماد بصري شامل مفترض. نتائج442/442 وبقية الأدلة في [تدقيق PR](pr-spec-audit.md).
+
+
+## دمج PR وتحديث النسخة المحلية — 2026-11-13
+
+أثبت git fetch origin وصول دمج [PR #13](https://github.com/aymanobeid0/dentex/pull/13) إلىmain عند19510ee. بطلب المستخدم سُحب إلىD:/dentex بتقدم سريع علىmain، دون إعادة دمج أوreset. التنفيذ والتوثيق مدمجان؛ أصبحت التذاكر الخمسclosed/complete بسبب الدمج، ولا يُستنتج منه قبول بصري إضافي أو نجاحCI غير مقروء. السجلات السابقة عن طلب مفتوح تاريخية.
+
+
+## متابعة06 بطلب المستخدم — 2026-11-13
+
+[نتيجة الحجز وملخص اليوم](issues/06-booking-result-and-day-summary.md) متابعة UI مستقلة بعد دمج الخمس؛ لا تعيد فتح01–05. طلب المستخدم نافذة نتيجة قابلة للإغلاق وتقسيم اليوم2:1 مع بطاقة تفتح القائمة. [دليل التحقق](booking-result-day-summary-verification.md) يسجل النتيجة الحالية وحدودها.
+
+الحالة الحالية06: **ready-for-human / complete**؛ [التحقق](booking-result-day-summary-verification.md) مصدر النتائج والحدود واللقطات. لا رفع أو PR لهذه المتابعة.
+
+
+## متابعة07 بطلب المستخدم — 2026-11-13
+
+[الحجز من ساعات اليوم وأعداد الفترات](issues/07-calendar-hour-booking-and-period-counts.md): متابعة بعد06، in-progress. لا تعيد فتح التذاكر المدمجة. [التحقق](calendar-hour-period-counts-verification.md) مصدر النتائج والحدود.
+
+الحالة الحالية07: **ready-for-human / complete**.219/219 واجهة ثم10/10 تقويم؛ [التحقق](calendar-hour-period-counts-verification.md) مصدر الأدلة والحدود. لا رفع أو PR.

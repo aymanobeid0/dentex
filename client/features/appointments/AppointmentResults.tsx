@@ -22,6 +22,7 @@ export function AppointmentResults({
   calendarHeader,
   doctorChoices,
   onDateChange,
+  onBookSlot,
 }: {
   filter: DayFilter | { patientId: string; page: number };
   lang: Lang;
@@ -35,6 +36,7 @@ export function AppointmentResults({
   calendarHeader?: ReactNode;
   doctorChoices?: { id: string; name: string }[];
   onDateChange?: (date: string) => void;
+  onBookSlot?: (date: string, time: string) => void;
 }) {
   const t = translations[lang].appointments,
     query = useAppointmentList(filter, canRead, onExpired);
@@ -79,6 +81,13 @@ export function AppointmentResults({
             header={calendarHeader}
             doctorChoices={doctorChoices}
             onDateChange={onDateChange}
+            onBookSlot={canWrite && canRead ? onBookSlot : undefined}
+            dayPage={{
+              page: filter.page,
+              total: query.data?.total ?? 0,
+              hasNext: query.data?.hasNext ?? false,
+              onChange: onPage,
+            }}
             showGrid={!!query.data}
             emptyMessage={
               !canRead || query.blocked

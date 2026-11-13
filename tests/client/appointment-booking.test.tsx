@@ -98,6 +98,14 @@ it.each(["ar", "fr"] as const)(
     );
     await user.click(screen.getByRole("button", { name: t.save }));
     expect((await screen.findByRole("status")).textContent).toBe(t.saved);
+    const result = screen.getByRole("dialog", { name: t.resultSuccess });
+    expect(result.textContent).toContain(patient.name);
+    expect(result.textContent).toContain(doctor.name);
+    expect(result.textContent).toContain("10:00 – 10:30");
+    expect(result.textContent).toContain(t.booked);
+    await user.click(screen.getByRole("button", { name: t.close }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.queryByText(t.saved)).toBeNull();
     expect(document.activeElement).toBe(
       screen.getByRole("button", { name: t.book }),
     );
@@ -131,6 +139,10 @@ it.each(["ar", "fr"] as const)(
     const user = await fill(lang);
     await user.click(screen.getByRole("button", { name: t.save }));
     expect((await screen.findByRole("alert")).textContent).toBe(t.overlap);
+    expect(
+      screen.getByRole("dialog", { name: t.resultFailure }).textContent,
+    ).toContain(patient.name);
+    await user.click(screen.getByRole("button", { name: t.close }));
     expect((screen.getByLabelText(t.note) as HTMLTextAreaElement).value).toBe(
       "Keep this draft",
     );
@@ -165,6 +177,17 @@ it.each(["lost", "malformed", "server"] as const)(
     await user.click(screen.getByRole("button", { name: bookingText.fr.save }));
     expect((await screen.findByRole("alert")).textContent).toBe(
       bookingText.fr.uncertain,
+    );
+    expect(
+      screen.getByRole("dialog", { name: bookingText.fr.resultUncertain }),
+    ).toBeTruthy();
+    await user.click(
+      screen.getByRole("button", { name: bookingText.fr.close }),
+    );
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        screen.getByLabelText(bookingText.fr.note),
+      ),
     );
     fireEvent.submit(
       screen.getByLabelText(bookingText.fr.note).closest("form")!,
@@ -208,6 +231,7 @@ it("prevents double submit while pending, preserves offline draft, and applies w
   expect(screen.queryByRole("alertdialog")).toBeNull();
   finish(new Response(JSON.stringify({ error: "forbidden" }), { status: 403 }));
   await screen.findByRole("alert");
+  await user.click(screen.getByRole("button", { name: bookingText.fr.close }));
   vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
   fireEvent(window, new Event("offline"));
   expect(

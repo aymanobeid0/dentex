@@ -1,10 +1,10 @@
 import { DateField } from "../../ui/DateTimeField";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { translations, type Lang } from "../../shared/i18n";
 import { Label } from "../../ui/Label";
 import { SelectField } from "../../ui/SelectField";
 import type { NavigationGuard } from "../../ui/useDraftGuard";
-import { BookingAction } from "./BookingAction";
+import { BookingAction, BookingDialog } from "./BookingAction";
 import type { PatientRegistrationSlot } from "./BookingAction";
 import { AppointmentResults } from "./AppointmentResults";
 import { useAppointmentDoctors, useAppointmentList } from "./queries";
@@ -46,6 +46,8 @@ export function AppointmentsPage(props: AppointmentsPageProps) {
     page: 1,
     view: "day",
   }));
+  const [slot, setSlot] = useState<{ date: string; time: string } | null>(null);
+  const slotOpener = useRef<HTMLElement | null>(null);
   const [text, setText] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilters = [filter.doctorId, filter.status, filter.q].filter(
@@ -252,12 +254,28 @@ export function AppointmentsPage(props: AppointmentsPageProps) {
           onPage={(page) => setFilter((previous) => ({ ...previous, page }))}
           onDateChange={(date) => change({ date })}
           bookingAction={<BookingAction {...props} />}
+          onBookSlot={
+            props.canWrite
+              ? (date, time) => {
+                  slotOpener.current = document.activeElement as HTMLElement;
+                  setSlot({ date, time });
+                }
+              : undefined
+          }
           calendarHeader={controls}
           doctorChoices={[...options]
             .filter(([id]) => !filter.doctorId || id === filter.doctorId)
             .map(([id, name]) => ({ id, name }))}
         />
       </div>
+      {slot && (
+        <BookingDialog
+          {...props}
+          initialSchedule={slot}
+          returnFocus={slotOpener}
+          onClose={() => setSlot(null)}
+        />
+      )}
     </section>
   );
 }

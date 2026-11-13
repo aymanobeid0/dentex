@@ -19,6 +19,7 @@ import {
   shiftPeriod,
 } from "../../client/features/appointments/calendar";
 import { translations } from "../../client/shared/i18n";
+import { AppointmentCalendar } from "../../client/features/appointments/AppointmentCalendar";
 const doctor = {
   id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
   name: "Calendar doctor",
@@ -82,7 +83,7 @@ it.each(["ar", "fr"] as const)(
       within(month).queryByRole("button", { name: /Calendar patient C/ }),
     ).toBeNull();
     const more = within(month).getByRole("button", {
-      name: new RegExp(t.more),
+      name: new RegExp("^" + t.total + ": 3"),
     });
     more.focus();
     await user.keyboard("{Enter}");
@@ -103,9 +104,17 @@ it.each(["ar", "fr"] as const)(
     await user.click(screen.getByRole("button", { name: t.close }));
     await user.click(screen.getByRole("radio", { name: t.week }));
     const week = await screen.findByRole("region", { name: t.weekCalendar });
-    expect(week.querySelectorAll(".ui-week-hour")).toHaveLength(24);
+    expect(week.querySelectorAll(".ui-week-hour")).toHaveLength(0);
+    expect(within(week).queryByText("Calendar patient A")).toBeNull();
+    await user.click(
+      within(week).getByRole("button", {
+        name: new RegExp("^" + t.total + ": 3"),
+      }),
+    );
     expect(
-      within(week).getAllByRole("button", { name: /Calendar patient/ }),
+      within(
+        screen.getByRole("dialog", { name: t.dayAppointments }),
+      ).getAllByRole("button", { name: /Calendar patient/ }),
     ).toHaveLength(3);
     expect(fetcher.mock.calls.some(([url]) => url.includes("view=month"))).toBe(
       true,
@@ -196,4 +205,154 @@ it("preserves Gregorian Monday boundaries, leap days and navigation at supported
     expect(Number.isFinite(new Date(day + "T00:00:00.000Z").getTime())).toBe(
       true,
     );
+});
+
+it.each(["ar", "fr"] as const)(
+  "opens the full day list from the summary card, including paged results in %s",
+  async (lang) => {
+    const t = translations[lang].appointments,
+      user = userEvent.setup(),
+      onPage = vi.fn(),
+      onOpen = vi.fn();
+    const appointments = Array.from({ length: 7 }, (_, index) => ({
+      ...rows[0],
+      status: "booked" as const,
+      id: "day-" + index,
+      patient: { ...rows[0].patient, name: "Day patient " + index },
+    }));
+    renderPatient(
+      <AppointmentCalendar
+        date="2090-01-01"
+        view="day"
+        items={appointments}
+        lang={lang}
+        onOpen={onOpen}
+        dayPage={{ page: 1, total: 55, hasNext: true, onChange: onPage }}
+      />,
+    );
+    const card = screen.getByRole("button", { name: t.viewDayAppointments });
+    expect(card.querySelectorAll(".ui-day-agenda-entry")).toHaveLength(4);
+    expect(card.textContent).toContain("+51");
+    card.focus();
+    await user.keyboard("{Enter}");
+    const list = screen.getByRole("dialog", { name: t.dayAppointments });
+    expect(
+      within(list).getAllByRole("button", { name: /Day patient/ }),
+    ).toHaveLength(7);
+    await user.click(within(list).getByRole("button", { name: t.next }));
+    expect(onPage).toHaveBeenCalledWith(2);
+    await user.click(
+      within(list).getByRole("button", { name: /Day patient 6/ }),
+    );
+    expect(onOpen).toHaveBeenCalledWith("day-6");
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(document.activeElement).toBe(card));
+  },
+);
+
+it.each(["ar", "fr"] as const)(
+  "books from a day hour with an editable initial time and a clean next booking in %s",
+  async (lang) => {
+    const t = translations[lang].appointments,
+      user = userEvent.setup();
+    const fetcher = vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        const input = JSON.parse(String(options.body));
+        const startsAt = input.date + "T" + input.time + ":00.000Z";
+        return new Response(
+          JSON.stringify({
+            id: rows[0].id,
+            patientId: input.patientId,
+            doctorId: input.doctorId,
+            startsAt,
+            endsAt: new Date(
+              Date.parse(startsAt) + input.durationMinutes * 60000,
+            ).toISOString(),
+            status: "booked",
+            editVersion: 1,
+          }),
+          { status: 201 },
+        );
+      }
+      if (url.endsWith("/doctors")) return json({ items: [doctor] });
+      if (url.includes("/patients?"))
+        return json({
+          items: [{ ...rows[0].patient, phone: "+22262112233" }],
+          page: 1,
+          hasNext: false,
+        });
+      return json({ items: rows, total: 3, page: 1, hasNext: false });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    renderPatient(
+      <AppointmentsPage lang={lang} canRead canWrite onExpired={vi.fn()} />,
+    );
+    await user.click(screen.getByRole("button", { name: t.filters }));
+    await chooseDate(user, t.date, "2090-01-01", lang);
+    const hour = await screen.findByRole("button", {
+      name: t.bookAt + " 14:00",
+    });
+    await user.click(hour);
+    let dialog = screen.getByRole("dialog", { name: t.title });
+    expect(within(dialog).getByLabelText(t.date).getAttribute("value")).toBe(
+      "2090-01-01",
+    );
+    expect(within(dialog).getByLabelText(t.time).getAttribute("value")).toBe(
+      "14:00",
+    );
+    await user.click(within(dialog).getByRole("button", { name: t.close }));
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(hour));
+    hour.focus();
+    await user.keyboard("{Enter}");
+    dialog = screen.getByRole("dialog", { name: t.title });
+    await user.type(
+      within(dialog).getByRole("combobox", { name: t.patientSearch }),
+      "Calendar",
+    );
+    await user.click(await screen.findByRole("option"));
+    await waitFor(() =>
+      expect(
+        within(dialog)
+          .getByRole("combobox", { name: t.doctor })
+          .hasAttribute("disabled"),
+      ).toBe(false),
+    );
+    within(dialog).getByRole("combobox", { name: t.doctor }).focus();
+    await user.keyboard("{Enter}{Home}{Enter}");
+    await chooseTime(user, t.time, "14:07", lang);
+    await user.click(within(dialog).getByRole("button", { name: t.save }));
+    const result = await screen.findByRole("dialog", { name: t.resultSuccess });
+    expect(result.textContent).toContain("14:07 – 14:37");
+    await user.click(within(result).getByRole("button", { name: t.close }));
+    await waitFor(() => expect(document.activeElement).toBe(hour));
+    const writes = fetcher.mock.calls.filter(
+      ([, options]) => options?.method === "POST",
+    );
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(String(writes[0][1]?.body))).toMatchObject({
+      date: "2090-01-01",
+      time: "14:07",
+    });
+    await user.click(screen.getByRole("button", { name: t.book }));
+    dialog = screen.getByRole("dialog", { name: t.title });
+    expect(within(dialog).getByLabelText(t.time).getAttribute("value")).toBe(
+      "",
+    );
+  },
+);
+it("keeps day hour booking disabled for a read-only employee", async () => {
+  transport();
+  const t = translations.fr.appointments,
+    user = userEvent.setup();
+  renderPatient(
+    <AppointmentsPage lang="fr" canRead canWrite={false} onExpired={vi.fn()} />,
+  );
+  const hour = await screen.findByRole("button", {
+    name: t.bookAt + " 14:00",
+  });
+  expect(hour.hasAttribute("disabled")).toBe(true);
+  await user.click(hour);
+  expect(screen.queryByRole("dialog")).toBeNull();
 });

@@ -16,6 +16,7 @@ export function Modal({
   headerIcon,
   footer,
   onOpenAutoFocus,
+  onCloseAutoFocus,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,6 +30,7 @@ export function Modal({
   headerIcon?: ReactNode;
   footer?: ReactNode;
   onOpenAutoFocus?: (event: Event) => void;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -41,6 +43,7 @@ export function Modal({
           data-framed={!!headerIcon}
           dir={direction}
           onOpenAutoFocus={onOpenAutoFocus}
+          onCloseAutoFocus={onCloseAutoFocus}
           onEscapeKeyDown={(event) => {
             // Let an expanded editable combobox consume Escape before the dialog.
             if (

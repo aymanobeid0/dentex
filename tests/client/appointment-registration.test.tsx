@@ -124,6 +124,7 @@ it.each(["ar", "fr"] as const)(
     );
     await user.click(screen.getByRole("button", { name: t.save }));
     await screen.findByText(t.overlap);
+    await user.click(screen.getByRole("button", { name: t.close }));
     const posts = fetcher.mock.calls.filter(
       ([, options]) => options?.method === "POST",
     );
