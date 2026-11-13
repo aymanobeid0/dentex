@@ -53,3 +53,8 @@
 [الحجز من ساعات اليوم وأعداد الفترات](issues/07-calendar-hour-booking-and-period-counts.md): متابعة بعد06، in-progress. لا تعيد فتح التذاكر المدمجة. [التحقق](calendar-hour-period-counts-verification.md) مصدر النتائج والحدود.
 
 الحالة الحالية07: **ready-for-human / complete**.219/219 واجهة ثم10/10 تقويم؛ [التحقق](calendar-hour-period-counts-verification.md) مصدر الأدلة والحدود. لا رفع أو PR.
+
+
+## PR المتابعات المفتوح — 2026-11-13
+
+فُتح [PR #14](https://github.com/aymanobeid0/dentex/pull/14) غير مسودة بعد رفع041b620، ليجمع06/07 واسم اليوم والشرطة وفاصل الساعات.219/219 واجهة والبناء والفحوص ناجحة محليًا؛ لا دمج أو نشر أو اعتماد بصري شامل أو نجاحCI بعيد مفترض.
