@@ -47,6 +47,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm run db:generate
+      - run: npm run check:ui-styles
       - name: Initialize isolated test database
         run: npm run db:deploy
       - name: Check architecture and build in parallel

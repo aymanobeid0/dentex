@@ -12,7 +12,15 @@ import { AccountPage } from "../features/account";
 import { LoginPage, Session, useIdentity, useLogout } from "../features/auth";
 import { ClinicsPage } from "../features/clinics";
 import { EmployeePage } from "../features/employees";
-import { PatientPage, type PatientView } from "../features/patients";
+import {
+  PatientPage,
+  PatientRegistrationPanel,
+  type PatientView,
+} from "../features/patients";
+import {
+  AppointmentsPage,
+  PatientAppointments,
+} from "../features/appointments";
 import { RolePermissionsPage } from "../features/roles";
 import { LanguageSwitch, translations, useLanguage } from "../shared/i18n";
 import type { NavigationGuard } from "../ui/useDraftGuard";
@@ -87,7 +95,14 @@ function SessionApp({
   const { busy, error, logout } = useLogout(expire);
   const [clinicBusy, setClinicBusy] = useState(false);
   const pageGuard = useRef<NavigationGuard | null>(null),
+    appointmentGuard = useRef<NavigationGuard | null>(null),
     clinicGuard = useRef<NavigationGuard | null>(null);
+  const registerAppointmentGuard = useCallback(
+    (guard: NavigationGuard | null) => {
+      appointmentGuard.current = guard;
+    },
+    [],
+  );
   const registerPageGuard = useCallback((guard: NavigationGuard | null) => {
     pageGuard.current = guard;
   }, []);
@@ -105,7 +120,13 @@ function SessionApp({
       location.hash === nextLocation.hash
     )
       return false;
-    return !!(busy || clinicBusy || pageGuard.current || clinicGuard.current);
+    return !!(
+      busy ||
+      clinicBusy ||
+      pageGuard.current ||
+      clinicGuard.current ||
+      appointmentGuard.current
+    );
   });
   const attempted = useRef<typeof blocker | null>(null);
   const handled = useRef(new WeakSet<object>());
@@ -150,7 +171,7 @@ function SessionApp({
         ? retainsClinic
           ? null
           : clinicGuard.current
-        : pageGuard.current;
+        : appointmentGuard.current || pageGuard.current;
     if (guard) guard(proceed, reset);
     else proceed();
   }, [blocker, busy, clinicBusy, platformRetained, account?.kind]);
@@ -169,7 +190,7 @@ function SessionApp({
         <LanguageSwitch />
         <p role="alert">{t.network}</p>
         <button
-          className="language"
+          className="ui-button"
           onClick={() => void session.refresh().catch(() => {})}
         >
           {t.retry}
@@ -212,7 +233,7 @@ function SessionApp({
           <LanguageSwitch />
           <h1>{t.notFound}</h1>
           <button
-            className="language"
+            className="ui-button"
             onClick={() => void go(paths.clinicLogin)}
           >
             {t.toClinic}
@@ -248,7 +269,14 @@ function SessionApp({
   const canWrite =
     account.kind === "clinic" &&
     (admin || account.permissions.includes("patients.write"));
+  const canReadAppointments =
+    account.kind === "clinic" &&
+    (admin || account.permissions.includes("appointments.read"));
+  const canWriteAppointments =
+    account.kind === "clinic" &&
+    (admin || account.permissions.includes("appointments.write"));
   const clinicScreen = [
+    "appointments",
     "home",
     "clinicAccount",
     "patients",
@@ -270,7 +298,10 @@ function SessionApp({
     ((screen === "patients" || screen === "patientFile") &&
       !canRead &&
       !(screen === "patients" && canWrite)) ||
-    (screen === "patientNew" && !canWrite);
+    (screen === "patientNew" && !canWrite) ||
+    (screen === "appointments" &&
+      !canReadAppointments &&
+      !canWriteAppointments);
   const redirectPath =
     legacyTarget ??
     landingTarget ??
@@ -288,6 +319,7 @@ function SessionApp({
             screen === "clinics" ||
             screen === "employees" ||
             screen === "rolePermissions" ||
+            screen === "appointments" ||
             screen === "patients"
           ? screen
           : null;
@@ -317,6 +349,7 @@ function SessionApp({
     };
     if (account.kind === "platform" && clinicGuard.current)
       clinicGuard.current(leave);
+    else if (appointmentGuard.current) appointmentGuard.current(leave);
     else if (pageGuard.current) pageGuard.current(leave);
     else leave();
   };
@@ -337,6 +370,7 @@ function SessionApp({
       canManageEmployees={canManageEmployees}
       isAdmin={admin}
       canAccessPatients={canRead || canWrite}
+      canAccessAppointments={canReadAppointments || canWriteAppointments}
       busy={busy || clinicBusy}
       onLogout={guardedLogout}
     >
@@ -365,7 +399,7 @@ function SessionApp({
       ) : forbidden || screen === "notFound" ? (
         <section className="card">
           <h1>{forbidden ? t.forbidden : t.notFound}</h1>
-          <button className="language" onClick={() => void go(defaultPath)}>
+          <button className="ui-button" onClick={() => void go(defaultPath)}>
             {t.toDefault}
           </button>
         </section>
@@ -397,6 +431,17 @@ function SessionApp({
         </>
       ) : page === "patients" ? (
         <PatientPage
+          renderAppointments={(patient) => (
+            <PatientAppointments
+              key={patient.id}
+              patient={patient}
+              lang={lang}
+              canWrite={canWriteAppointments}
+              canRead={canRead && canReadAppointments}
+              onExpired={expire}
+              onNavigationGuardChange={registerAppointmentGuard}
+            />
+          )}
           lang={lang}
           view={patientView}
           onNavigate={navigatePatient}
@@ -405,6 +450,23 @@ function SessionApp({
           canLookupOldNumber={admin}
           onExpired={expire}
           onNavigationGuardChange={registerPageGuard}
+        />
+      ) : page === "appointments" ? (
+        <AppointmentsPage
+          lang={lang}
+          canRead={canReadAppointments}
+          canWrite={canWriteAppointments}
+          canRegisterPatient={canWrite}
+          renderPatientRegistration={(callbacks) => (
+            <PatientRegistrationPanel
+              {...callbacks}
+              lang={lang}
+              canWrite={canWrite}
+              onExpired={expire}
+            />
+          )}
+          onExpired={expire}
+          onNavigationGuardChange={registerAppointmentGuard}
         />
       ) : page === "employees" ? (
         <EmployeePage

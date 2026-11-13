@@ -1,5 +1,7 @@
 # معيار مكونات الواجهة — Radix Primitives
 
+تُضبط ملكية المظهر والأبعاد والطبقات والحركة وفق [القرارات المشتركة](ui-components.md)، المعتمدة بطلب المستخدم2026-11-12. تبقىPrimitives مسؤولة عن السلوك والتركيز ولوحة المفاتيح؛ المظهر المشترك لا تعيد الميزات تعريفه.
+
 حالة التنفيذ: أُنجز اعتماد Primitives للمكونات القائمة ضمنPR #3. أضافت تذكرة انتقال الحالة03 نافذة تجاهل المسودة بـRadix Alert Dialog عبرclient/ui، ودخلتmain فيPR #6. معيار الاستخدام أدناه باقٍ؛ أدلة التحقق باللغتين ولوحة المفاتيح في [تحقق02](../.scratch/frontend-state-migration/02-verification.md) و[تحقق03](../.scratch/frontend-state-migration/03-verification.md).
 
 اعتمد المستخدم في 2026-11-04 استخدام Radix Primitives على مستوى المكونات القديمة والحالية والمستقبلية. هذا معيار واجهة ضمن React، ولا يغير معمارية الخادم المعتمدة أو عقود API.
@@ -12,3 +14,5 @@
 - استورد الحزم المحددة والمكونات المشتركة دون إنشاء barrel يجلب جميع الحزم، ولا تستخدم خصائص preview دون حاجة معتمدة.
 
 مصدر التطبيق: `.scratch/live-search-radix/spec.md`. مصادر المكتبة: https://www.radix-ui.com/primitives ومرجع كل primitive. سجل الحصر والاختبارات والفحص الفعلي وحدوده في [.scratch/live-search-radix/verification.md](../.scratch/live-search-radix/verification.md).
+
+اختيار التاريخ والوقت2026-11-13: يستخدمDateField/TimeField مكوناتDialog وSelect الحالية عبرui؛ شبكة الأيام بعناصرHTML وأدوارgrid وحركة لوحة المفاتيح المثبتة باللغتين. لا استبدال لإدارة التركيز أو الإغلاق الخاصة بـRadix. [الدليل](../.scratch/appointments/date-time-picker-verification.md).

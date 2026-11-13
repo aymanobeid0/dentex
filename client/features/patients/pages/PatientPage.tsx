@@ -10,7 +10,15 @@ import { PatientRegistrationForm } from "../components/PatientRegistrationForm";
 import { usePatientsPage } from "../hooks/usePatientsPage";
 import { OldNumberLookup } from "../components/OldNumberLookup";
 import type { PatientView } from "../types";
+import type { ReactNode } from "react";
+export type PatientAppointmentContext = {
+  id: string;
+  name: string;
+  fileNumber: string;
+  archived: boolean;
+};
 type Props = {
+  renderAppointments?: (patient: PatientAppointmentContext) => ReactNode;
   lang: Lang;
   canRead: boolean;
   canLookupOldNumber?: boolean;
@@ -30,6 +38,7 @@ export function PatientPage(props: Props) {
   );
 }
 function PatientFlow({
+  renderAppointments,
   view,
   onNavigate,
   lang,
@@ -100,80 +109,84 @@ function PatientFlow({
         onDiscard={guard.discard}
         returnFocus={guard.returnFocus}
       />
-      <div className="content-heading">
-        {canLookupOldNumber && canRead && !creating && !id && (
-          <OldNumberLookup
-            lang={lang}
-            onExpired={onExpired}
-            onNavigate={onNavigate}
-          />
+      <ConfirmDialog
+        open={archiveOpen && !!archiveAction && !guard.pending}
+        direction={lang === "ar" ? "rtl" : "ltr"}
+        title={archiveAction?.archived ? t.archive : t.restore}
+        description={
+          archiveAction?.archived ? t.archiveConfirmHint : t.restoreConfirmHint
+        }
+        cancel={t.cancelEdit}
+        confirm={archiveAction?.archived ? t.confirmArchive : t.confirmRestore}
+        onCancel={cancelArchive}
+        onConfirm={() => void submitArchive()}
+        busy={busy}
+        blocked={archiveBlocked}
+        returnFocus={archiveFocus}
+      >
+        {busy && <p role="status">{t.loading}</p>}
+        {archiveIssue && (
+          <div>
+            <p role="alert">
+              {archiveIssue === "uncertain"
+                ? t.archiveUncertain
+                : t[archiveIssue]}
+            </p>
+            <button
+              className="ui-button"
+              disabled={edit.review.isFetching || !canRead}
+              onClick={() => {
+                void edit.review.refetch();
+              }}
+            >
+              {t.reviewFile}
+            </button>
+            {edit.review.isFetching && <p role="status">{t.loading}</p>}
+            {edit.review.isError && <p role="alert">{t.reviewFailed}</p>}
+            {edit.review.isSuccess &&
+              !edit.review.isFetching &&
+              canRead &&
+              patient && (
+                <>
+                  <PatientFile lang={lang} t={t} patient={edit.review.data} />
+                  <CheckField
+                    checked={archiveReviewed}
+                    onCheckedChange={acknowledgeArchiveReview}
+                  >
+                    {edit.review.data.archived === archiveAction?.archived
+                      ? t.acceptCurrentStatus
+                      : t.continueSaving}
+                  </CheckField>
+                </>
+              )}
+          </div>
         )}
-        <ConfirmDialog
-          open={archiveOpen && !!archiveAction && !guard.pending}
-          direction={lang === "ar" ? "rtl" : "ltr"}
-          title={archiveAction?.archived ? t.archive : t.restore}
-          description={
-            archiveAction?.archived
-              ? t.archiveConfirmHint
-              : t.restoreConfirmHint
-          }
-          cancel={t.cancelEdit}
-          confirm={
-            archiveAction?.archived ? t.confirmArchive : t.confirmRestore
-          }
-          onCancel={cancelArchive}
-          onConfirm={() => void submitArchive()}
-          busy={busy}
-          blocked={archiveBlocked}
-          returnFocus={archiveFocus}
-        >
-          {busy && <p role="status">{t.loading}</p>}
-          {archiveIssue && (
-            <div>
-              <p role="alert">
-                {archiveIssue === "uncertain"
-                  ? t.archiveUncertain
-                  : t[archiveIssue]}
-              </p>
-              <button
-                className="language"
-                disabled={edit.review.isFetching || !canRead}
-                onClick={() => {
-                  void edit.review.refetch();
-                }}
-              >
-                {t.reviewFile}
-              </button>
-              {edit.review.isFetching && <p role="status">{t.loading}</p>}
-              {edit.review.isError && <p role="alert">{t.reviewFailed}</p>}
-              {edit.review.isSuccess &&
-                !edit.review.isFetching &&
-                canRead &&
-                patient && (
-                  <>
-                    <PatientFile lang={lang} t={t} patient={edit.review.data} />
-                    <CheckField
-                      checked={archiveReviewed}
-                      onCheckedChange={acknowledgeArchiveReview}
-                    >
-                      {edit.review.data.archived === archiveAction?.archived
-                        ? t.acceptCurrentStatus
-                        : t.continueSaving}
-                    </CheckField>
-                  </>
-                )}
-            </div>
-          )}
-        </ConfirmDialog>
+      </ConfirmDialog>
+      <div className="content-heading">
         <h1 ref={heading} tabIndex={-1}>
           {id ? t.file : t.title}
         </h1>
-        {canWrite && !creating && (
-          <button className="language" onClick={newPatient}>
-            <UserPlus size={16} aria-hidden />
-            {t.new}
-          </button>
-        )}
+        <div className="heading-actions">
+          {canLookupOldNumber && canRead && !creating && !id && (
+            <OldNumberLookup
+              lang={lang}
+              onExpired={onExpired}
+              onNavigate={onNavigate}
+            />
+          )}
+          {canRead && (id || creating) && (
+            <button className="ui-button" onClick={backToList}>
+              <ArrowLeft size={16} className="directional" aria-hidden />
+              {t.backToList}
+            </button>
+          )}
+          {canWrite && !creating && !id && (
+            <button className="primary action" onClick={newPatient}>
+              <UserPlus size={16} aria-hidden />
+              {t.new}
+            </button>
+          )}
+        </div>
       </div>
       {file.stale && (
         <p className="patient-search-feedback" role="status">
@@ -181,7 +194,7 @@ function PatientFlow({
         </p>
       )}
       {!patient && archiveAction && archiveIssue && !archiveOpen && canRead && (
-        <button className="language" onClick={startArchive}>
+        <button className="ui-button" onClick={startArchive}>
           {t.reviewFile}
         </button>
       )}
@@ -199,7 +212,7 @@ function PatientFlow({
         <div className="error" role="alert">
           <p>{editing && error === "uncertain" ? t.editUncertain : t[error]}</p>
           {id && error !== "denied" && error !== "missing" && (
-            <button className="language" onClick={file.reload}>
+            <button className="ui-button" onClick={file.reload}>
               <RefreshCw size={16} aria-hidden />
               {t.retry}
             </button>
@@ -211,7 +224,7 @@ function PatientFlow({
           <p role="status">{canRead ? t.reviewHint : t.reviewDenied}</p>
           {canRead && (
             <button
-              className="language"
+              className="ui-button"
               disabled={review.isFetching}
               onClick={() => void review.refetch()}
             >
@@ -231,7 +244,7 @@ function PatientFlow({
                   <li key={item.id}>
                     <button
                       type="button"
-                      className="patient-link"
+                      className="ui-link patient-link"
                       onClick={() =>
                         onNavigate({ kind: "file", patientId: item.id })
                       }
@@ -253,7 +266,7 @@ function PatientFlow({
             <div className="card patient-review">
               <p>{t.editReviewHint}</p>
               <button
-                className="language"
+                className="ui-button"
                 disabled={edit.review.isFetching}
                 onClick={() => void edit.review.refetch()}
               >
@@ -286,7 +299,7 @@ function PatientFlow({
             editing
           />
           <button
-            className="language patient-back"
+            className="ui-button patient-back"
             disabled={busy}
             onClick={cancelEditing}
           >
@@ -301,24 +314,21 @@ function PatientFlow({
         ) : (
           patient && (
             <>
-              <PatientFile lang={lang} t={t} patient={patient} />
+              <PatientFile
+                lang={lang}
+                t={t}
+                patient={patient}
+                canWrite={canWrite}
+                onEdit={startEditing}
+                onArchive={startArchive}
+              />
+              {renderAppointments?.({
+                id: patient.id,
+                name: patient.name,
+                fileNumber: patient.fileNumber,
+                archived: patient.archived,
+              })}
               {patient.archived && <p role="status">{t.archivedHint}</p>}
-              {canWrite && !patient.archived && (
-                <button
-                  className="language patient-back"
-                  onClick={startEditing}
-                >
-                  {t.edit}
-                </button>
-              )}
-              {canWrite && (
-                <button
-                  className="language patient-back"
-                  onClick={startArchive}
-                >
-                  {patient.archived ? t.restore : t.archive}
-                </button>
-              )}
             </>
           )
         )
@@ -344,18 +354,6 @@ function PatientFlow({
           <FileText size={24} aria-hidden />
           <p>{canRead ? t.empty : t.denied}</p>
         </div>
-      )}
-      {canRead && (id || creating) && (
-        <button className="language patient-back" onClick={backToList}>
-          <ArrowLeft size={16} className="directional" aria-hidden />
-          {t.backToList}
-        </button>
-      )}
-      {id && canWrite && (
-        <button className="language patient-back" onClick={newPatient}>
-          <ArrowLeft size={16} className="directional" aria-hidden />
-          {t.back}
-        </button>
       )}
     </section>
   );

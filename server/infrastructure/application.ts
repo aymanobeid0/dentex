@@ -18,6 +18,9 @@ import { createAccountService } from '../modules/account/account.service';
 import { createPatientsRepository } from '../modules/patients/patients.repository';
 import { createPatientsOperations, createPatientsService } from '../modules/patients/patients.service';
 import type { PatientsScope } from '../modules/patients/patients.dto';
+import { createAppointmentsRepository } from '../modules/appointments/appointments.repository';
+import { createAppointmentsService } from '../modules/appointments/appointments.service';
+import type { AppointmentsScope } from '../modules/appointments/appointments.dto';
 
 /** The only place that assembles feature internals; no business decisions here. */
 export function createServices(database: PrismaClient) {
@@ -46,6 +49,10 @@ export function createServices(database: PrismaClient) {
     return { ...bound, actor, platformAuthorized };
   }
   const bound = bind(database);
+  const appointmentsTransactions = createTransactionManager<AppointmentsScope, ClinicMutation>(database, async (client, context) => {
+    const scope = await mutation(client, context);
+    return { repository: createAppointmentsRepository(client), patients: createPatientsOperations(createPatientsRepository(client)), employees: scope.employees, actor: scope.actor };
+  });
   const patientsTransactions = createTransactionManager<PatientsScope, ClinicMutation>(database, async (client, context) => {
     const scope = await mutation(client, context);
     return { repository: createPatientsRepository(client), actor: scope.actor };
@@ -63,6 +70,7 @@ export function createServices(database: PrismaClient) {
     return { repository: scope.clinicsRepository, roles: scope.roles, employees: scope.employees, patients: createPatientsOperations(createPatientsRepository(client)), platformAuthorized: scope.platformAuthorized };
   });
   return {
+    appointments: createAppointmentsService(appointmentsTransactions),
     auth: createAuthService(bound.authRepository, verifyPassword, bound),
     patients: createPatientsService(createPatientsRepository(database), patientsTransactions),
     roles: createRolesService(bound.rolesRepository, rolesTransactions),

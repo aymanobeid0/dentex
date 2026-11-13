@@ -8,17 +8,8 @@
 .clinic-form .field {
   max-width: 500px;
 }
-.clinic-form .input-shell input {
-  height: 36px;
-}
-.clinic-form .input-shell input[dir="ltr"] {
-  text-align: left;
-}
-@media (max-width: 760px) {
-  .clinic-form .input-shell input {
-    height: 44px;
-  }
-}
+
+
 .shell .clinic-form h2 {
   font-size: 18px;
 }

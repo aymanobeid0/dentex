@@ -117,7 +117,7 @@ function LookupContent({
           <p>
             <button
               type="button"
-              className="patient-link"
+              className="ui-link patient-link"
               onClick={() => {
                 if (query.data)
                   onNavigate({ kind: "file", patientId: query.data.id });
@@ -152,7 +152,7 @@ export function OldNumberLookup({
       description={t.oldNumberHint}
       close={t.closeLookup}
       trigger={
-        <button className="language">
+        <button className="ui-button">
           <History size={16} aria-hidden />
           {t.oldNumberLookup}
         </button>

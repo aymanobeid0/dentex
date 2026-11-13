@@ -1,5 +1,6 @@
 import {
   Building2,
+  CalendarDays,
   House,
   Menu,
   PanelLeftClose,
@@ -13,6 +14,7 @@ import { Hint } from "../../ui/Hint";
 import type { Page } from "../navigation";
 type Labels = {
   home: string;
+  appointments: string;
   dashboard: string;
   employees: string;
   rolePermissions: string;
@@ -28,6 +30,7 @@ type Props = {
   canManageEmployees: boolean;
   isAdmin: boolean;
   canAccessPatients?: boolean;
+  canAccessAppointments?: boolean;
   patientsLabel?: string;
   labels: Labels;
 };
@@ -39,10 +42,17 @@ export function AppSidebar({
   canManageEmployees,
   isAdmin,
   canAccessPatients,
+  canAccessAppointments,
   patientsLabel,
   labels: t,
 }: Props) {
   const items = [
+    {
+      page: "appointments" as const,
+      visible: kind === "clinic" && canAccessAppointments,
+      label: t.appointments,
+      Icon: CalendarDays,
+    },
     {
       page: "home" as const,
       visible: kind === "clinic",

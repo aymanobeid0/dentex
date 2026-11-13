@@ -12,7 +12,7 @@ import {
   useRegistrationDraftGuard,
   type NavigationGuard,
 } from "./useRegistrationDraftGuard";
-import type { PatientView } from "../types";
+import type { PatientView, RegisteredPatientForAppointment } from "../types";
 type Form = {
   name: string;
   phone: string;
@@ -83,6 +83,7 @@ export function usePatientsPage({
   canWrite,
   onExpired,
   onNavigationGuardChange,
+  onRegistered,
 }: {
   view: PatientView;
   onNavigate: (view: PatientView) => void;
@@ -91,6 +92,7 @@ export function usePatientsPage({
   canWrite: boolean;
   onExpired: () => void;
   onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
+  onRegistered?: (patient: RegisteredPatientForAppointment) => void;
 }) {
   const { mutation, review } = usePatientRegistration(canRead);
   const [uncertain, setUncertain] = useState(false);
@@ -387,7 +389,14 @@ export function usePatientsPage({
       guard.release();
       setForm(blank);
       setFieldErrors({});
-      if (canRead) {
+      if (onRegistered) {
+        onRegistered({
+          id: created.id,
+          fileNumber: created.fileNumber,
+          name: form.name.trim(),
+          archived: false,
+        });
+      } else if (canRead) {
         onNavigate({ kind: "file", patientId: created.id });
       } else setReceipt(created.fileNumber);
     } catch (error) {

@@ -81,7 +81,7 @@ export function RolePermissionEditor({
           <ToggleGroupItem
             key={r.id}
             value={r.id}
-            className={"language " + (selected === r.id ? "role-selected" : "")}
+            className={"ui-button " + (selected === r.id ? "role-selected" : "")}
           >
             {t[r.key as "admin" | "dentist" | "receptionist"] ?? r.key}
           </ToggleGroupItem>

@@ -1,3 +1,4 @@
+import { IconButton } from "../../ui/IconButton";
 import { LogOut, Menu } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { LanguageSwitch, translations, type Lang } from "../../shared/i18n";
@@ -12,6 +13,7 @@ type Props = {
   canManageEmployees: boolean;
   isAdmin: boolean;
   canAccessPatients: boolean;
+  canAccessAppointments?: boolean;
   busy: boolean;
   onLogout: () => void;
   children: ReactNode;
@@ -24,6 +26,7 @@ export function AppShell({
   canManageEmployees,
   isAdmin,
   canAccessPatients,
+  canAccessAppointments,
   busy,
   onLogout,
   children,
@@ -33,17 +36,19 @@ export function AppShell({
     () => window.matchMedia("(max-width: 760px)").matches,
   );
   const title =
-    page === "home"
-      ? t.home
-      : page === "patients"
-        ? t.patients
-        : page === "rolePermissions"
-          ? t.rolePermissions
-          : page === "employees"
-            ? t.employees
-            : kind === "platform" && page === "clinics"
-              ? t.dashboard
-              : t.account;
+    page === "appointments"
+      ? t.appointments
+      : page === "home"
+        ? t.home
+        : page === "patients"
+          ? t.patients
+          : page === "rolePermissions"
+            ? t.rolePermissions
+            : page === "employees"
+              ? t.employees
+              : kind === "platform" && page === "clinics"
+                ? t.dashboard
+                : t.account;
   return (
     <Disclosure
       open={!collapsed}
@@ -63,6 +68,7 @@ export function AppShell({
           canManageEmployees={canManageEmployees}
           isAdmin={isAdmin}
           canAccessPatients={canAccessPatients}
+          canAccessAppointments={canAccessAppointments}
           patientsLabel={t.patients}
           labels={t}
         />
@@ -81,10 +87,14 @@ export function AppShell({
             </span>
             <div>
               <LanguageSwitch />
-              <button className="language" onClick={onLogout} disabled={busy}>
+              <IconButton
+                label={t.logout}
+                tone="danger"
+                onClick={onLogout}
+                disabled={busy}
+              >
                 <LogOut size={16} aria-hidden="true" />
-                {t.logout}
-              </button>
+              </IconButton>
             </div>
           </header>
           <main className="content">{children}</main>

@@ -27,3 +27,9 @@ export type PatientSearchResult = {
   page: number;
   hasNext: boolean;
 };
+export type RegisteredPatientForAppointment = {
+  id: string;
+  name: string;
+  fileNumber: string;
+  archived: false;
+};

@@ -9,6 +9,7 @@ afterEach(cleanup);
 it("keeps navigation names when collapsed and mirrors the collapse icon in RTL", () => {
   const labels = {
     home: "الرئيسية",
+    appointments: "Rendez-vous",
     dashboard: "العيادات",
     employees: "الموظفون",
     rolePermissions: "الأدوار والصلاحيات",

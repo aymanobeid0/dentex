@@ -62,7 +62,7 @@ export function AccountPassword({
       <Disclosure open={open} onOpenChange={setOpen} asChild>
         <section className="card clinic-form account-password">
           <DisclosureTrigger asChild>
-            <button ref={trigger} className="language" hidden={open}>
+            <button ref={trigger} className="ui-button" hidden={open}>
               <KeyRound size={16} aria-hidden="true" />
               {t.title}
             </button>
@@ -106,7 +106,7 @@ export function AccountPassword({
               {error === "uncertain" && (
                 <button
                   type="button"
-                  className="language"
+                  className="ui-button"
                   disabled={busy}
                   onClick={signInAgain}
                 >
@@ -120,7 +120,7 @@ export function AccountPassword({
                 </button>
                 <button
                   type="button"
-                  className="language"
+                  className="ui-button"
                   disabled={busy}
                   onClick={cancel}
                 >

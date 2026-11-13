@@ -35,7 +35,7 @@ export function WriteReview({
       <p>{password ? t.passwordHint : t.createHint}</p>
       <button
         type="button"
-        className="language"
+        className="ui-button"
         disabled={busy}
         onClick={onReview}
       >
@@ -51,7 +51,7 @@ export function WriteReview({
           {children}
           <button
             type="button"
-            className="language"
+            className="ui-button"
             disabled={busy || acknowledged}
             onClick={onAcknowledge}
           >

@@ -1,3 +1,5 @@
+import { IconButton } from "../../../ui/IconButton";
+import { nameInitials } from "../../../ui/nameInitials";
 import { KeyRound, Pencil, UserCheck, UserX } from "lucide-react";
 import type { useEmployees } from "../hooks/useEmployees";
 type Props = Pick<
@@ -30,7 +32,7 @@ export function EmployeeTable({
       {loadError ? (
         <div role="alert">
           {t.error}{" "}
-          <button className="language" onClick={load}>
+          <button className="ui-button" onClick={load}>
             {t.retry}
           </button>
         </div>
@@ -53,31 +55,60 @@ export function EmployeeTable({
             <tbody>
               {list.map((employee) => (
                 <tr key={employee.id}>
-                  <td>{employee.name}</td>
+                  <td>
+                    <span className="row-name-cell">
+                      <span className="row-avatar" aria-hidden>
+                        {nameInitials(employee.name)}
+                      </span>
+                      {employee.name}
+                    </span>
+                  </td>
                   <td>
                     <bdi>{employee.username}</bdi>
                   </td>
-                  <td>{employee.roles.map(roleName).join(t.roleSeparator)}</td>
-                  <td>{employee.active ? t.active : t.inactive}</td>
+                  <td>
+                    {employee.roles.map((role, index) => (
+                      <span key={role.id}>
+                        <span className="badge badge-primary">
+                          {roleName(role)}
+                        </span>
+                        {index < employee.roles.length - 1
+                          ? t.roleSeparator
+                          : ""}
+                      </span>
+                    ))}
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        "badge " +
+                        (employee.active ? "badge-success" : "badge-neutral")
+                      }
+                    >
+                      <span className="badge-dot" aria-hidden />
+                      {employee.active ? t.active : t.inactive}
+                    </span>
+                  </td>
                   <td>
                     <div className="form-actions">
-                      <button
-                        className="language"
+                      <IconButton
+                        label={t.edit}
+                        tone="primary"
                         onClick={() => {
                           setNotice(null);
                           open(employee);
                         }}
                       >
                         <Pencil size={15} aria-hidden="true" />
-                        {t.edit}
-                      </button>
+                      </IconButton>
                       {(canManageAdmins ||
                         !employee.roles.some(
                           (role) => role.key === "admin",
                         )) && (
                         <>
-                          <button
-                            className="language"
+                          <IconButton
+                            label={employee.active ? l.disable : l.enable}
+                            tone={employee.active ? "danger" : "success"}
                             onClick={() => {
                               setNotice(null);
                               setAction({ kind: "status", employee });
@@ -88,18 +119,17 @@ export function EmployeeTable({
                             ) : (
                               <UserCheck size={15} aria-hidden="true" />
                             )}
-                            {employee.active ? l.disable : l.enable}
-                          </button>
-                          <button
-                            className="language"
+                          </IconButton>
+                          <IconButton
+                            label={l.reset}
+                            tone="warning"
                             onClick={() => {
                               setNotice(null);
                               setAction({ kind: "reset", employee });
                             }}
                           >
                             <KeyRound size={15} aria-hidden="true" />
-                            {l.reset}
-                          </button>
+                          </IconButton>
                         </>
                       )}
                     </div>

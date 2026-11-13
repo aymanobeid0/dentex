@@ -19,6 +19,8 @@ import { createAccountController } from './modules/account/account.controller';
 import { accountRouter } from './modules/account/account.routes';
 import { createPatientsController } from './modules/patients/patients.controller';
 import { patientsRouter } from './modules/patients/patients.routes';
+import { createAppointmentsController } from './modules/appointments/appointments.controller';
+import { appointmentsRouter } from './modules/appointments/appointments.routes';
 
 export const prisma = createPrismaClient();
 export const app = express();
@@ -45,6 +47,7 @@ app.use('/api/clinic', rolesRouter(createRolesController(services.roles)));
 app.use('/api/clinic/account', accountRouter(createAccountController(services.account)));
 app.use('/api/clinic/employees', employeesRouter(createEmployeesController(services.employees)));
 app.use('/api/clinic/patients', patientsRouter(createPatientsController(services.patients)));
+app.use('/api/clinic/appointments', appointmentsRouter(createAppointmentsController(services.appointments)));
 app.use('/api', () => { throw new ApplicationError('not_found'); });
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('dist'));
