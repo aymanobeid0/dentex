@@ -1,6 +1,6 @@
 # 07: الحجز من ساعات اليوم وأعداد مواعيد الأسبوع والشهر
 
-Status: ready-for-human
+Status: closed
 Execution: complete
 
 2026-11-13. طلب المستخدم أن يفتح الضغط على أي ساعة في تقويم اليوم نافذة الحجز بوقت بداية افتراضي يساوي الساعة المختارة، مع إمكانية تعديله؛ وأن يعرض الأسبوع والشهر عدد المواعيد فقط، ويفتح الضغط على العدد قائمة المواعيد.
@@ -24,3 +24,6 @@ Execution: complete
 
 
 الطلب الحالي: [PR #14](https://github.com/aymanobeid0/dentex/pull/14) مفتوح للمراجعة من codex/appointment-feedback-day-agenda إلىmain. الحالة ready-for-human/complete باقية، دون دمج أو نشر.
+
+
+2026-11-13: أكدت قراءةGitHub دمج[PR #14](https://github.com/aymanobeid0/dentex/pull/14) في19:24:55UTC؛ أُغلقت التذكرة بسبب الدمج. لا سحب أو تبديل مصدر محلي ضمن سؤال الميزة التالية.

@@ -1,6 +1,6 @@
 # 06: نتيجة الحجز وملخص مواعيد اليوم
 
-Status: ready-for-human
+Status: closed
 Execution: complete
 
 2026-11-13. طلب المستخدم استبدال بانر الحجز الدائم بنافذة تعرض نتيجة الحجز وتفاصيله وزر إغلاق علوي، وتقسيم اليوم إلى ثلثين للجدول الزمني وثلث لبطاقة المواعيد التي تفتح القائمة عند الضغط.
@@ -24,3 +24,6 @@ Execution: complete
 
 
 الطلب الحالي: [PR #14](https://github.com/aymanobeid0/dentex/pull/14) مفتوح للمراجعة من codex/appointment-feedback-day-agenda إلىmain. الحالة ready-for-human/complete باقية، دون دمج أو نشر.
+
+
+2026-11-13: أكدت قراءةGitHub دمج[PR #14](https://github.com/aymanobeid0/dentex/pull/14) في19:24:55UTC؛ أُغلقت التذكرة بسبب الدمج. لا سحب أو تبديل مصدر محلي ضمن سؤال الميزة التالية.
