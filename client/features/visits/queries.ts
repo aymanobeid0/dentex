@@ -13,6 +13,9 @@ import {
   searchPatients,
   type Attendance,
   type AttendanceEdit,
+  writeVisit,
+  readPatientHistory,
+  type VisitAction,
 } from "./api";
 function useVisitsRead<T>(
   key: readonly unknown[],
@@ -41,6 +44,20 @@ export function useQueue(onExpired: () => void) {
     ["queue"],
     (signal) => readQueue(request, signal),
     onExpired,
+  );
+}
+export function usePatientHistory(
+  patientId: string,
+  page: number,
+  onExpired: () => void,
+  enabled: boolean,
+) {
+  const request = useApi();
+  return useVisitsRead(
+    ["history", patientId, page],
+    (signal) => readPatientHistory(request, patientId, page, signal),
+    onExpired,
+    enabled,
   );
 }
 export function useDoctors(onExpired: () => void) {
@@ -73,14 +90,17 @@ export function useAttendanceWrite() {
     mutationFn: (
       operation:
         | { kind: "arrive"; patientId: string; doctorId: string }
-        | { kind: "edit"; current: Attendance; input: AttendanceEdit },
+        | { kind: "edit"; current: Attendance; input: AttendanceEdit }
+        | { kind: "visit"; current: Attendance; action: VisitAction },
     ) =>
       operation.kind === "arrive"
         ? arrive(request, {
             patientId: operation.patientId,
             doctorId: operation.doctorId,
           })
-        : editAttendance(request, operation.current, operation.input),
+        : operation.kind === "visit"
+          ? writeVisit(request, operation.current, operation.action)
+          : editAttendance(request, operation.current, operation.input),
     retry: false,
     networkMode: "always",
     gcTime: 0,

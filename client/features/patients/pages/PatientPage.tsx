@@ -17,7 +17,14 @@ export type PatientAppointmentContext = {
   fileNumber: string;
   archived: boolean;
 };
+export type PatientVisitContext = {
+  id: string;
+  name: string;
+  fileNumber: string;
+  archived: boolean;
+};
 type Props = {
+  renderVisits?: (patient: PatientVisitContext) => ReactNode;
   renderAppointments?: (patient: PatientAppointmentContext) => ReactNode;
   lang: Lang;
   canRead: boolean;
@@ -38,6 +45,7 @@ export function PatientPage(props: Props) {
   );
 }
 function PatientFlow({
+  renderVisits,
   renderAppointments,
   view,
   onNavigate,
@@ -323,6 +331,12 @@ function PatientFlow({
                 onArchive={startArchive}
               />
               {renderAppointments?.({
+                id: patient.id,
+                name: patient.name,
+                fileNumber: patient.fileNumber,
+                archived: patient.archived,
+              })}
+              {renderVisits?.({
                 id: patient.id,
                 name: patient.name,
                 fileNumber: patient.fileNumber,

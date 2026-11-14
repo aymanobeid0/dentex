@@ -4,6 +4,8 @@ import { ApplicationError } from "../shared/errors";
 const statuses: Readonly<Record<string, number>> = {
   attendance_active: 409,
   attendance_not_waiting: 409,
+  doctor_busy: 409,
+  visit_not_in_progress: 409,
   invalid_input: 400,
   invalid_roles: 400,
   invalid_permissions: 400,

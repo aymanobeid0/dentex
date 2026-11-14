@@ -5,6 +5,35 @@ export const arriveSchema = z
   .strict();
 export type ArriveInput = z.infer<typeof arriveSchema>;
 const editVersion = z.number().int().min(1).max(2147483646);
+export const startSchema = z
+  .object({
+    editVersion,
+    previous: z
+      .object({
+        attendanceId: uuidSchema,
+        editVersion,
+        visitVersion: editVersion,
+        confirmed: z.literal(true),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+export const completeSchema = z
+  .object({ editVersion, visitVersion: editVersion })
+  .strict();
+export const historySchema = z
+  .object({
+    page: z
+      .string()
+      .regex(/^[1-9]\d*$/)
+      .transform(Number)
+      .pipe(z.number().int().max(1000000))
+      .default(1),
+  })
+  .strict();
+export type StartInput = z.infer<typeof startSchema>;
+export type CompleteInput = z.infer<typeof completeSchema>;
 export const editAttendanceSchema = z.discriminatedUnion("kind", [
   z
     .object({ kind: z.literal("transfer"), doctorId: uuidSchema, editVersion })

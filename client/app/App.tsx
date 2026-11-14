@@ -21,7 +21,7 @@ import {
   AppointmentsPage,
   PatientAppointments,
 } from "../features/appointments";
-import { VisitsPage } from "../features/visits";
+import { VisitsPage, PatientVisits } from "../features/visits";
 import { RolePermissionsPage } from "../features/roles";
 import { LanguageSwitch, translations, useLanguage } from "../shared/i18n";
 import type { NavigationGuard } from "../ui/useDraftGuard";
@@ -441,6 +441,15 @@ function SessionApp({
         </>
       ) : page === "patients" ? (
         <PatientPage
+          renderVisits={(patient) => (
+            <PatientVisits
+              key={patient.id}
+              patient={patient}
+              lang={lang}
+              canRead={canAccessVisits}
+              onExpired={expire}
+            />
+          )}
           renderAppointments={(patient) => (
             <PatientAppointments
               key={patient.id}

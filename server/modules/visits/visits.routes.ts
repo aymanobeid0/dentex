@@ -19,6 +19,9 @@ export function visitsRouter(
   router.use(requireAttendance);
   router.get("/doctors", controller.doctors);
   router.get("/patients", controller.patients);
+  router.get("/patient/:patientId", controller.history);
+  router.post("/:id/start", controller.start);
+  router.post("/:id/complete", controller.complete);
   router.get("/", controller.list);
   router.get("/:id", controller.get);
   router.post("/", controller.arrive);

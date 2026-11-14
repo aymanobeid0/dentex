@@ -37,7 +37,11 @@ export function VisitsPage(props: Props) {
   const queue = useQueue(onExpired),
     [action, setAction] = useState<
       | { kind: "arrive" }
-      | { kind: "transfer" | "leave"; row: Attendance }
+      | {
+          kind: "transfer" | "leave" | "start" | "complete";
+          row: Attendance;
+          previous?: Attendance;
+        }
       | null
     >(null);
   const arriveTrigger = useRef<HTMLButtonElement | null>(null);
@@ -120,25 +124,66 @@ export function VisitsPage(props: Props) {
                           <time dateTime={row.arrivedAt}>
                             {arrivalTime(row.arrivedAt, lang)}
                           </time>
+                          <span>
+                            {row.status === "with_doctor"
+                              ? t.withDoctor
+                              : t.waiting}
+                          </span>
+                          {row.visit && (
+                            <span>
+                              {t.entry}:{" "}
+                              <time dateTime={row.visit.startedAt}>
+                                {arrivalTime(row.visit.startedAt, lang)}
+                              </time>
+                            </span>
+                          )}
                           {row.patient.archived && (
                             <span className="error">{t.archived}</span>
                           )}
                         </div>
                         <div className="visits-actions">
-                          <button
-                            className="ui-button"
-                            onClick={() => open({ kind: "transfer", row })}
-                          >
-                            <ArrowRightLeft size={16} aria-hidden />
-                            {t.transfer}
-                          </button>
-                          <button
-                            className="ui-button"
-                            onClick={() => open({ kind: "leave", row })}
-                          >
-                            <LogOut size={16} aria-hidden />
-                            {t.leave}
-                          </button>
+                          {row.status === "waiting" ? (
+                            <>
+                              <button
+                                className="ui-button"
+                                disabled={
+                                  row.patient.archived || !row.doctor.eligible
+                                }
+                                onClick={() =>
+                                  open({
+                                    kind: "start",
+                                    row,
+                                    previous: rows.find(
+                                      (item) => item.status === "with_doctor",
+                                    ),
+                                  })
+                                }
+                              >
+                                {t.start}
+                              </button>
+                              <button
+                                className="ui-button"
+                                onClick={() => open({ kind: "transfer", row })}
+                              >
+                                <ArrowRightLeft size={16} aria-hidden />
+                                {t.transfer}
+                              </button>
+                              <button
+                                className="ui-button"
+                                onClick={() => open({ kind: "leave", row })}
+                              >
+                                <LogOut size={16} aria-hidden />
+                                {t.leave}
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              className="ui-button"
+                              onClick={() => open({ kind: "complete", row })}
+                            >
+                              {t.complete}
+                            </button>
+                          )}
                         </div>
                       </li>
                     ))}
@@ -190,7 +235,13 @@ function AttendanceDialog({
   onSaved,
   ...props
 }: Props & {
-  action: { kind: "arrive" } | { kind: "transfer" | "leave"; row: Attendance };
+  action:
+    | { kind: "arrive" }
+    | {
+        kind: "transfer" | "leave" | "start" | "complete";
+        row: Attendance;
+        previous?: Attendance;
+      };
   latest?: Attendance;
   missing: boolean;
   returnFocus: RefObject<HTMLElement | null>;
@@ -208,6 +259,13 @@ function AttendanceDialog({
   const [current, setCurrent] = useState(
     action.kind === "arrive" ? undefined : action.row,
   );
+  const [previous, setPrevious] = useState(
+    action.kind === "start" ? action.previous : undefined,
+  );
+  const [reviewedPrevious, setReviewedPrevious] = useState<
+    Attendance | undefined
+  >();
+  const visitAction = action.kind === "start" || action.kind === "complete";
   const [issue, setIssue] = useState(""),
     [recovery, setRecovery] = useState<"uncertain" | "conflict" | null>(null),
     [review, setReview] = useState<{ items: Attendance[] } | null>(null),
@@ -236,10 +294,15 @@ function AttendanceDialog({
     issue === t.readDenied ||
     (!!recovery && !acknowledged) ||
     changed ||
-    !!(current && current.status !== "waiting");
+    !!(
+      current &&
+      current.status !==
+        (action.kind === "complete" ? "with_doctor" : "waiting")
+    );
   async function save() {
     if (submitting.current || blocked) return;
     if (
+      !visitAction &&
       action.kind !== "leave" &&
       (!doctorId || (action.kind === "arrive" && !patient))
     ) {
@@ -252,18 +315,27 @@ function AttendanceDialog({
       await mutation.mutateAsync(
         action.kind === "arrive"
           ? { kind: "arrive", patientId: patient!.id, doctorId }
-          : {
-              kind: "edit",
-              current: current!,
-              input:
-                action.kind === "transfer"
-                  ? {
-                      kind: "transfer",
-                      doctorId,
-                      editVersion: current!.editVersion,
-                    }
-                  : { kind: "leave", editVersion: current!.editVersion },
-            },
+          : visitAction
+            ? {
+                kind: "visit",
+                current: current!,
+                action:
+                  action.kind === "start"
+                    ? { kind: "start", previous }
+                    : { kind: "complete" },
+              }
+            : {
+                kind: "edit",
+                current: current!,
+                input:
+                  action.kind === "transfer"
+                    ? {
+                        kind: "transfer",
+                        doctorId,
+                        editVersion: current!.editVersion,
+                      }
+                    : { kind: "leave", editVersion: current!.editVersion },
+              },
       );
       guard.release();
       onSaved();
@@ -295,9 +367,15 @@ function AttendanceDialog({
     setReviewBusy(true);
     setReviewFailed(false);
     setReview(null);
+    setReviewedPrevious(undefined);
     setAcknowledged(false);
     try {
-      setReview(await reviewAttendance(current?.id));
+      const [next, prior] = await Promise.all([
+        reviewAttendance(current?.id),
+        previous ? reviewAttendance(previous.id) : Promise.resolve(undefined),
+      ]);
+      setReview(next);
+      setReviewedPrevious(prior?.items[0]);
     } catch (error) {
       setReviewFailed(true);
       if (error instanceof ApiError && error.status === 401) onExpired();
@@ -312,14 +390,28 @@ function AttendanceDialog({
         .map((row) => (
           <p key={row.id}>
             {row.patient.name} · {row.doctor.name} ·{" "}
-            {row.status === "waiting" ? t.waiting : t.leave} ·{" "}
-            {arrivalTime(row.arrivedAt, lang)}
+            {row.status === "waiting"
+              ? t.waiting
+              : row.status === "with_doctor"
+                ? t.withDoctor
+                : row.status === "completed"
+                  ? t.completed
+                  : t.leave}{" "}
+            · {arrivalTime(row.arrivedAt, lang)}
           </p>
         ))}
       {!current &&
         !review.items.some((row) => row.patient.id === patient?.id) && (
           <p>{t.reviewEmpty}</p>
         )}
+      {reviewedPrevious && (
+        <p>
+          {t.previousPatient}: {reviewedPrevious.patient.name} ·{" "}
+          {reviewedPrevious.status === "with_doctor"
+            ? t.withDoctor
+            : t.completed}
+        </p>
+      )}
     </div>
   );
   const recoveryUi = (
@@ -358,6 +450,14 @@ function AttendanceDialog({
           onAccept={(keep) => {
             const next = review?.items[0];
             if (!next) return;
+            if (previous) {
+              if (!reviewedPrevious) return;
+              setPrevious(
+                reviewedPrevious.status === "with_doctor"
+                  ? reviewedPrevious
+                  : undefined,
+              );
+            }
             setCurrent(next);
             if (!keep) setDoctorId(next.doctor.id);
             setRecovery(null);
@@ -390,7 +490,12 @@ function AttendanceDialog({
           <bdi>{current?.patient.fileNumber}</bdi>
         </p>
       )}
-      {action.kind !== "leave" && (
+      {action.kind !== "arrive" && action.kind === "start" && previous && (
+        <p>
+          {t.previousPatient}: <strong>{previous.patient.name}</strong>
+        </p>
+      )}
+      {!visitAction && action.kind !== "leave" && (
         <div className="field">
           <Label htmlFor={`${id}-doctor`}>{t.doctor}</Label>
           <SelectField
@@ -426,14 +531,36 @@ function AttendanceDialog({
   );
   return (
     <>
-      {action.kind === "leave" ? (
+      {action.kind === "leave" || visitAction ? (
         <ConfirmDialog
           open
           direction={dir}
-          title={t.leave}
-          description={t.leaveDescription}
+          title={
+            action.kind === "start"
+              ? t.start
+              : action.kind === "complete"
+                ? t.complete
+                : t.leave
+          }
+          description={
+            action.kind === "start"
+              ? previous
+                ? `${t.previousPatient}: ${previous.patient.name}. ${t.completeDescription}`
+                : t.startDescription
+              : action.kind === "complete"
+                ? t.completeDescription
+                : t.leaveDescription
+          }
           cancel={t.cancel}
-          confirm={t.leave}
+          confirm={
+            action.kind === "start"
+              ? previous
+                ? t.completePrevious
+                : t.start
+              : action.kind === "complete"
+                ? t.complete
+                : t.leave
+          }
           onCancel={close}
           onConfirm={() => void save()}
           busy={busy}

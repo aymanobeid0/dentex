@@ -6,7 +6,9 @@ export class VisitsError extends ApplicationError {
       | "patient_archived"
       | "doctor_ineligible"
       | "edit_conflict"
-      | "attendance_not_waiting",
+      | "attendance_not_waiting"
+      | "doctor_busy"
+      | "visit_not_in_progress",
   ) {
     super(code);
   }

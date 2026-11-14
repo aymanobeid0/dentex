@@ -322,3 +322,169 @@ it("keeps a modified arrival draft on Escape until the discard dialog is explici
   await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   expect(screen.getByRole("button", { name: t.arrive })).toBeTruthy();
 });
+it.each(["ar", "fr"] as const)(
+  "starts and completes the selected waiting patient in %s",
+  async (lang) => {
+    const t = translations[lang].visits;
+    let current: any = row;
+    const fetcher = vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        if (url.endsWith("/start"))
+          current = {
+            ...row,
+            status: "with_doctor",
+            editVersion: 2,
+            visit: {
+              id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+              status: "in_progress",
+              startedAt: "2026-11-13T10:00:00.000Z",
+              recordedEndAt: null,
+              editVersion: 1,
+            },
+          };
+        else
+          current = {
+            ...current,
+            status: "completed",
+            recordedEndAt: "2026-11-13T11:00:00.000Z",
+            editVersion: 3,
+            visit: {
+              ...current.visit,
+              status: "completed",
+              recordedEndAt: "2026-11-13T11:00:00.000Z",
+              editVersion: 2,
+            },
+          };
+        return new Response(JSON.stringify(current));
+      }
+      if (url.endsWith("/doctors"))
+        return new Response(JSON.stringify({ items: [doctor] }));
+      return new Response(
+        JSON.stringify({
+          items: current.status === "completed" ? [] : [current],
+          doctors: [doctor],
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetcher);
+    renderPatient(<VisitsPage lang={lang} onExpired={() => {}} />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: t.start }));
+    const dialog = screen.getByRole("alertdialog");
+    expect(dialog.getAttribute("dir")).toBe(lang === "ar" ? "rtl" : "ltr");
+    await user.click(within(dialog).getByRole("button", { name: t.start }));
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    await user.click(await screen.findByRole("button", { name: t.complete }));
+    await user.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", {
+        name: t.complete,
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(await screen.findByText(t.empty)).toBeTruthy();
+    expect(
+      fetcher.mock.calls
+        .filter(([, o]) => o?.method === "POST")
+        .map(([u]) => u),
+    ).toEqual([
+      `/api/clinic/visits/${row.id}/start`,
+      `/api/clinic/visits/${row.id}/complete`,
+    ]);
+  },
+);
+it.each(["ar", "fr"] as const)(
+  "requires named previous confirmation and reviews lost compound reply without resending in %s",
+  async (lang) => {
+    const t = translations[lang].visits,
+      e = translations[lang].editing;
+    const prior = {
+      ...row,
+      id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      patient: {
+        ...patient,
+        id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+        name: "Previous patient",
+      },
+      status: "with_doctor",
+      editVersion: 2,
+      visit: {
+        id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+        status: "in_progress",
+        startedAt: "2026-11-13T09:10:00.000Z",
+        recordedEndAt: null,
+        editVersion: 1,
+      },
+    };
+    const entered = {
+      ...row,
+      status: "with_doctor",
+      editVersion: 2,
+      visit: {
+        ...prior.visit,
+        id: "11111111-1111-4111-8111-111111111111",
+        startedAt: "2026-11-13T10:00:00.000Z",
+      },
+    };
+    const finished = {
+      ...prior,
+      status: "completed",
+      editVersion: 3,
+      recordedEndAt: "2026-11-13T10:00:00.000Z",
+      visit: {
+        ...prior.visit,
+        status: "completed",
+        editVersion: 2,
+        recordedEndAt: "2026-11-13T10:00:00.000Z",
+      },
+    };
+    let wrote = false;
+    const fetcher = vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        wrote = true;
+        throw new TypeError("lost reply");
+      }
+      if (url.endsWith("/doctors"))
+        return new Response(JSON.stringify({ items: [doctor] }));
+      if (url.endsWith(`/${row.id}`))
+        return new Response(JSON.stringify(entered));
+      if (url.endsWith(`/${prior.id}`))
+        return new Response(JSON.stringify(finished));
+      return new Response(
+        JSON.stringify({
+          items: wrote ? [entered] : [prior, row],
+          doctors: [doctor],
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetcher);
+    renderPatient(<VisitsPage lang={lang} onExpired={() => {}} />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: t.start }));
+    const dialog = screen.getByRole("alertdialog");
+    expect(
+      within(dialog).getAllByText(/Previous patient/).length,
+    ).toBeGreaterThan(0);
+    await user.click(
+      within(dialog).getByRole("button", { name: t.completePrevious }),
+    );
+    await screen.findByText(e.uncertain);
+    expect(
+      within(dialog)
+        .getByRole("button", { name: t.completePrevious })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+    await user.click(within(dialog).getByRole("button", { name: e.review }));
+    await within(dialog).findByRole("button", { name: e.useLatest });
+    const posts = fetcher.mock.calls.filter(([, o]) => o?.method === "POST");
+    expect(posts).toHaveLength(1);
+    expect(JSON.parse(String(posts[0][1]!.body))).toEqual({
+      editVersion: 1,
+      previous: {
+        attendanceId: prior.id,
+        editVersion: 2,
+        visitVersion: 1,
+        confirmed: true,
+      },
+    });
+  },
+);

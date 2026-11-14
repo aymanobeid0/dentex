@@ -8,6 +8,7 @@ datasource db {
   provider = "postgresql"
 }
 model Clinic {
+  visits Visit[]
   attendances Attendance[]
   appointments Appointment[]
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -21,6 +22,7 @@ model Clinic {
   @@map("clinics")
 }
 model Patient {
+  visits Visit[]
   attendances Attendance[]
   appointments Appointment[]
   archived Boolean @default(false)
@@ -53,6 +55,8 @@ model PlatformAdmin {
   @@map("platform_admins")
 }
 model User {
+  visits Visit[] @relation("VisitDoctor")
+  recordedVisits Visit[] @relation("VisitCreator")
   attendances Attendance[] @relation("AttendanceDoctor")
   recordedAttendances Attendance[] @relation("AttendanceCreator")
   appointments Appointment[] @relation("AppointmentDoctor")
@@ -76,6 +80,7 @@ model User {
 }
 
 model Attendance {
+  visits Visit[]
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   patientId String @map("patient_id") @db.Uuid
@@ -95,6 +100,26 @@ model Attendance {
   @@unique([clinicId, id])
   @@index([clinicId, doctorId, status, arrivedAt, arrivalSequence])
   @@map("attendances")
+}
+model Visit {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  attendanceId String @map("attendance_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  doctorId String @map("doctor_id") @db.Uuid
+  createdBy String @map("created_by") @db.Uuid
+  status String @default("in_progress") @db.VarChar(24)
+  startedAt DateTime @map("started_at") @db.Timestamptz
+  recordedEndAt DateTime? @map("recorded_end_at") @db.Timestamptz
+  editVersion Int @default(1) @map("edit_version")
+  attendance Attendance @relation(fields: [clinicId, attendanceId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patient Patient @relation(fields: [clinicId, patientId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  doctor User @relation("VisitDoctor", fields: [clinicId, doctorId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  creator User @relation("VisitCreator", fields: [clinicId, createdBy], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@unique([clinicId, id])
+  @@index([clinicId, attendanceId, startedAt])
+  @@map("visits")
 }
 model Role {
   editVersion Int @default(1) @map("edit_version")

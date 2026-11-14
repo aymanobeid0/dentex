@@ -6,6 +6,9 @@ import {
   arriveSchema,
   editAttendanceSchema,
   attendancePatientsSchema,
+  startSchema,
+  completeSchema,
+  historySchema,
 } from "./visits.schemas";
 import type { VisitsService } from "./visits.service";
 export function createVisitsController(service: VisitsService) {
@@ -50,5 +53,42 @@ export function createVisitsController(service: VisitsService) {
       ),
     );
   };
-  return { list, get, arrive, edit, doctors, patients };
+  const start: RequestHandler = async (req, res) => {
+    res.json(
+      await service.start(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.id, "not_found"),
+        parseInput(startSchema, req.body),
+      ),
+    );
+  };
+  const complete: RequestHandler = async (req, res) => {
+    res.json(
+      await service.complete(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.id, "not_found"),
+        parseInput(completeSchema, req.body),
+      ),
+    );
+  };
+  const history: RequestHandler = async (req, res) => {
+    res.json(
+      await service.history(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.patientId, "not_found"),
+        parseInput(historySchema, req.query).page,
+      ),
+    );
+  };
+  return {
+    list,
+    get,
+    arrive,
+    edit,
+    doctors,
+    patients,
+    start,
+    complete,
+    history,
+  };
 }

@@ -12,7 +12,18 @@ export function createVisitsRepository(
     arrivedAt: true,
     recordedEndAt: true,
     editVersion: true,
-  } as const;
+    visits: {
+      orderBy: [{ startedAt: "desc" as const }, { id: "desc" as const }],
+      take: 1,
+      select: {
+        id: true,
+        status: true,
+        startedAt: true,
+        recordedEndAt: true,
+        editVersion: true,
+      },
+    },
+  } satisfies Prisma.AttendanceSelect;
   const expose = (row: {
     id: string;
     patientId: string;
@@ -21,13 +32,126 @@ export function createVisitsRepository(
     arrivedAt: Date;
     recordedEndAt: Date | null;
     editVersion: number;
-  }) => ({
-    ...row,
-    status: row.status as AttendanceStatus,
-    arrivedAt: row.arrivedAt.toISOString(),
-    recordedEndAt: row.recordedEndAt?.toISOString() ?? null,
-  });
+    visits: Array<{
+      id: string;
+      status: string;
+      startedAt: Date;
+      recordedEndAt: Date | null;
+      editVersion: number;
+    }>;
+  }) => {
+    const { visits, ...attendance } = row;
+    return {
+      ...attendance,
+      ...(visits[0]
+        ? {
+            visit: {
+              ...visits[0],
+              status: visits[0].status as "in_progress" | "completed",
+              startedAt: visits[0].startedAt.toISOString(),
+              recordedEndAt: visits[0].recordedEndAt?.toISOString() ?? null,
+            },
+          }
+        : {}),
+      status: row.status as AttendanceStatus,
+      arrivedAt: row.arrivedAt.toISOString(),
+      recordedEndAt: row.recordedEndAt?.toISOString() ?? null,
+    };
+  };
   return {
+    async history(clinicId, patientId, page) {
+      return (
+        await database.attendance.findMany({
+          where: { clinicId, patientId },
+          select,
+          orderBy: [{ arrivedAt: "desc" }, { arrivalSequence: "desc" }],
+          skip: (page - 1) * 20,
+          take: 21,
+        })
+      ).map(expose);
+    },
+    async activeVisit(clinicId, doctorId) {
+      const row = await database.visit.findFirst({
+        where: { clinicId, doctorId, status: "in_progress" },
+      });
+      return row
+        ? {
+            ...row,
+            status: row.status as "in_progress",
+            startedAt: row.startedAt.toISOString(),
+            recordedEndAt: row.recordedEndAt?.toISOString() ?? null,
+          }
+        : null;
+    },
+    async start(clinicId, current, actorId, at) {
+      await database.visit.create({
+        data: {
+          clinicId,
+          attendanceId: current.id,
+          patientId: current.patientId,
+          doctorId: current.doctorId,
+          createdBy: actorId,
+          startedAt: at,
+        },
+      });
+      const updated = await database.attendance.updateMany({
+        where: {
+          clinicId,
+          id: current.id,
+          editVersion: current.editVersion,
+          status: "waiting",
+        },
+        data: {
+          status: "with_doctor",
+          editVersion: { increment: 1 },
+          updatedAt: at,
+        },
+      });
+      if (updated.count !== 1) throw new VisitsError("edit_conflict");
+      return expose(
+        await database.attendance.findFirstOrThrow({
+          where: { clinicId, id: current.id },
+          select,
+        }),
+      );
+    },
+    async complete(clinicId, current, at) {
+      const updated = await database.visit.updateMany({
+        where: {
+          clinicId,
+          id: current.visit!.id,
+          editVersion: current.visit!.editVersion,
+          status: "in_progress",
+        },
+        data: {
+          status: "completed",
+          recordedEndAt: at,
+          editVersion: { increment: 1 },
+        },
+      });
+      if (updated.count !== 1) throw new VisitsError("edit_conflict");
+      const attendance = await database.attendance.updateMany({
+        where: {
+          clinicId,
+          id: current.id,
+          editVersion: current.editVersion,
+          status: "with_doctor",
+        },
+        data: {
+          status: "completed",
+          recordedEndAt: at,
+          editVersion: { increment: 1 },
+          updatedAt: at,
+        },
+      });
+      if (attendance.count !== 1) throw new VisitsError("edit_conflict");
+      return expose(
+        await database.attendance.findFirstOrThrow({
+          where: { clinicId, id: current.id },
+          select,
+        }),
+      );
+    },
     async replace(clinicId, current, next) {
       const result = await database.attendance.updateMany({
         where: {
@@ -48,7 +172,7 @@ export function createVisitsRepository(
     async list(clinicId) {
       return (
         await database.attendance.findMany({
-          where: { clinicId, status: "waiting" },
+          where: { clinicId, status: { in: ["waiting", "with_doctor"] } },
           select,
           orderBy: [{ arrivedAt: "asc" }, { arrivalSequence: "asc" }],
         })

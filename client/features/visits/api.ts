@@ -10,10 +10,17 @@ export type Attendance = {
   id: string;
   patient: PatientChoice;
   doctor: DoctorChoice;
-  status: "waiting" | "left_before_entry";
+  status: "waiting" | "left_before_entry" | "with_doctor" | "completed";
   arrivedAt: string;
   recordedEndAt: string | null;
   editVersion: number;
+  visit?: {
+    id: string;
+    status: "in_progress" | "completed";
+    startedAt: string;
+    recordedEndAt: string | null;
+    editVersion: number;
+  };
 };
 export type AttendanceEdit =
   | { kind: "transfer"; doctorId: string; editVersion: number }
@@ -47,7 +54,26 @@ function snapshot(value: Attendance) {
     Number.isInteger(value.editVersion) &&
     value.editVersion > 0 &&
     timestamp(value.arrivedAt) &&
-    ((value.status === "waiting" && value.recordedEndAt === null) ||
+    (!value.visit ||
+      (identifier(value.visit.id) &&
+        timestamp(value.visit.startedAt) &&
+        value.visit.startedAt >= value.arrivedAt &&
+        Number.isInteger(value.visit.editVersion) &&
+        value.visit.editVersion > 0 &&
+        ((value.visit.status === "in_progress" &&
+          value.visit.recordedEndAt === null) ||
+          (value.visit.status === "completed" &&
+            timestamp(value.visit.recordedEndAt) &&
+            value.visit.recordedEndAt >= value.visit.startedAt)))) &&
+    ((value.status === "waiting" &&
+      value.recordedEndAt === null &&
+      !value.visit) ||
+      (value.status === "with_doctor" &&
+        value.recordedEndAt === null &&
+        value.visit?.status === "in_progress") ||
+      (value.status === "completed" &&
+        value.visit?.status === "completed" &&
+        value.recordedEndAt === value.visit.recordedEndAt) ||
       (value.status === "left_before_entry" &&
         timestamp(value.recordedEndAt) &&
         value.recordedEndAt >= value.arrivedAt))
@@ -63,7 +89,10 @@ export async function readQueue(request: ApiRequest, signal?: AbortSignal) {
     !value ||
     !Array.isArray(value.items) ||
     !Array.isArray(value.doctors) ||
-    value.items.some((row) => !snapshot(row) || row.status !== "waiting") ||
+    value.items.some(
+      (row) =>
+        !snapshot(row) || !["waiting", "with_doctor"].includes(row.status),
+    ) ||
     value.doctors.some((row) => !doctor(row))
   )
     throw new ApiError("network");
@@ -182,5 +211,85 @@ export async function editAttendance(
       (input.kind === "transfer" ? input.doctorId : current.doctor.id)
   )
     throw new ApiError("uncertain");
+  return value;
+}
+export type VisitAction =
+  { kind: "start"; previous?: Attendance } | { kind: "complete" };
+export async function writeVisit(
+  request: ApiRequest,
+  current: Attendance,
+  action: VisitAction,
+) {
+  let status = 0;
+  const body =
+    action.kind === "complete"
+      ? {
+          editVersion: current.editVersion,
+          visitVersion: current.visit!.editVersion,
+        }
+      : {
+          editVersion: current.editVersion,
+          ...(action.previous
+            ? {
+                previous: {
+                  attendanceId: action.previous.id,
+                  editVersion: action.previous.editVersion,
+                  visitVersion: action.previous.visit!.editVersion,
+                  confirmed: true,
+                },
+              }
+            : {}),
+        };
+  const value = await readJson<Attendance>(
+    async (url, options) => {
+      const response = await request(url, options);
+      status = response.status;
+      return response;
+    },
+    `${base}/${current.id}/${action.kind}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
+  if (
+    status !== 200 ||
+    !snapshot(value) ||
+    value.id !== current.id ||
+    value.patient.id !== current.patient.id ||
+    value.doctor.id !== current.doctor.id ||
+    value.arrivedAt !== current.arrivedAt ||
+    value.editVersion !== current.editVersion + 1 ||
+    value.status !== (action.kind === "start" ? "with_doctor" : "completed") ||
+    !value.visit ||
+    value.visit.editVersion !==
+      (action.kind === "start" ? 1 : current.visit!.editVersion + 1) ||
+    (action.kind === "complete" &&
+      (value.visit.id !== current.visit!.id ||
+        value.visit.startedAt !== current.visit!.startedAt))
+  )
+    throw new ApiError("uncertain");
+  return value;
+}
+export async function readPatientHistory(
+  request: ApiRequest,
+  patientId: string,
+  page: number,
+  signal?: AbortSignal,
+) {
+  const value = await readJson<{
+    items: Attendance[];
+    page: number;
+    hasNext: boolean;
+  }>(request, `${base}/patient/${patientId}?page=${page}`, { signal });
+  if (
+    !value ||
+    !Array.isArray(value.items) ||
+    value.items.some((row) => !snapshot(row) || row.patient.id !== patientId) ||
+    value.page !== page ||
+    typeof value.hasNext !== "boolean"
+  )
+    throw new ApiError("network");
   return value;
 }
