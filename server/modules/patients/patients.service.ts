@@ -19,6 +19,46 @@ export function createPatientsOperations(
   repository: PatientsRepository,
 ): PatientsOperations {
   return {
+    async attendanceReferences(clinicId, patientIds) {
+      const ids = [...new Set(patientIds)],
+        result = [];
+      const input = listPatientsSchema.parse({ status: "all" });
+      for (let offset = 0; offset < ids.length; offset += 500) {
+        const rows = await repository.appointmentReferences(
+          clinicId,
+          ids.slice(offset, offset + 500),
+          input,
+        );
+        result.push(
+          ...rows.map(({ id, name, fileNumber, archived }) => ({
+            id,
+            name,
+            fileNumber,
+            archived,
+          })),
+        );
+      }
+      return result;
+    },
+    async searchAttendancePatients(clinicId, input) {
+      const result = await repository.list(
+        clinicId,
+        listPatientsSchema.parse({
+          q: input.q,
+          page: String(input.page),
+          status: "active",
+        }),
+      );
+      return {
+        ...result,
+        items: result.items.map(({ id, name, fileNumber, archived }) => ({
+          id,
+          name,
+          fileNumber,
+          archived,
+        })),
+      };
+    },
     async searchAppointmentPatients(clinicId, input) {
       const result = await repository.list(
         clinicId,

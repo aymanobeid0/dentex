@@ -29,6 +29,18 @@ export type AppointmentPatientSummary = AppointmentPatientReference & {
   phone: string;
 };
 export interface PatientsOperations {
+  attendanceReferences(
+    clinicId: string,
+    ids: readonly string[],
+  ): Promise<AttendancePatientReference[]>;
+  searchAttendancePatients(
+    clinicId: string,
+    input: { q: string; page: number },
+  ): Promise<{
+    items: AttendancePatientReference[];
+    page: number;
+    hasNext: boolean;
+  }>;
   searchAppointmentPatients(
     clinicId: string,
     input: { q: string; page: number },
@@ -48,6 +60,10 @@ export interface PatientsOperations {
     patientId: string,
   ): Promise<AppointmentPatientReference | null>;
 }
+export type AttendancePatientReference = Pick<
+  Patient,
+  "id" | "name" | "fileNumber" | "archived"
+>;
 export interface PatientsRepository {
   appointmentReferences(
     clinicId: string,

@@ -14,6 +14,7 @@ type Props = {
   isAdmin: boolean;
   canAccessPatients: boolean;
   canAccessAppointments?: boolean;
+  canAccessVisits?: boolean;
   busy: boolean;
   onLogout: () => void;
   children: ReactNode;
@@ -27,6 +28,7 @@ export function AppShell({
   isAdmin,
   canAccessPatients,
   canAccessAppointments,
+  canAccessVisits,
   busy,
   onLogout,
   children,
@@ -36,19 +38,21 @@ export function AppShell({
     () => window.matchMedia("(max-width: 760px)").matches,
   );
   const title =
-    page === "appointments"
-      ? t.appointments
-      : page === "home"
-        ? t.home
-        : page === "patients"
-          ? t.patients
-          : page === "rolePermissions"
-            ? t.rolePermissions
-            : page === "employees"
-              ? t.employees
-              : kind === "platform" && page === "clinics"
-                ? t.dashboard
-                : t.account;
+    page === "visits"
+      ? t.visits
+      : page === "appointments"
+        ? t.appointments
+        : page === "home"
+          ? t.home
+          : page === "patients"
+            ? t.patients
+            : page === "rolePermissions"
+              ? t.rolePermissions
+              : page === "employees"
+                ? t.employees
+                : kind === "platform" && page === "clinics"
+                  ? t.dashboard
+                  : t.account;
   return (
     <Disclosure
       open={!collapsed}
@@ -69,6 +73,7 @@ export function AppShell({
           isAdmin={isAdmin}
           canAccessPatients={canAccessPatients}
           canAccessAppointments={canAccessAppointments}
+          canAccessVisits={canAccessVisits}
           patientsLabel={t.patients}
           labels={t}
         />

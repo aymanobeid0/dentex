@@ -1,0 +1,44 @@
+.visits-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-end: var(--space-8);
+}
+.visits-queues {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  gap: var(--space-8);
+  align-items: start;
+}
+.visits-queue h2 {
+  margin-block: 0 var(--space-8);
+}
+.visits-list {
+  display: grid;
+  gap: var(--space-8);
+  margin: 0;
+  padding-inline-start: var(--space-10);
+}
+.visits-list li {
+  padding-inline-start: var(--space-2);
+}
+.visits-person {
+  display: grid;
+  gap: var(--space-1);
+  margin-block-end: var(--space-3);
+  overflow-wrap: anywhere;
+}
+.visits-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.visits-form {
+  display: grid;
+  gap: var(--space-8);
+}
+.visits-picker {
+  min-width: 0;
+}
+.visits-patient-search {
+  position: relative;
+}

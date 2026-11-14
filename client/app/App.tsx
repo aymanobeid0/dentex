@@ -21,6 +21,7 @@ import {
   AppointmentsPage,
   PatientAppointments,
 } from "../features/appointments";
+import { VisitsPage } from "../features/visits";
 import { RolePermissionsPage } from "../features/roles";
 import { LanguageSwitch, translations, useLanguage } from "../shared/i18n";
 import type { NavigationGuard } from "../ui/useDraftGuard";
@@ -275,7 +276,13 @@ function SessionApp({
   const canWriteAppointments =
     account.kind === "clinic" &&
     (admin || account.permissions.includes("appointments.write"));
+  const canAccessVisits =
+    account.kind === "clinic" &&
+    account.roles.some((role) =>
+      ["admin", "dentist", "receptionist"].includes(role),
+    );
   const clinicScreen = [
+    "visits",
     "appointments",
     "home",
     "clinicAccount",
@@ -291,6 +298,7 @@ function SessionApp({
     "platformAccount",
   ].includes(screen);
   const forbidden =
+    (screen === "visits" && !canAccessVisits) ||
     (clinicScreen && account.kind !== "clinic") ||
     (platformScreen && account.kind !== "platform") ||
     (screen === "employees" && !canManageEmployees) ||
@@ -320,6 +328,7 @@ function SessionApp({
             screen === "employees" ||
             screen === "rolePermissions" ||
             screen === "appointments" ||
+            screen === "visits" ||
             screen === "patients"
           ? screen
           : null;
@@ -371,6 +380,7 @@ function SessionApp({
       isAdmin={admin}
       canAccessPatients={canRead || canWrite}
       canAccessAppointments={canReadAppointments || canWriteAppointments}
+      canAccessVisits={canAccessVisits}
       busy={busy || clinicBusy}
       onLogout={guardedLogout}
     >
@@ -467,6 +477,12 @@ function SessionApp({
           )}
           onExpired={expire}
           onNavigationGuardChange={registerAppointmentGuard}
+        />
+      ) : page === "visits" ? (
+        <VisitsPage
+          lang={lang}
+          onExpired={expire}
+          onNavigationGuardChange={registerPageGuard}
         />
       ) : page === "employees" ? (
         <EmployeePage
