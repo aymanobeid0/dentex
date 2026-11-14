@@ -42,3 +42,7 @@
 .visits-patient-search {
   position: relative;
 }
+.treatment-plans, .treatment-plan { display: grid; gap: 16px; }
+.treatment-history { display: grid; gap: 12px; padding-inline-start: 24px; }
+.treatment-history li { display: grid; gap: 4px; }
+.treatment-change-values { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 16px; }

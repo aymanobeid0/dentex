@@ -8,6 +8,7 @@ datasource db {
   provider = "postgresql"
 }
 model Clinic {
+  treatmentPlans TreatmentPlan[]
   attendanceCorrections AttendanceCorrection[]
   appointmentVisitLinks AppointmentVisitLink[]
   appointmentVisitPins AppointmentVisitPin[]
@@ -26,6 +27,7 @@ model Clinic {
   @@map("clinics")
 }
 model Patient {
+  treatmentPlans TreatmentPlan[]
   visits Visit[]
   attendances Attendance[]
   appointments Appointment[]
@@ -48,6 +50,53 @@ model Patient {
   @@unique([clinicId, fileNumber])
   @@map("patients")
 }
+model TreatmentPlan {
+  id String @id @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  title String @db.VarChar(200)
+  notes String @db.VarChar(2000)
+  status String @default("active") @db.VarChar(12)
+  editVersion Int @default(1) @map("edit_version")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  clinic Clinic @relation(fields:[clinicId], references:[id], onDelete:NoAction, onUpdate:NoAction)
+  patient Patient @relation(fields:[clinicId,patientId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  items TreatmentItem[]
+  history TreatmentChange[]
+  @@unique([clinicId,id])
+  @@index([clinicId,patientId,createdAt])
+  @@map("treatment_plans")
+}
+model TreatmentItem {
+  id String @id @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  planId String @map("plan_id") @db.Uuid
+  description String @db.VarChar(200)
+  location String @db.VarChar(80)
+  notes String @db.VarChar(2000)
+  status String @default("pending") @db.VarChar(12)
+  editVersion Int @default(1) @map("edit_version")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  plan TreatmentPlan @relation(fields:[clinicId,planId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  @@unique([clinicId,id])
+  @@index([clinicId,planId,createdAt])
+  @@map("treatment_items")
+}
+model TreatmentChange {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  planId String @map("plan_id") @db.Uuid
+  actorId String @map("actor_id") @db.Uuid
+  kind String @db.VarChar(32)
+  reason String? @db.VarChar(500)
+  before Json
+  after Json
+  recordedAt DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+  plan TreatmentPlan @relation(fields:[clinicId,planId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  actor User @relation(fields:[clinicId,actorId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  @@index([clinicId,planId,recordedAt])
+  @@map("treatment_changes")
+}
 model PlatformAdmin {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username String @unique
@@ -59,6 +108,7 @@ model PlatformAdmin {
   @@map("platform_admins")
 }
 model User {
+  treatmentChanges TreatmentChange[]
   attendanceCorrections AttendanceCorrection[]
   appointmentVisitChanges AppointmentVisitChange[]
   visits Visit[] @relation("VisitDoctor")

@@ -145,6 +145,7 @@ export interface VisitsRepository {
   }): Promise<AttendanceRecord>;
 }
 export interface VisitsScope {
+  treatments: import("./treatments.dto").TreatmentsRepository;
   appointments: AppointmentsOperations;
   repository: VisitsRepository;
   patients: PatientsOperations;

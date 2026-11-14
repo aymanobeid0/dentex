@@ -42,6 +42,8 @@ import type { AppointmentsScope } from "../modules/appointments/appointments.dto
 import { createVisitsRepository } from "../modules/visits/visits.repository";
 import { createVisitsService } from "../modules/visits/visits.service";
 import type { VisitsScope } from "../modules/visits/visits.dto";
+import { createTreatmentsRepository } from "../modules/visits/treatments.repository";
+import { createTreatmentsService } from "../modules/visits/treatments.service";
 
 /** The only place that assembles feature internals; no business decisions here. */
 export function createServices(database: PrismaClient) {
@@ -94,6 +96,7 @@ export function createServices(database: PrismaClient) {
     const scope = await mutation(client, context);
     return {
       repository: createVisitsRepository(client),
+      treatments: createTreatmentsRepository(client),
       appointments: createAppointmentsOperations(
         createAppointmentsRepository(client),
       ),
@@ -154,6 +157,7 @@ export function createServices(database: PrismaClient) {
   });
   return {
     visits: createVisitsService(visitsTransactions),
+    treatments: createTreatmentsService(visitsTransactions),
     appointments: createAppointmentsService(appointmentsTransactions),
     auth: createAuthService(bound.authRepository, verifyPassword, bound),
     patients: createPatientsService(

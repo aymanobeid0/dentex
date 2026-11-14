@@ -26,6 +26,7 @@ export type PatientVisitContext = {
   archived: boolean;
 };
 type Props = {
+  renderTreatmentPlans?: (patient: PatientVisitContext) => ReactNode;
   onSectionChangeRequest?: NavigationGuard;
   renderVisits?: (patient: PatientVisitContext) => ReactNode;
   renderAppointments?: (patient: PatientAppointmentContext) => ReactNode;
@@ -48,6 +49,7 @@ export function PatientPage(props: Props) {
   );
 }
 function PatientFlow({
+  renderTreatmentPlans,
   onSectionChangeRequest,
   renderVisits,
   renderAppointments,
@@ -376,7 +378,7 @@ function PatientFlow({
                   {
                     value: "treatmentPlan",
                     label: t.treatmentSection,
-                    content: <p>{t.sectionUnavailable}</p>,
+                    content: renderTreatmentPlans?.(patient) ?? <p>{t.sectionUnavailable}</p>,
                   },
                 ]}
               />
