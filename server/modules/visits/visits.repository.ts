@@ -59,6 +59,13 @@ export function createVisitsRepository(
     };
   };
   return {
+    async reviseVisit(clinicId, id, editVersion) {
+      const changed = await database.visit.updateMany({
+        where: { clinicId, id, editVersion },
+        data: { editVersion: { increment: 1 } },
+      });
+      if (changed.count !== 1) throw new VisitsError("edit_conflict");
+    },
     async history(clinicId, patientId, page) {
       return (
         await database.attendance.findMany({

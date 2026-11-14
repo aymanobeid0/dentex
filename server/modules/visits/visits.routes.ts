@@ -20,6 +20,8 @@ export function visitsRouter(
   router.get("/doctors", controller.doctors);
   router.get("/patients", controller.patients);
   router.get("/patient/:patientId", controller.history);
+  router.get("/:id/appointment-options", controller.appointmentOptions);
+  router.patch("/:id/appointment-link", controller.appointmentLink);
   router.post("/:id/start", controller.start);
   router.post("/:id/complete", controller.complete);
   router.get("/", controller.list);

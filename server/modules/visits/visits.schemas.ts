@@ -34,6 +34,23 @@ export const historySchema = z
   .strict();
 export type StartInput = z.infer<typeof startSchema>;
 export type CompleteInput = z.infer<typeof completeSchema>;
+const linkFacts = {
+  visitId: uuidSchema,
+  visitVersion: editVersion,
+  expectedLinkVersion: z.number().int().min(0).max(2147483646),
+};
+export const appointmentLinkSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      ...linkFacts,
+      kind: z.literal("assign"),
+      appointmentId: uuidSchema,
+      expectedAppointmentVersion: editVersion,
+    })
+    .strict(),
+  z.object({ ...linkFacts, kind: z.literal("detach") }).strict(),
+]);
+export type AppointmentLinkInput = z.infer<typeof appointmentLinkSchema>;
 export const editAttendanceSchema = z.discriminatedUnion("kind", [
   z
     .object({ kind: z.literal("transfer"), doctorId: uuidSchema, editVersion })

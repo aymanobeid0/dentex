@@ -31,6 +31,30 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
+it.each([
+  ["ar", "لا يوجد حضور أو زيارات مسجلة لهذا المريض."],
+  ["fr", "Aucune présence ni visite enregistrée pour ce patient."],
+] as const)(
+  "uses a history-specific empty state in %s",
+  async (lang, message) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ items: [], page: 1, hasNext: false })),
+      ),
+    );
+    renderPatient(
+      <PatientVisits
+        patient={patient}
+        lang={lang}
+        canRead
+        onExpired={() => {}}
+      />,
+    );
+    expect(await screen.findByText(message)).toBeTruthy();
+  },
+);
 it.each(["ar", "fr"] as const)(
   "shows attendance separately from visits, paginates and preserves confirmed history on connection failure in %s",
   async (lang) => {

@@ -1,19 +1,28 @@
-import { useState } from "react";
+import { AppointmentLinkDialog } from "./AppointmentLinkDialog";
+import { AppointmentReference } from "./AppointmentReference";
+import type { Attendance } from "./api";
+import type { NavigationGuard } from "../../ui/useDraftGuard";
+import { useRef, useState } from "react";
 import { translations, type Lang } from "../../shared/i18n";
 import { usePatientHistory } from "./queries";
-import { arrivalTime } from "./VisitsPage";
+import { arrivalTime } from "./visits.format";
 
 export function PatientVisits({
   patient,
   lang,
   canRead,
   onExpired,
+  onNavigationGuardChange,
 }: {
   patient: { id: string; name: string; fileNumber: string; archived: boolean };
   lang: Lang;
   canRead: boolean;
   onExpired: () => void;
+  onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
 }) {
+  const [editing, setEditing] = useState<Attendance | null>(null),
+    [saved, setSaved] = useState(false),
+    returnFocus = useRef<HTMLElement | null>(null);
   const [page, setPage] = useState(1),
     t = translations[lang].visits;
   const query = usePatientHistory(patient.id, page, onExpired, canRead);
@@ -24,6 +33,21 @@ export function PatientVisits({
       dir={lang === "ar" ? "rtl" : "ltr"}
       aria-label={t.history}
     >
+      {saved && <p role="status">{t.saved}</p>}
+      {editing && (
+        <AppointmentLinkDialog
+          row={editing}
+          lang={lang}
+          onExpired={onExpired}
+          onNavigationGuardChange={onNavigationGuardChange}
+          returnFocus={returnFocus}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            setSaved(true);
+          }}
+        />
+      )}
       <div className="content-heading">
         <h2>{t.history}</h2>
         <button
@@ -42,13 +66,14 @@ export function PatientVisits({
       {query.data && !query.blocked && (
         <>
           {!query.data.items.length ? (
-            <p>{t.reviewEmpty}</p>
+            <p>{t.historyEmpty}</p>
           ) : (
             <ol className="visits-list">
               {query.data.items.map((row) => (
                 <li key={row.id}>
                   <div className="visits-person">
                     <strong>{row.doctor.name}</strong>
+                    <AppointmentReference row={row} lang={lang} />
                     <span>
                       {t.arrive}:{" "}
                       <time dateTime={row.arrivedAt}>
@@ -81,6 +106,19 @@ export function PatientVisits({
                       </span>
                     )}
                   </div>
+                  {row.visit && (
+                    <button
+                      className="ui-button"
+                      onClick={() => {
+                        returnFocus.current =
+                          document.activeElement as HTMLElement;
+                        setSaved(false);
+                        setEditing(row);
+                      }}
+                    >
+                      {t.linkAppointment}
+                    </button>
+                  )}
                 </li>
               ))}
             </ol>

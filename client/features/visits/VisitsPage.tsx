@@ -1,3 +1,6 @@
+import { arrivalTime } from "./visits.format";
+import { AppointmentLinkDialog } from "./AppointmentLinkDialog";
+import { AppointmentReference } from "./AppointmentReference";
 import { useId, useRef, useState, type RefObject } from "react";
 import { ArrowRightLeft, LogOut, UserRoundPlus } from "lucide-react";
 import { translations, type Lang } from "../../shared/i18n";
@@ -23,14 +26,6 @@ type Props = {
   onExpired: () => void;
   onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
 };
-export function arrivalTime(value: string, lang: Lang) {
-  return new Intl.DateTimeFormat(lang === "ar" ? "ar-MR-u-nu-latn" : "fr-FR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "Africa/Nouakchott",
-    calendar: "gregory",
-  }).format(new Date(value));
-}
 export function VisitsPage(props: Props) {
   const { lang, onExpired } = props,
     t = translations[lang].visits;
@@ -42,6 +37,7 @@ export function VisitsPage(props: Props) {
           row: Attendance;
           previous?: Attendance;
         }
+      | { kind: "link"; row: Attendance }
       | null
     >(null);
   const arriveTrigger = useRef<HTMLButtonElement | null>(null);
@@ -118,6 +114,7 @@ export function VisitsPage(props: Props) {
                       <li key={row.id}>
                         <div className="visits-person">
                           <strong>{row.patient.name}</strong>
+                          <AppointmentReference row={row} lang={lang} />
                           <span>
                             {t.fileNumber} <bdi>{row.patient.fileNumber}</bdi>
                           </span>
@@ -142,6 +139,14 @@ export function VisitsPage(props: Props) {
                           )}
                         </div>
                         <div className="visits-actions">
+                          {row.visit && (
+                            <button
+                              className="ui-button"
+                              onClick={() => open({ kind: "link", row })}
+                            >
+                              {t.linkAppointment}
+                            </button>
+                          )}
                           {row.status === "waiting" ? (
                             <>
                               <button
@@ -200,7 +205,19 @@ export function VisitsPage(props: Props) {
           )}
         </div>
       )}
-      {action && (
+      {action?.kind === "link" && (
+        <AppointmentLinkDialog
+          {...props}
+          row={action.row}
+          onClose={close}
+          onSaved={() => {
+            setNotice(true);
+            close();
+          }}
+          returnFocus={returnFocus}
+        />
+      )}
+      {action && action.kind !== "link" && (
         <AttendanceDialog
           {...props}
           action={action}
@@ -356,7 +373,10 @@ function AttendanceDialog({
         setRecovery("uncertain");
         setAcknowledged(false);
         setReview(null);
-      } else setIssue(t[error.code as keyof typeof t] || t.failed);
+      } else {
+        const message = t[error.code as keyof typeof t];
+        setIssue(typeof message === "string" ? message : t.failed);
+      }
     } finally {
       submitting.current = false;
       mutation.reset();

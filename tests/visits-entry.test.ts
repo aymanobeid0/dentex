@@ -325,7 +325,14 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
       const history = await get(`/patient/${patients[1]}?page=1`);
       expect(history.body).toMatchObject({ page: 1, hasNext: false });
       expect(Object.keys(history.body.items[0].visit).sort()).toEqual(
-        ["id", "status", "startedAt", "recordedEndAt", "editVersion"].sort(),
+        [
+          "id",
+          "status",
+          "startedAt",
+          "recordedEndAt",
+          "editVersion",
+          "appointmentLink",
+        ].sort(),
       );
       expect(Object.keys(history.body.items[0].patient).sort()).toEqual(
         ["id", "name", "fileNumber", "archived"].sort(),

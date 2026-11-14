@@ -1,5 +1,9 @@
 import type { ActorAccess } from "../../shared/actor";
 import type {
+  AppointmentsOperations,
+  AppointmentVisitLink,
+} from "../appointments";
+import type {
   PatientsOperations,
   AttendancePatientReference,
 } from "../patients";
@@ -18,6 +22,7 @@ export interface VisitRecord {
   startedAt: string;
   recordedEndAt: string | null;
   editVersion: number;
+  appointmentLink?: AppointmentVisitLink;
 }
 export interface AttendanceRecord {
   id: string;
@@ -37,6 +42,11 @@ export interface AttendanceSnapshot extends Omit<
   doctor: AttendanceDoctorReference;
 }
 export interface VisitsRepository {
+  reviseVisit(
+    clinicId: string,
+    visitId: string,
+    editVersion: number,
+  ): Promise<void>;
   history(
     clinicId: string,
     patientId: string,
@@ -74,6 +84,7 @@ export interface VisitsRepository {
   }): Promise<AttendanceRecord>;
 }
 export interface VisitsScope {
+  appointments: AppointmentsOperations;
   repository: VisitsRepository;
   patients: PatientsOperations;
   employees: EmployeesOperations;

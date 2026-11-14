@@ -20,6 +20,23 @@ export interface NewAppointment {
   administrativeNote: string | null;
 }
 export interface AppointmentsRepository {
+  visitReferences(
+    clinicId: string,
+    input: { patientId: string; day: string },
+  ): Promise<AppointmentVisitReference[]>;
+  visitLinks(
+    clinicId: string,
+    visitIds: readonly string[],
+  ): Promise<AppointmentVisitLink[]>;
+  visitPins(
+    clinicId: string,
+    appointmentId: string,
+  ): Promise<Array<{ visitId: string; visitDay: string }>>;
+  saveVisitLink(
+    clinicId: string,
+    input: SetVisitLinkInput,
+    previous: AppointmentVisitLink,
+  ): Promise<AppointmentVisitLink>;
   patientIds(clinicId: string, filter: AppointmentFilter): Promise<string[]>;
   list(
     clinicId: string,
@@ -39,6 +56,47 @@ export interface AppointmentsRepository {
     cancellationReason?: string | null,
   ): Promise<AppointmentSnapshot>;
   insert(input: NewAppointment): Promise<AppointmentReceipt>;
+}
+export type AppointmentVisitReference = Pick<
+  AppointmentRecord,
+  "id" | "patientId" | "doctorId" | "startsAt" | "status" | "editVersion"
+>;
+export interface AppointmentVisitLink {
+  visitId: string;
+  appointmentId: string | null;
+  editVersion: number;
+  appointment?: AppointmentVisitReference | null;
+}
+type VisitLinkFacts = {
+  visitId: string;
+  patientId: string;
+  visitDay: string;
+  actorId: string;
+  expectedLinkVersion: number;
+};
+export type SetVisitLinkInput = VisitLinkFacts &
+  (
+    | {
+        kind: "assign";
+        appointmentId: string;
+        expectedAppointmentVersion: number;
+      }
+    | { kind: "detach" }
+    | { kind: "invalidateEntry" }
+  );
+export interface AppointmentsOperations {
+  visitReferences(
+    clinicId: string,
+    input: { patientId: string; day: string },
+  ): Promise<AppointmentVisitReference[]>;
+  visitLinks(
+    clinicId: string,
+    visitIds: readonly string[],
+  ): Promise<AppointmentVisitLink[]>;
+  setVisitLink(
+    clinicId: string,
+    input: SetVisitLinkInput,
+  ): Promise<AppointmentVisitLink>;
 }
 export type AppointmentStatus = "booked" | "attended" | "absent" | "cancelled";
 export interface AppointmentFilter {

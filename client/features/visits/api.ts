@@ -20,8 +20,128 @@ export type Attendance = {
     startedAt: string;
     recordedEndAt: string | null;
     editVersion: number;
+    appointmentLink?: AppointmentLink;
   };
 };
+export type AppointmentLink = {
+  visitId: string;
+  appointmentId: string | null;
+  editVersion: number;
+  appointment?: AppointmentOption | null;
+};
+export type AppointmentOption = {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  doctor: { id: string; name: string };
+  startsAt: string;
+  status: "booked" | "attended" | "absent" | "cancelled";
+  editVersion: number;
+};
+export type AppointmentOptions = {
+  visitId: string;
+  visitVersion: number;
+  visitDay: string;
+  link: AppointmentLink;
+  items: AppointmentOption[];
+};
+const validOption = (item: AppointmentOption) =>
+  !!item &&
+  identifier(item.id) &&
+  identifier(item.patientId) &&
+  identifier(item.doctorId) &&
+  item.doctor?.id === item.doctorId &&
+  typeof item.doctor.name === "string" &&
+  !!item.doctor.name &&
+  timestamp(item.startsAt) &&
+  ["booked", "attended", "absent", "cancelled"].includes(item.status) &&
+  Number.isInteger(item.editVersion) &&
+  item.editVersion > 0;
+const validLink = (link: AppointmentLink, visitId: string) =>
+  !!link &&
+  link.visitId === visitId &&
+  (link.appointmentId === null || identifier(link.appointmentId)) &&
+  Number.isInteger(link.editVersion) &&
+  link.editVersion >= 0 &&
+  (!link.appointment ||
+    (validOption(link.appointment) &&
+      link.appointment.id === link.appointmentId));
+export async function readAppointmentOptions(
+  request: ApiRequest,
+  row: Attendance,
+  signal?: AbortSignal,
+) {
+  const value = await readJson<AppointmentOptions>(
+    request,
+    `${base}/${row.id}/appointment-options`,
+    { signal },
+  );
+  if (
+    !value ||
+    !row.visit ||
+    value.visitId !== row.visit.id ||
+    !Number.isInteger(value.visitVersion) ||
+    value.visitVersion < 1 ||
+    value.visitDay !== row.visit.startedAt.slice(0, 10) ||
+    !validLink(value.link, row.visit.id) ||
+    !Array.isArray(value.items) ||
+    value.items.some(
+      (item) =>
+        !item ||
+        !identifier(item.id) ||
+        item.patientId !== row.patient.id ||
+        !identifier(item.doctorId) ||
+        item.doctor?.id !== item.doctorId ||
+        !item.doctor.name ||
+        !timestamp(item.startsAt) ||
+        item.startsAt.slice(0, 10) !== value.visitDay ||
+        !["booked", "attended", "absent", "cancelled"].includes(item.status) ||
+        !Number.isInteger(item.editVersion) ||
+        item.editVersion < 1,
+    )
+  )
+    throw new ApiError("network");
+  return value;
+}
+export async function writeAppointmentLink(
+  request: ApiRequest,
+  row: Attendance,
+  options: AppointmentOptions,
+  choice: string,
+) {
+  const selected = options.items.find((item) => item.id === choice);
+  if (!row.visit || (choice !== "none" && !selected))
+    throw new ApiError("network");
+  const input = {
+    visitId: row.visit.id,
+    visitVersion: row.visit.editVersion,
+    expectedLinkVersion: options.link.editVersion,
+    ...(selected
+      ? {
+          kind: "assign",
+          appointmentId: selected.id,
+          expectedAppointmentVersion: selected.editVersion,
+        }
+      : { kind: "detach" }),
+  };
+  const value = await readJson<Attendance>(
+    request,
+    `${base}/${row.id}/appointment-link`,
+    { method: "PATCH", body: JSON.stringify(input) },
+  );
+  if (
+    !snapshot(value) ||
+    value.id !== row.id ||
+    value.visit?.id !== row.visit.id ||
+    !value.visit.appointmentLink ||
+    !validLink(value.visit.appointmentLink, row.visit.id) ||
+    value.visit.appointmentLink.editVersion !== options.link.editVersion + 1 ||
+    value.visit.appointmentLink.appointmentId !== (selected?.id ?? null) ||
+    value.visit.editVersion !== row.visit.editVersion + 1
+  )
+    throw new ApiError("uncertain");
+  return value;
+}
 export type AttendanceEdit =
   | { kind: "transfer"; doctorId: string; editVersion: number }
   | { kind: "leave"; editVersion: number };
@@ -56,6 +176,8 @@ function snapshot(value: Attendance) {
     timestamp(value.arrivedAt) &&
     (!value.visit ||
       (identifier(value.visit.id) &&
+        (!value.visit.appointmentLink ||
+          validLink(value.visit.appointmentLink, value.visit.id)) &&
         timestamp(value.visit.startedAt) &&
         value.visit.startedAt >= value.arrivedAt &&
         Number.isInteger(value.visit.editVersion) &&

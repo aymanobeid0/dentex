@@ -152,6 +152,7 @@ export function AppointmentEditor({
         appointment_overlap: "overlap",
         appointment_in_past: "past",
         appointment_not_booked: "notBooked",
+        appointment_visit_day_locked: "visitDayLocked",
         doctor_ineligible: "ineligible",
         patient_archived: "archivedWarning",
         forbidden: "readDenied",

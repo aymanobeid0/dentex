@@ -172,6 +172,12 @@
     "signInAgain": "Revenir à la connexion"
   },
   "patients": {
+    "fileSections": "Sections du dossier patient",
+    "visitsSection": "Visites",
+    "appointmentsSection": "Rendez-vous",
+    "odontogramSection": "Schéma dentaire",
+    "treatmentSection": "Plan de traitement",
+    "sectionUnavailable": "Cette section n’est pas disponible actuellement.",
     "discardTitle": "Quitter l’inscription ?",
     "discardHint": "Les informations non enregistrées seront perdues.",
     "stay": "Rester",
@@ -370,6 +376,7 @@
     "editConflict": "Un autre utilisateur a modifié ce rendez-vous. Votre brouillon est conservé ; consultez la version actuelle.",
     "editUncertain": "Impossible de confirmer l’enregistrement. La modification peut avoir été appliquée. Consultez la version actuelle avant toute nouvelle tentative ; aucun renvoi automatique.",
     "notBooked": "Seuls les rendez-vous réservés peuvent être reprogrammés.",
+    "visitDayLocked": "Ce rendez-vous a été lié à une visite commencée. Il doit rester le même jour, même après avoir délié la référence. Réservez un nouveau rendez-vous pour le suivi.",
     "recordChanged": "Le rendez-vous a changé sur le serveur. Votre brouillon est conservé ; consultez les données actuelles.",
     "review": "Consulter la version actuelle",
     "latest": "Données actuelles du rendez-vous",
@@ -447,6 +454,7 @@
     "withDoctor": "Chez le médecin",
     "completed": "Visite terminée",
     "history": "Historique des présences et visites",
+    "historyEmpty": "Aucune présence ni visite enregistrée pour ce patient.",
     "entry": "Entrée enregistrée",
     "endRecorded": "Fin enregistrée",
     "startDescription": "L’entrée crée une visite, même sans acte de soin.",
@@ -485,6 +493,22 @@
     "reviewEmpty": "Ce patient ne figure pas dans l’attente actuelle. Vérifiez avant une nouvelle arrivée.",
     "draftDescription": "Choisir le patient et le médecin pour enregistrer son arrivée, sans commencer de visite.",
     "transferDescription": "Le transfert conserve l’heure et la priorité d’arrivée.",
-    "queue": "File d’attente du médecin"
+    "queue": "File d’attente du médecin",
+    "linkAppointment": "Lier un rendez-vous",
+    "saveLink": "Enregistrer le lien",
+    "appointmentChoice": "Rendez-vous de référence",
+    "linkWarning": "Délier ne permet pas de déplacer ce rendez-vous vers un autre jour ni de le réutiliser pour une autre visite.",
+    "linkDoctorMismatch": "Le praticien du rendez-vous diffère de celui de la visite.",
+    "linkDescription": "Référence facultative pour une visite réelle, du même patient et du même jour.",
+    "linkIndependent": "Les états du rendez-vous, de la présence et de la visite restent indépendants.",
+    "noAppointment": "Sans rendez-vous lié",
+    "noAppointmentOptions": "Aucun rendez-vous pour ce patient le jour du début de la visite.",
+    "appointmentStatuses": {
+      "booked": "Réservé",
+      "attended": "Présent",
+      "absent": "Absent",
+      "cancelled": "Annulé"
+    },
+    "invalidAppointmentChoice": "Le rendez-vous sélectionné n’est plus disponible. Choisissez une autre référence ou aucun lien."
   }
 }

@@ -8,6 +8,9 @@ datasource db {
   provider = "postgresql"
 }
 model Clinic {
+  appointmentVisitLinks AppointmentVisitLink[]
+  appointmentVisitPins AppointmentVisitPin[]
+  appointmentVisitChanges AppointmentVisitChange[]
   visits Visit[]
   attendances Attendance[]
   appointments Appointment[]
@@ -55,6 +58,7 @@ model PlatformAdmin {
   @@map("platform_admins")
 }
 model User {
+  appointmentVisitChanges AppointmentVisitChange[]
   visits Visit[] @relation("VisitDoctor")
   recordedVisits Visit[] @relation("VisitCreator")
   attendances Attendance[] @relation("AttendanceDoctor")
@@ -173,6 +177,8 @@ model PatientNumberHistory {
 }
 
 model Appointment {
+  visitLinks AppointmentVisitLink[]
+  visitPins AppointmentVisitPin[]
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   patientId String @map("patient_id") @db.Uuid
@@ -208,4 +214,44 @@ model AppointmentChange {
   actor User @relation(fields: [clinicId, actorId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
   @@index([clinicId, appointmentId, createdAt])
   @@map("appointment_changes")
+}
+
+// Appointment-owned references: visitId is deliberately opaque (no visits FK).
+model AppointmentVisitLink {
+  clinicId String @map("clinic_id") @db.Uuid
+  visitId String @map("visit_id") @db.Uuid
+  appointmentId String? @map("appointment_id") @db.Uuid
+  editVersion Int @map("edit_version")
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  appointment Appointment? @relation(fields: [clinicId, appointmentId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@id([clinicId, visitId])
+  @@unique([clinicId, appointmentId])
+  @@map("appointment_visit_links")
+}
+
+model AppointmentVisitPin {
+  clinicId String @map("clinic_id") @db.Uuid
+  appointmentId String @map("appointment_id") @db.Uuid
+  visitId String @map("visit_id") @db.Uuid
+  visitDay String @map("visit_day") @db.VarChar(10)
+  valid Boolean @default(true)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  appointment Appointment @relation(fields: [clinicId, appointmentId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@id([clinicId, appointmentId, visitId])
+  @@map("appointment_visit_pins")
+}
+
+model AppointmentVisitChange {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  visitId String @map("visit_id") @db.Uuid
+  actorId String @map("actor_id") @db.Uuid
+  action String @db.VarChar(20)
+  before Json
+  after Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  actor User @relation(fields: [clinicId, actorId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@index([clinicId, visitId, createdAt])
+  @@map("appointment_visit_changes")
 }

@@ -11,6 +11,7 @@ import type {
   EditAttendanceInput,
   StartInput,
   CompleteInput,
+  AppointmentLinkInput,
 } from "./visits.schemas";
 import { VisitsError } from "./visits.errors";
 export function createVisitsService(
@@ -42,15 +43,21 @@ export function createVisitsService(
     clinicId: string,
     records: AttendanceRecord[],
   ): Promise<AttendanceSnapshot[]> {
+    const links = await scope.appointments.visitLinks(
+      clinicId,
+      records.flatMap((row) => (row.visit ? [row.visit.id] : [])),
+    );
     const [patients, doctors] = await Promise.all([
       scope.patients.attendanceReferences(
         clinicId,
         records.map((r) => r.patientId),
       ),
-      scope.employees.attendanceDoctorReferences(
-        clinicId,
-        records.map((r) => r.doctorId),
-      ),
+      scope.employees.attendanceDoctorReferences(clinicId, [
+        ...records.map((r) => r.doctorId),
+        ...links.flatMap((link) =>
+          link.appointment ? [link.appointment.doctorId] : [],
+        ),
+      ]),
     ]);
     const patientMap = new Map(patients.map((r) => [r.id, r])),
       doctorMap = new Map(doctors.map((r) => [r.id, r]));
@@ -58,10 +65,110 @@ export function createVisitsService(
       const patient = patientMap.get(patientId),
         doctor = doctorMap.get(doctorId);
       if (!patient || !doctor) throw new ApplicationError("not_found");
-      return { ...row, patient, doctor };
+      const link = links.find((link) => link.visitId === row.visit?.id);
+      const linkedDoctor = link?.appointment
+        ? doctorMap.get(link.appointment.doctorId)
+        : undefined;
+      if (link?.appointment && !linkedDoctor)
+        throw new ApplicationError("not_found");
+      return {
+        ...row,
+        ...(row.visit
+          ? {
+              visit: {
+                ...row.visit,
+                appointmentLink: link
+                  ? {
+                      ...link,
+                      appointment: link.appointment
+                        ? {
+                            ...link.appointment,
+                            doctor: {
+                              id: linkedDoctor!.id,
+                              name: linkedDoctor!.name,
+                            },
+                          }
+                        : null,
+                    }
+                  : undefined,
+              },
+            }
+          : {}),
+        patient,
+        doctor,
+      };
     });
   }
   return {
+    appointmentOptions: (actor: ClinicActor, id: string) =>
+      locked(actor, async (scope) => {
+        const row = await scope.repository.find(actor.clinicId, id);
+        if (!row) throw new ApplicationError("not_found");
+        if (!row.visit) throw new VisitsError("visit_required");
+        const visitDay = row.visit.startedAt.slice(0, 10);
+        const [references, [link]] = await Promise.all([
+          scope.appointments.visitReferences(actor.clinicId, {
+            patientId: row.patientId,
+            day: visitDay,
+          }),
+          scope.appointments.visitLinks(actor.clinicId, [row.visit.id]),
+        ]);
+        const staff = await scope.employees.attendanceDoctorReferences(
+          actor.clinicId,
+          references.map((item) => item.doctorId),
+        );
+        const names = new Map(staff.map((doctor) => [doctor.id, doctor.name]));
+        const items = references.map((item) => ({
+          ...item,
+          doctor: { id: item.doctorId, name: names.get(item.doctorId) ?? "" },
+        }));
+        return {
+          visitId: row.visit.id,
+          visitVersion: row.visit.editVersion,
+          visitDay,
+          link: {
+            visitId: link.visitId,
+            appointmentId: link.appointmentId,
+            editVersion: link.editVersion,
+          },
+          items,
+        };
+      }),
+    appointmentLink: (
+      actor: ClinicActor,
+      id: string,
+      input: AppointmentLinkInput,
+    ) =>
+      locked(actor, async (scope) => {
+        const row = await scope.repository.find(actor.clinicId, id);
+        if (!row) throw new ApplicationError("not_found");
+        if (!row.visit) throw new VisitsError("visit_required");
+        if (
+          row.visit.id !== input.visitId ||
+          row.visit.editVersion !== input.visitVersion
+        )
+          throw new VisitsError("edit_conflict");
+        await scope.repository.reviseVisit(
+          actor.clinicId,
+          row.visit.id,
+          row.visit.editVersion,
+        );
+        await scope.appointments.setVisitLink(actor.clinicId, {
+          ...input,
+          visitId: row.visit.id,
+          patientId: row.patientId,
+          visitDay: row.visit.startedAt.slice(0, 10),
+          actorId: actor.userId,
+        });
+        return (
+          await snapshots(scope, actor.clinicId, [
+            {
+              ...row,
+              visit: { ...row.visit, editVersion: row.visit.editVersion + 1 },
+            },
+          ])
+        )[0];
+      }),
     history: (actor: ClinicActor, patientId: string, page: number) =>
       locked(actor, async (scope) => {
         const [patient] = await scope.patients.attendanceReferences(

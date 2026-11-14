@@ -8,6 +8,7 @@ export class VisitsError extends ApplicationError {
       | "edit_conflict"
       | "attendance_not_waiting"
       | "doctor_busy"
+      | "visit_required"
       | "visit_not_in_progress",
   ) {
     super(code);

@@ -9,9 +9,27 @@ import {
   startSchema,
   completeSchema,
   historySchema,
+  appointmentLinkSchema,
 } from "./visits.schemas";
 import type { VisitsService } from "./visits.service";
 export function createVisitsController(service: VisitsService) {
+  const appointmentOptions: RequestHandler = async (req, res) => {
+    res.json(
+      await service.appointmentOptions(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.id, "not_found"),
+      ),
+    );
+  };
+  const appointmentLink: RequestHandler = async (req, res) => {
+    res.json(
+      await service.appointmentLink(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.id, "not_found"),
+        parseInput(appointmentLinkSchema, req.body),
+      ),
+    );
+  };
   const list: RequestHandler = async (_req, res) => {
     res.json(await service.list(clinicActor(res)));
   };
@@ -81,6 +99,8 @@ export function createVisitsController(service: VisitsService) {
     );
   };
   return {
+    appointmentOptions,
+    appointmentLink,
     list,
     get,
     arrive,

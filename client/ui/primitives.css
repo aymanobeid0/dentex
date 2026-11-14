@@ -267,3 +267,38 @@ body:has([role="alertdialog"]) [role="dialog"] {
   background: var(--bg-subtle);
   flex-shrink: 0;
 }
+.ui-tabs {
+  min-width: 0;
+}
+.ui-tabs-list {
+  display: flex;
+  gap: var(--space-2);
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+.ui-tabs-trigger {
+  flex: 0 0 auto;
+  height: var(--control-h);
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+.ui-tabs-trigger[data-state="active"] {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.ui-tabs-trigger:focus-visible {
+  outline: 1px solid var(--border-focus);
+  outline-offset: -3px;
+}
+.ui-tabs-panel {
+  padding-block-start: var(--space-4);
+}

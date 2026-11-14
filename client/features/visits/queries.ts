@@ -16,6 +16,9 @@ import {
   writeVisit,
   readPatientHistory,
   type VisitAction,
+  readAppointmentOptions,
+  writeAppointmentLink,
+  type AppointmentOptions,
 } from "./api";
 function useVisitsRead<T>(
   key: readonly unknown[],
@@ -37,6 +40,57 @@ function useVisitsRead<T>(
     }
   }, [query.error, client, scope]);
   return { ...query, data: enabled ? query.data : undefined };
+}
+export function useAppointmentOptions(row: Attendance, onExpired: () => void) {
+  const request = useApi();
+  return useVisitsRead(
+    ["appointment-options", row.id],
+    (signal) => readAppointmentOptions(request, row, signal),
+    onExpired,
+  );
+}
+export function useAppointmentLinkWrite() {
+  const request = useApi(),
+    client = useQueryClient(),
+    scope = useQueryScope();
+  return useMutation({
+    mutationFn: ({
+      row,
+      options,
+      choice,
+    }: {
+      row: Attendance;
+      options: AppointmentOptions;
+      choice: string;
+    }) => writeAppointmentLink(request, row, options, choice),
+    retry: false,
+    networkMode: "always",
+    gcTime: 0,
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: [...scope, "visits"] });
+      void client.invalidateQueries({ queryKey: [...scope, "appointments"] });
+    },
+  });
+}
+export function useAppointmentLinkReview() {
+  const request = useApi(),
+    client = useQueryClient(),
+    scope = useQueryScope();
+  return async (row: Attendance) => {
+    const current = await client.fetchQuery({
+      queryKey: [...scope, "visits", "detail", row.id],
+      queryFn: ({ signal }) => readAttendance(request, row.id, signal),
+      staleTime: 0,
+      retry: false,
+    });
+    const options = await client.fetchQuery({
+      queryKey: [...scope, "visits", "appointment-options", row.id],
+      queryFn: ({ signal }) => readAppointmentOptions(request, current, signal),
+      staleTime: 0,
+      retry: false,
+    });
+    return { row: current, options };
+  };
 }
 export function useQueue(onExpired: () => void) {
   const request = useApi();

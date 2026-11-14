@@ -97,6 +97,7 @@ function SessionApp({
   const [clinicBusy, setClinicBusy] = useState(false);
   const pageGuard = useRef<NavigationGuard | null>(null),
     appointmentGuard = useRef<NavigationGuard | null>(null),
+    visitGuard = useRef<NavigationGuard | null>(null),
     clinicGuard = useRef<NavigationGuard | null>(null);
   const registerAppointmentGuard = useCallback(
     (guard: NavigationGuard | null) => {
@@ -104,6 +105,21 @@ function SessionApp({
     },
     [],
   );
+  const registerVisitGuard = useCallback((guard: NavigationGuard | null) => {
+    visitGuard.current = guard;
+  }, []);
+  const requestClinicLeave = useCallback<NavigationGuard>((leave, stay) => {
+    const guards = [
+      visitGuard.current,
+      appointmentGuard.current,
+      pageGuard.current,
+    ].filter((guard): guard is NavigationGuard => !!guard);
+    const next = (index: number) =>
+      index < guards.length
+        ? guards[index](() => next(index + 1), stay)
+        : leave();
+    next(0);
+  }, []);
   const registerPageGuard = useCallback((guard: NavigationGuard | null) => {
     pageGuard.current = guard;
   }, []);
@@ -126,7 +142,8 @@ function SessionApp({
       clinicBusy ||
       pageGuard.current ||
       clinicGuard.current ||
-      appointmentGuard.current
+      appointmentGuard.current ||
+      visitGuard.current
     );
   });
   const attempted = useRef<typeof blocker | null>(null);
@@ -172,10 +189,17 @@ function SessionApp({
         ? retainsClinic
           ? null
           : clinicGuard.current
-        : appointmentGuard.current || pageGuard.current;
+        : requestClinicLeave;
     if (guard) guard(proceed, reset);
     else proceed();
-  }, [blocker, busy, clinicBusy, platformRetained, account?.kind]);
+  }, [
+    blocker,
+    busy,
+    clinicBusy,
+    platformRetained,
+    account?.kind,
+    requestClinicLeave,
+  ]);
 
   if (account) {
     intent.confirmed = true;
@@ -358,9 +382,7 @@ function SessionApp({
     };
     if (account.kind === "platform" && clinicGuard.current)
       clinicGuard.current(leave);
-    else if (appointmentGuard.current) appointmentGuard.current(leave);
-    else if (pageGuard.current) pageGuard.current(leave);
-    else leave();
+    else requestClinicLeave(leave);
   };
   return (
     <AppShell
@@ -441,12 +463,14 @@ function SessionApp({
         </>
       ) : page === "patients" ? (
         <PatientPage
+          onSectionChangeRequest={requestClinicLeave}
           renderVisits={(patient) => (
             <PatientVisits
               key={patient.id}
               patient={patient}
               lang={lang}
               canRead={canAccessVisits}
+              onNavigationGuardChange={registerVisitGuard}
               onExpired={expire}
             />
           )}
