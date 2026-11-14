@@ -9,7 +9,7 @@
 | [01: تسجيل الحضور وإدارة انتظار الأطباء](issues/01-attendance-and-doctor-queues.md) | لا شيء | ready-for-human | in-progress؛ الكود متحقق والتدقيق البصري محجوب وفحص المستخدم منتظر |
 | [02: دخول الطبيب وسجل الزيارة وإنهاؤها](issues/02-start-and-complete-visits.md) | 01 | ready-for-human | in-progress؛ الكود متحقق وdev شغالة والفحص البصري/البشري باقيان |
 | [03: ربط الزيارة بالموعد وحفظ استقلال السجلين](issues/03-optional-appointment-link.md) | 02 | ready-for-human | in-progress؛ الكود متحقق وdevشغالة وفحص المستخدم منتظر |
-| [04: تصحيح الحالات وحذف تسجيل الحضور الخاطئ](issues/04-correct-status-and-delete-mistakes.md) | 02 | ready-for-agent | not-started |
+| [04: تصحيح الحالات وحذف تسجيل الحضور الخاطئ](issues/04-correct-status-and-delete-mistakes.md) | 02 | ready-for-agent | in-progress؛ كتابة متتابعة بعد حفظ03 |
 | [05: إغلاق نهاية اليوم وتوضيح النتيجة غير المؤكدة](issues/05-automatic-day-close.md) | 02 | ready-for-agent | not-started |
 
 ## مسار العمل والاعتماديات
