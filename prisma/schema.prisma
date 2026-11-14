@@ -8,6 +8,7 @@ datasource db {
   provider = "postgresql"
 }
 model Clinic {
+  attendanceCorrections AttendanceCorrection[]
   appointmentVisitLinks AppointmentVisitLink[]
   appointmentVisitPins AppointmentVisitPin[]
   appointmentVisitChanges AppointmentVisitChange[]
@@ -58,6 +59,7 @@ model PlatformAdmin {
   @@map("platform_admins")
 }
 model User {
+  attendanceCorrections AttendanceCorrection[]
   appointmentVisitChanges AppointmentVisitChange[]
   visits Visit[] @relation("VisitDoctor")
   recordedVisits Visit[] @relation("VisitCreator")
@@ -84,6 +86,7 @@ model User {
 }
 
 model Attendance {
+  corrections AttendanceCorrection[]
   visits Visit[]
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -254,4 +257,21 @@ model AppointmentVisitChange {
   actor User @relation(fields: [clinicId, actorId], references: [clinicId, id], onDelete: NoAction, onUpdate: NoAction)
   @@index([clinicId, visitId, createdAt])
   @@map("appointment_visit_changes")
+}
+
+model AttendanceCorrection {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  attendanceId String @map("attendance_id") @db.Uuid
+  actorId String @map("actor_id") @db.Uuid
+  kind String @db.VarChar(32)
+  reason String? @db.VarChar(500)
+  before Json
+  after Json
+  recordedAt DateTime @map("recorded_at") @db.Timestamptz
+  clinic Clinic @relation(fields:[clinicId], references:[id], onDelete:NoAction, onUpdate:NoAction)
+  attendance Attendance @relation(fields:[clinicId,attendanceId], references:[clinicId,id], onDelete:Cascade, onUpdate:NoAction)
+  actor User @relation(fields:[clinicId,actorId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  @@index([clinicId,attendanceId,recordedAt])
+  @@map("attendance_corrections")
 }

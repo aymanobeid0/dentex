@@ -5,6 +5,9 @@ import { ApiError } from "../../shared/api/request";
 import { useQueryScope } from "../../shared/query/QueryScope";
 import { useDisplayedQuery } from "../../shared/query/useDisplayedQuery";
 import {
+  deleteAttendance,
+  writeCorrection,
+  type CorrectionChoice,
   arrive,
   editAttendance,
   readDoctors,
@@ -185,4 +188,36 @@ export function useAttendanceReview() {
       retry: false,
     });
   };
+}
+
+export function useAttendanceDetail(row: Attendance, onExpired: () => void) {
+  const request = useApi();
+  return useVisitsRead(
+    ["detail", row.id],
+    (signal) => readAttendance(request, row.id, signal),
+    onExpired,
+  );
+}
+export function useCorrectionWrite() {
+  const request = useApi(),
+    client = useQueryClient(),
+    scope = useQueryScope();
+  return useMutation({
+    mutationFn: async (
+      input:
+        | { row: Attendance; choice: CorrectionChoice; reason: string }
+        | { row: Attendance; remove: true },
+    ): Promise<void> => {
+      if ("remove" in input) await deleteAttendance(request, input.row);
+      else
+        await writeCorrection(request, input.row, input.choice, input.reason);
+    },
+    retry: false,
+    networkMode: "always",
+    gcTime: 0,
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: [...scope, "visits"] });
+      void client.invalidateQueries({ queryKey: [...scope, "appointments"] });
+    },
+  });
 }

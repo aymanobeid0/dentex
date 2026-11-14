@@ -12,18 +12,41 @@ import type {
   AttendanceDoctorReference,
 } from "../employees";
 export type AttendanceStatus =
-  "waiting" | "left_before_entry" | "with_doctor" | "completed";
+  "waiting" | "left_before_entry" | "with_doctor" | "completed" | "auto_closed";
 export interface VisitRecord {
   id: string;
   attendanceId: string;
   patientId: string;
   doctorId: string;
-  status: "in_progress" | "completed";
+  status:
+    "in_progress" | "completed" | "auto_closed" | "entry_recorded_in_error";
   startedAt: string;
   recordedEndAt: string | null;
   editVersion: number;
   appointmentLink?: AppointmentVisitLink;
 }
+export type CorrectionState = {
+  status: AttendanceStatus;
+  recordedEndAt: string | null;
+  visit?: {
+    id: string;
+    status: VisitRecord["status"];
+    recordedEndAt: string | null;
+  };
+};
+export interface CorrectionRecord {
+  id: string;
+  kind: string;
+  actorId: string;
+  reason: string | null;
+  recordedAt: string;
+  before: CorrectionState;
+  after: CorrectionState;
+}
+export type AttendanceVisit = Omit<
+  VisitRecord,
+  "attendanceId" | "patientId" | "doctorId"
+>;
 export interface AttendanceRecord {
   id: string;
   patientId: string;
@@ -32,16 +55,40 @@ export interface AttendanceRecord {
   arrivedAt: string;
   recordedEndAt: string | null;
   editVersion: number;
-  visit?: Omit<VisitRecord, "attendanceId" | "patientId" | "doctorId">;
+  visit?: AttendanceVisit;
+  invalidEntries?: AttendanceVisit[];
+  corrections?: CorrectionRecord[];
 }
 export interface AttendanceSnapshot extends Omit<
   AttendanceRecord,
-  "patientId" | "doctorId"
+  "patientId" | "doctorId" | "corrections"
 > {
+  corrections?: Array<
+    Omit<CorrectionRecord, "actorId"> & { actor: { id: string; name: string } }
+  >;
   patient: AttendancePatientReference;
   doctor: AttendanceDoctorReference;
 }
 export interface VisitsRepository {
+  activeAttendance(
+    clinicId: string,
+    patientId: string,
+    excluding: string,
+  ): Promise<boolean>;
+  correct(
+    clinicId: string,
+    current: AttendanceRecord,
+    next: {
+      status: AttendanceStatus;
+      recordedEndAt: Date | null;
+      visitStatus?: VisitRecord["status"];
+    },
+    actorId: string,
+    kind: string,
+    reason: string | null,
+    at: Date,
+  ): Promise<AttendanceRecord>;
+  remove(clinicId: string, current: AttendanceRecord): Promise<void>;
   reviseVisit(
     clinicId: string,
     visitId: string,

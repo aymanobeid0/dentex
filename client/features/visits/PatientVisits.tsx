@@ -1,3 +1,7 @@
+import {
+  AttendanceCorrections,
+  CorrectionHistory,
+} from "./AttendanceCorrections";
 import { AppointmentLinkDialog } from "./AppointmentLinkDialog";
 import { AppointmentReference } from "./AppointmentReference";
 import type { Attendance } from "./api";
@@ -73,6 +77,7 @@ export function PatientVisits({
                 <li key={row.id}>
                   <div className="visits-person">
                     <strong>{row.doctor.name}</strong>
+                    <CorrectionHistory row={row} lang={lang} />
                     <AppointmentReference row={row} lang={lang} />
                     <span>
                       {t.arrive}:{" "}
@@ -81,13 +86,9 @@ export function PatientVisits({
                       </time>
                     </span>
                     <span>
-                      {row.status === "waiting"
-                        ? t.waiting
-                        : row.status === "with_doctor"
-                          ? t.withDoctor
-                          : row.status === "completed"
-                            ? t.completed
-                            : t.leave}
+                      {row.status === "completed"
+                        ? t.completed
+                        : t.attendanceStatuses[row.status]}
                     </span>
                     {row.visit && (
                       <span>
@@ -106,19 +107,27 @@ export function PatientVisits({
                       </span>
                     )}
                   </div>
-                  {row.visit && (
-                    <button
-                      className="ui-button"
-                      onClick={() => {
-                        returnFocus.current =
-                          document.activeElement as HTMLElement;
-                        setSaved(false);
-                        setEditing(row);
-                      }}
-                    >
-                      {t.linkAppointment}
-                    </button>
-                  )}
+                  <div className="visits-actions">
+                    <AttendanceCorrections
+                      row={row}
+                      lang={lang}
+                      onExpired={onExpired}
+                      onNavigationGuardChange={onNavigationGuardChange}
+                    />
+                    {row.visit && (
+                      <button
+                        className="ui-button"
+                        onClick={() => {
+                          returnFocus.current =
+                            document.activeElement as HTMLElement;
+                          setSaved(false);
+                          setEditing(row);
+                        }}
+                      >
+                        {t.linkAppointment}
+                      </button>
+                    )}
+                  </div>
                 </li>
               ))}
             </ol>

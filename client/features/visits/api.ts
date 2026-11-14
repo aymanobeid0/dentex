@@ -10,19 +10,169 @@ export type Attendance = {
   id: string;
   patient: PatientChoice;
   doctor: DoctorChoice;
-  status: "waiting" | "left_before_entry" | "with_doctor" | "completed";
+  status:
+    | "waiting"
+    | "left_before_entry"
+    | "with_doctor"
+    | "completed"
+    | "auto_closed";
   arrivedAt: string;
   recordedEndAt: string | null;
   editVersion: number;
+  corrections?: Correction[];
+  invalidEntries?: VisitEntry[];
   visit?: {
     id: string;
-    status: "in_progress" | "completed";
+    status: "in_progress" | "completed" | "auto_closed";
     startedAt: string;
     recordedEndAt: string | null;
     editVersion: number;
     appointmentLink?: AppointmentLink;
   };
 };
+export type VisitEntry = {
+  id: string;
+  status: "entry_recorded_in_error";
+  startedAt: string;
+  recordedEndAt: string | null;
+  editVersion: number;
+};
+export type CorrectionState = {
+  status: Attendance["status"];
+  recordedEndAt: string | null;
+  visit?: {
+    id: string;
+    status:
+      "in_progress" | "completed" | "auto_closed" | "entry_recorded_in_error";
+    recordedEndAt: string | null;
+  };
+};
+export type Correction = {
+  id: string;
+  kind: string;
+  actor: { id: string; name: string };
+  reason: string | null;
+  recordedAt: string;
+  before: CorrectionState;
+  after: CorrectionState;
+};
+export type CorrectionChoice =
+  | "restore_waiting"
+  | "mark_left"
+  | "invalidate_waiting"
+  | "invalidate_left"
+  | "reopen_visit"
+  | "confirm_completed";
+export function correctionChoices(row: Attendance): CorrectionChoice[] {
+  const sameDay =
+    row.arrivedAt.slice(0, 10) === new Date().toISOString().slice(0, 10);
+  if (row.visit)
+    return [
+      ...(row.visit.startedAt.slice(0, 10) ===
+        new Date().toISOString().slice(0, 10) && row.status === "completed"
+        ? ["reopen_visit" as const]
+        : []),
+      ...(row.status === "auto_closed" ? ["confirm_completed" as const] : []),
+      ...(sameDay ? ["invalidate_waiting" as const] : []),
+      "invalidate_left",
+    ];
+  if (row.status === "waiting" || row.status === "auto_closed")
+    return ["mark_left"];
+  return row.status === "left_before_entry" && sameDay
+    ? ["restore_waiting"]
+    : [];
+}
+export async function writeCorrection(
+  request: ApiRequest,
+  row: Attendance,
+  choice: CorrectionChoice,
+  reason: string,
+) {
+  const invalidate = choice.startsWith("invalidate_");
+  const body = {
+    kind: invalidate ? "invalidate_entry" : choice,
+    editVersion: row.editVersion,
+    ...(reason.trim() ? { reason: reason.trim() } : {}),
+    ...(invalidate ||
+    choice === "reopen_visit" ||
+    choice === "confirm_completed"
+      ? { visitId: row.visit!.id, visitVersion: row.visit!.editVersion }
+      : {}),
+    ...(invalidate
+      ? {
+          outcome:
+            choice === "invalidate_waiting" ? "waiting" : "left_before_entry",
+          confirmed: true,
+        }
+      : {}),
+  };
+  let responseStatus = 0;
+  const value = await readJson<Attendance>(
+    async (url, options) => {
+      const response = await request(url, options);
+      responseStatus = response.status;
+      return response;
+    },
+    `${base}/${row.id}/correction`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
+  const expectedStatus =
+    choice === "restore_waiting" || choice === "invalidate_waiting"
+      ? "waiting"
+      : choice === "reopen_visit"
+        ? "with_doctor"
+        : choice === "confirm_completed"
+          ? "completed"
+          : "left_before_entry";
+  const addedAudits = value?.corrections?.filter(
+    (change) => !row.corrections?.some((before) => before.id === change.id),
+  );
+  const audit = addedAudits?.length === 1 ? addedAudits[0] : undefined;
+  if (
+    responseStatus !== 200 ||
+    !snapshot(value) ||
+    value.id !== row.id ||
+    value.patient.id !== row.patient.id ||
+    value.doctor.id !== row.doctor.id ||
+    value.arrivedAt !== row.arrivedAt ||
+    value.editVersion !== row.editVersion + 1 ||
+    value.status !== expectedStatus ||
+    !audit ||
+    audit.kind !== body.kind ||
+    audit.reason !== (reason.trim() || null) ||
+    audit.before.status !== row.status ||
+    audit.after.status !== expectedStatus ||
+    (invalidate &&
+      !value.invalidEntries?.some((v) => v.id === row.visit?.id)) ||
+    (!invalidate && row.visit && value.visit?.id !== row.visit.id)
+  )
+    throw new ApiError("uncertain");
+  return value;
+}
+export async function deleteAttendance(request: ApiRequest, row: Attendance) {
+  const response = await request(`${base}/${row.id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      editVersion: row.editVersion,
+      confirmedNeverArrived: true,
+    }),
+  });
+  if (response.status !== 204) {
+    if (!response.ok) {
+      let value: { error?: string } = {};
+      try {
+        value = await response.json();
+      } catch {}
+      throw new ApiError("http", response.status, value.error);
+    }
+    throw new ApiError("uncertain");
+  }
+}
 export type AppointmentLink = {
   visitId: string;
   appointmentId: string | null;
@@ -165,6 +315,29 @@ const doctor = (value: DoctorChoice) =>
   identifier(value.id) &&
   typeof value.name === "string" &&
   typeof value.eligible === "boolean";
+function validCorrectionState(value: CorrectionState) {
+  return (
+    !!value &&
+    [
+      "waiting",
+      "left_before_entry",
+      "with_doctor",
+      "completed",
+      "auto_closed",
+    ].includes(value.status) &&
+    (value.recordedEndAt === null || timestamp(value.recordedEndAt)) &&
+    (!value.visit ||
+      (identifier(value.visit.id) &&
+        [
+          "in_progress",
+          "completed",
+          "auto_closed",
+          "entry_recorded_in_error",
+        ].includes(value.visit.status) &&
+        (value.visit.recordedEndAt === null ||
+          timestamp(value.visit.recordedEndAt))))
+  );
+}
 function snapshot(value: Attendance) {
   return (
     !!value &&
@@ -174,6 +347,30 @@ function snapshot(value: Attendance) {
     Number.isInteger(value.editVersion) &&
     value.editVersion > 0 &&
     timestamp(value.arrivedAt) &&
+    (!value.invalidEntries ||
+      (Array.isArray(value.invalidEntries) &&
+        value.invalidEntries.every(
+          (entry) =>
+            identifier(entry.id) &&
+            entry.status === "entry_recorded_in_error" &&
+            timestamp(entry.startedAt) &&
+            Number.isInteger(entry.editVersion) &&
+            entry.editVersion > 0 &&
+            (entry.recordedEndAt === null || timestamp(entry.recordedEndAt)),
+        ))) &&
+    (!value.corrections ||
+      (Array.isArray(value.corrections) &&
+        value.corrections.every(
+          (change) =>
+            identifier(change.id) &&
+            identifier(change.actor?.id) &&
+            typeof change.actor.name === "string" &&
+            !!change.actor.name &&
+            timestamp(change.recordedAt) &&
+            (change.reason === null || typeof change.reason === "string") &&
+            validCorrectionState(change.before) &&
+            validCorrectionState(change.after),
+        ))) &&
     (!value.visit ||
       (identifier(value.visit.id) &&
         (!value.visit.appointmentLink ||
@@ -184,7 +381,7 @@ function snapshot(value: Attendance) {
         value.visit.editVersion > 0 &&
         ((value.visit.status === "in_progress" &&
           value.visit.recordedEndAt === null) ||
-          (value.visit.status === "completed" &&
+          (["completed", "auto_closed"].includes(value.visit.status) &&
             timestamp(value.visit.recordedEndAt) &&
             value.visit.recordedEndAt >= value.visit.startedAt)))) &&
     ((value.status === "waiting" &&
@@ -196,6 +393,9 @@ function snapshot(value: Attendance) {
       (value.status === "completed" &&
         value.visit?.status === "completed" &&
         value.recordedEndAt === value.visit.recordedEndAt) ||
+      (value.status === "auto_closed" &&
+        timestamp(value.recordedEndAt) &&
+        (!value.visit || value.visit.status === "auto_closed")) ||
       (value.status === "left_before_entry" &&
         timestamp(value.recordedEndAt) &&
         value.recordedEndAt >= value.arrivedAt))

@@ -12,6 +12,8 @@ import type {
   StartInput,
   CompleteInput,
   AppointmentLinkInput,
+  CorrectionInput,
+  DeleteAttendanceInput,
 } from "./visits.schemas";
 import { VisitsError } from "./visits.errors";
 export function createVisitsService(
@@ -54,6 +56,7 @@ export function createVisitsService(
       ),
       scope.employees.attendanceDoctorReferences(clinicId, [
         ...records.map((r) => r.doctorId),
+        ...records.flatMap((r) => (r.corrections ?? []).map((c) => c.actorId)),
         ...links.flatMap((link) =>
           link.appointment ? [link.appointment.doctorId] : [],
         ),
@@ -61,7 +64,7 @@ export function createVisitsService(
     ]);
     const patientMap = new Map(patients.map((r) => [r.id, r])),
       doctorMap = new Map(doctors.map((r) => [r.id, r]));
-    return records.map(({ patientId, doctorId, ...row }) => {
+    return records.map(({ patientId, doctorId, corrections, ...row }) => {
       const patient = patientMap.get(patientId),
         doctor = doctorMap.get(doctorId);
       if (!patient || !doctor) throw new ApplicationError("not_found");
@@ -73,6 +76,15 @@ export function createVisitsService(
         throw new ApplicationError("not_found");
       return {
         ...row,
+        ...(corrections
+          ? {
+              corrections: corrections.map(({ actorId, ...change }) => {
+                const actor = doctorMap.get(actorId);
+                if (!actor) throw new ApplicationError("not_found");
+                return { ...change, actor: { id: actorId, name: actor.name } };
+              }),
+            }
+          : {}),
         ...(row.visit
           ? {
               visit: {
@@ -99,7 +111,150 @@ export function createVisitsService(
       };
     });
   }
+  async function invalidateLinks(
+    scope: VisitsScope,
+    clinicId: string,
+    row: AttendanceRecord,
+    actorId: string,
+    visits: NonNullable<AttendanceRecord["invalidEntries"]>,
+  ) {
+    const links = await scope.appointments.visitLinks(
+      clinicId,
+      visits.map((v) => v.id),
+    );
+    for (const visit of visits)
+      await scope.appointments.setVisitLink(clinicId, {
+        kind: "invalidateEntry",
+        visitId: visit.id,
+        patientId: row.patientId,
+        visitDay: visit.startedAt.slice(0, 10),
+        actorId,
+        expectedLinkVersion: links.find((link) => link.visitId === visit.id)!
+          .editVersion,
+      });
+  }
   return {
+    remove: (actor: ClinicActor, id: string, input: DeleteAttendanceInput) =>
+      locked(actor, async (scope) => {
+        const row = await scope.repository.find(actor.clinicId, id);
+        if (!row) throw new ApplicationError("not_found");
+        if (row.editVersion !== input.editVersion)
+          throw new VisitsError("edit_conflict");
+        if (row.visit) throw new VisitsError("genuine_visit_delete_forbidden");
+        await invalidateLinks(
+          scope,
+          actor.clinicId,
+          row,
+          actor.userId,
+          row.invalidEntries ?? [],
+        );
+        await scope.repository.remove(actor.clinicId, row);
+      }),
+    correct: (actor: ClinicActor, id: string, input: CorrectionInput) =>
+      locked(actor, async (scope) => {
+        const row = await scope.repository.find(actor.clinicId, id);
+        if (!row) throw new ApplicationError("not_found");
+        if (row.editVersion !== input.editVersion)
+          throw new VisitsError("edit_conflict");
+        if (
+          "visitId" in input &&
+          (row.visit?.id !== input.visitId ||
+            row.visit.editVersion !== input.visitVersion)
+        )
+          throw new VisitsError("edit_conflict");
+        const at = now(),
+          sameDay =
+            row.arrivedAt.slice(0, 10) === at.toISOString().slice(0, 10);
+        let next: {
+          status: AttendanceRecord["status"];
+          recordedEndAt: Date | null;
+          visitStatus?: NonNullable<AttendanceRecord["visit"]>["status"];
+        };
+        switch (input.kind) {
+          case "restore_waiting":
+            if (row.visit || row.status !== "left_before_entry" || !sameDay)
+              throw new VisitsError("correction_not_allowed");
+            next = { status: "waiting", recordedEndAt: null };
+            break;
+          case "mark_left":
+            if (row.visit || !["waiting", "auto_closed"].includes(row.status))
+              throw new VisitsError("correction_not_allowed");
+            next = { status: "left_before_entry", recordedEndAt: at };
+            break;
+          case "invalidate_entry":
+            if (
+              !row.visit ||
+              !["in_progress", "completed", "auto_closed"].includes(
+                row.visit.status,
+              ) ||
+              (input.outcome === "waiting" && !sameDay)
+            )
+              throw new VisitsError("correction_not_allowed");
+            next = {
+              status: input.outcome,
+              recordedEndAt: input.outcome === "waiting" ? null : at,
+              visitStatus: "entry_recorded_in_error",
+            };
+            break;
+          case "reopen_visit":
+            if (
+              !row.visit ||
+              row.status !== "completed" ||
+              row.visit.status !== "completed" ||
+              row.visit.startedAt.slice(0, 10) !== at.toISOString().slice(0, 10)
+            )
+              throw new VisitsError("correction_not_allowed");
+            if (
+              await scope.repository.activeVisit(actor.clinicId, row.doctorId)
+            )
+              throw new VisitsError("doctor_busy");
+            next = {
+              status: "with_doctor",
+              recordedEndAt: null,
+              visitStatus: "in_progress",
+            };
+            break;
+          case "confirm_completed":
+            if (
+              row.status !== "auto_closed" ||
+              row.visit?.status !== "auto_closed"
+            )
+              throw new VisitsError("correction_not_allowed");
+            next = {
+              status: "completed",
+              recordedEndAt: at,
+              visitStatus: "completed",
+            };
+            break;
+        }
+        if (["waiting", "with_doctor"].includes(next.status)) {
+          if (
+            await scope.repository.activeAttendance(
+              actor.clinicId,
+              row.patientId,
+              row.id,
+            )
+          )
+            throw new VisitsError("attendance_active");
+        }
+        if (input.kind === "invalidate_entry")
+          await invalidateLinks(scope, actor.clinicId, row, actor.userId, [
+            row.visit!,
+          ]);
+        return (
+          await snapshots(scope, actor.clinicId, [
+            await scope.repository.correct(
+              actor.clinicId,
+              row,
+              next,
+              actor.userId,
+              input.kind,
+              input.reason || null,
+              at,
+            ),
+          ])
+        )[0];
+      }),
     appointmentOptions: (actor: ClinicActor, id: string) =>
       locked(actor, async (scope) => {
         const row = await scope.repository.find(actor.clinicId, id);

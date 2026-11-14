@@ -2,6 +2,8 @@ import type { ErrorRequestHandler } from "express";
 import { ApplicationError } from "../shared/errors";
 
 const statuses: Readonly<Record<string, number>> = {
+  genuine_visit_delete_forbidden: 409,
+  correction_not_allowed: 409,
   visit_required: 409,
   appointment_visit_day_locked: 409,
   appointment_visit_mismatch: 409,

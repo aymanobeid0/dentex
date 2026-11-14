@@ -69,3 +69,32 @@ export const attendancePatientsSchema = z
       .default(1),
   })
   .strict();
+
+const correctionFacts = {
+  editVersion,
+  reason: z.string().trim().max(500).optional(),
+};
+const visitFacts = {
+  ...correctionFacts,
+  visitId: uuidSchema,
+  visitVersion: editVersion,
+};
+export const correctionSchema = z.discriminatedUnion("kind", [
+  z.object({ ...correctionFacts, kind: z.literal("restore_waiting") }).strict(),
+  z.object({ ...correctionFacts, kind: z.literal("mark_left") }).strict(),
+  z
+    .object({
+      ...visitFacts,
+      kind: z.literal("invalidate_entry"),
+      outcome: z.enum(["waiting", "left_before_entry"]),
+      confirmed: z.literal(true),
+    })
+    .strict(),
+  z.object({ ...visitFacts, kind: z.literal("reopen_visit") }).strict(),
+  z.object({ ...visitFacts, kind: z.literal("confirm_completed") }).strict(),
+]);
+export type CorrectionInput = z.infer<typeof correctionSchema>;
+export const deleteAttendanceSchema = z
+  .object({ editVersion, confirmedNeverArrived: z.literal(true) })
+  .strict();
+export type DeleteAttendanceInput = z.infer<typeof deleteAttendanceSchema>;

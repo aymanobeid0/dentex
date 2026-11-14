@@ -20,6 +20,11 @@ export function visitsRouter(
   router.get("/doctors", controller.doctors);
   router.get("/patients", controller.patients);
   router.get("/patient/:patientId", controller.history);
+  router.all("/:id", (req, res, next) => {
+    if (req.method === "DELETE") return controller.remove(req, res, next);
+    next();
+  });
+  router.patch("/:id/correction", controller.correct);
   router.get("/:id/appointment-options", controller.appointmentOptions);
   router.patch("/:id/appointment-link", controller.appointmentLink);
   router.post("/:id/start", controller.start);

@@ -509,6 +509,40 @@
       "absent": "غائب",
       "cancelled": "ملغى"
     },
-    "invalidAppointmentChoice": "الموعد المختار لم يعد متاحًا. اختر مرجعًا آخر أو دون رابط."
+    "invalidAppointmentChoice": "الموعد المختار لم يعد متاحًا. اختر مرجعًا آخر أو دون رابط.",
+    "correctStatus": "تصحيح الحالة",
+    "correctionReason": "سبب التصحيح (اختياري)",
+    "correctionKind": "التصحيح",
+    "saveCorrection": "حفظ التصحيح",
+    "corrections": "سجل التصحيحات",
+    "invalidEntry": "دخول مسجل خطأً — لا يحتسب زيارة فعلية",
+    "deleteFalseAttendance": "حذف حضور لم يحدث",
+    "deleteFalseDescription": "أكد أن المريض لم يحضر أصلًا. سيحذف الحضور وتصحيحاته وسجلات الدخول المبطل نهائيًا. لا يمكن حذف زيارة فعلية.",
+    "confirmFalseDelete": "أؤكد أنه لم يحضر — حذف نهائي",
+    "correctionDescription": "صحح التسجيل الإداري مع حفظ السابق والجديد والمنفذ ووقت التصحيح. لا يثبت التصحيح وقت مغادرة فعليًا.",
+    "invalidateDescription": "أكد أن الدخول إلى الطبيب لم يحدث فعلًا. سيبقى أثر التسجيل مبطلًا وتحرر مراجع مواعيده؛ الدخول اللاحق زيارة جديدة.",
+    "confirmInvalidation": "تأكيد أن الدخول لم يحدث",
+    "correctionMissing": "السجل غير موجود عند تحديث البيانات. لا يمكن تأكيد نتيجة الحذف السابقة، ولن يعاد الحذف تلقائيًا.",
+    "correctionChoices": {
+      "restore_waiting": "إعادة إلى انتظار اليوم نفسه",
+      "mark_left": "تأكيد المغادرة قبل الدخول",
+      "invalidate_waiting": "إبطال دخول لم يحدث وإعادة إلى انتظار اليوم",
+      "invalidate_left": "إبطال دخول لم يحدث وتأكيد المغادرة قبل الدخول",
+      "reopen_visit": "تصحيح الإنهاء وإعادة الزيارة الجارية اليوم",
+      "confirm_completed": "تأكيد اكتمال الزيارة المغلقة تلقائيًا"
+    },
+    "attendanceStatuses": {
+      "waiting": "في الانتظار",
+      "with_doctor": "لدى الطبيب",
+      "left_before_entry": "غادر قبل الدخول",
+      "completed": "مكتملة",
+      "auto_closed": "أغلقت تلقائيًا"
+    },
+    "visitStatuses": {
+      "in_progress": "زيارة جارية",
+      "completed": "مكتملة",
+      "auto_closed": "أغلقت تلقائيًا",
+      "entry_recorded_in_error": "دخول مسجل خطأً"
+    }
   }
 }

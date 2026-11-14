@@ -509,6 +509,40 @@
       "absent": "Absent",
       "cancelled": "Annulé"
     },
-    "invalidAppointmentChoice": "Le rendez-vous sélectionné n’est plus disponible. Choisissez une autre référence ou aucun lien."
+    "invalidAppointmentChoice": "Le rendez-vous sélectionné n’est plus disponible. Choisissez une autre référence ou aucun lien.",
+    "correctStatus": "Corriger le statut",
+    "correctionReason": "Motif de correction (facultatif)",
+    "correctionKind": "Correction",
+    "saveCorrection": "Enregistrer la correction",
+    "corrections": "Historique des corrections",
+    "invalidEntry": "Entrée enregistrée par erreur — ne compte pas comme visite réelle",
+    "deleteFalseAttendance": "Supprimer une présence inexistante",
+    "deleteFalseDescription": "Confirmez que le patient ne s’est jamais présenté. La présence, ses corrections et ses entrées invalidées seront supprimées définitivement. Une visite réelle ne peut pas être supprimée.",
+    "confirmFalseDelete": "Jamais présenté — supprimer définitivement",
+    "correctionDescription": "Corrigez le suivi administratif en conservant les états, l’auteur et l’heure de correction. Cela ne prouve pas une heure réelle de départ.",
+    "invalidateDescription": "Confirmez que l’entrée chez le médecin n’a jamais eu lieu. Sa trace invalidée sera conservée et ses références de rendez-vous libérées ; une entrée ultérieure crée une nouvelle visite.",
+    "confirmInvalidation": "Confirmer que l’entrée n’a pas eu lieu",
+    "correctionMissing": "Le dossier est absent après actualisation. Le résultat de la suppression précédente reste incertain ; elle ne sera pas répétée automatiquement.",
+    "correctionChoices": {
+      "restore_waiting": "Rétablir l’attente du même jour",
+      "mark_left": "Confirmer le départ avant l’entrée",
+      "invalidate_waiting": "Invalider l’entrée inexistante et rétablir l’attente du jour",
+      "invalidate_left": "Invalider l’entrée inexistante et confirmer le départ avant l’entrée",
+      "reopen_visit": "Corriger la fin et rouvrir la visite du jour",
+      "confirm_completed": "Confirmer la fin de la visite fermée automatiquement"
+    },
+    "attendanceStatuses": {
+      "waiting": "En attente",
+      "with_doctor": "Chez le médecin",
+      "left_before_entry": "Parti avant l’entrée",
+      "completed": "Terminée",
+      "auto_closed": "Fermée automatiquement"
+    },
+    "visitStatuses": {
+      "in_progress": "Visite en cours",
+      "completed": "Terminée",
+      "auto_closed": "Fermée automatiquement",
+      "entry_recorded_in_error": "Entrée enregistrée par erreur"
+    }
   }
 }

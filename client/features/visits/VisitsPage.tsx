@@ -1,3 +1,7 @@
+import {
+  AttendanceCorrections,
+  CorrectionHistory,
+} from "./AttendanceCorrections";
 import { arrivalTime } from "./visits.format";
 import { AppointmentLinkDialog } from "./AppointmentLinkDialog";
 import { AppointmentReference } from "./AppointmentReference";
@@ -114,6 +118,7 @@ export function VisitsPage(props: Props) {
                       <li key={row.id}>
                         <div className="visits-person">
                           <strong>{row.patient.name}</strong>
+                          <CorrectionHistory row={row} lang={lang} />
                           <AppointmentReference row={row} lang={lang} />
                           <span>
                             {t.fileNumber} <bdi>{row.patient.fileNumber}</bdi>
@@ -139,6 +144,7 @@ export function VisitsPage(props: Props) {
                           )}
                         </div>
                         <div className="visits-actions">
+                          <AttendanceCorrections row={row} {...props} />
                           {row.visit && (
                             <button
                               className="ui-button"

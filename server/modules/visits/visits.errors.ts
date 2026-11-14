@@ -2,6 +2,8 @@ import { ApplicationError } from "../../shared/errors";
 export class VisitsError extends ApplicationError {
   constructor(
     code:
+      | "genuine_visit_delete_forbidden"
+      | "correction_not_allowed"
       | "attendance_active"
       | "patient_archived"
       | "doctor_ineligible"

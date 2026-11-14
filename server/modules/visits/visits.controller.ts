@@ -3,6 +3,8 @@ import { clinicActor } from "../../http/authorization";
 import { parseInput } from "../../http/validation";
 import { uuidSchema } from "../../shared/schemas";
 import {
+  deleteAttendanceSchema,
+  correctionSchema,
   arriveSchema,
   editAttendanceSchema,
   attendancePatientsSchema,
@@ -13,6 +15,23 @@ import {
 } from "./visits.schemas";
 import type { VisitsService } from "./visits.service";
 export function createVisitsController(service: VisitsService) {
+  const remove: RequestHandler = async (req, res) => {
+    await service.remove(
+      clinicActor(res),
+      parseInput(uuidSchema, req.params.id, "not_found"),
+      parseInput(deleteAttendanceSchema, req.body),
+    );
+    res.status(204).end();
+  };
+  const correct: RequestHandler = async (req, res) => {
+    res.json(
+      await service.correct(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.id, "not_found"),
+        parseInput(correctionSchema, req.body),
+      ),
+    );
+  };
   const appointmentOptions: RequestHandler = async (req, res) => {
     res.json(
       await service.appointmentOptions(
@@ -99,6 +118,8 @@ export function createVisitsController(service: VisitsService) {
     );
   };
   return {
+    correct,
+    remove,
     appointmentOptions,
     appointmentLink,
     list,
