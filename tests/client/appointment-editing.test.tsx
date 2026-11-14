@@ -36,13 +36,20 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
-function transport(outcome: "success" | "conflict" | "uncertain" = "success") {
+function transport(
+  outcome: "success" | "conflict" | "uncertain" | "visit-day" = "success",
+) {
   let data = structuredClone(initial),
     writes = 0;
   const fetcher = vi.fn(async (url: string, options?: RequestInit) => {
     if (options?.method === "PATCH") {
       writes++;
       const input = JSON.parse(String(options.body));
+      if (outcome === "visit-day")
+        return new Response(
+          JSON.stringify({ error: "appointment_visit_day_locked" }),
+          { status: 409 },
+        );
       if (outcome === "conflict" && writes === 1) {
         data.editVersion = 2;
         data.administrativeNote = "Colleague note";
@@ -143,6 +150,32 @@ it("does not resend a write after its response is lost and permits manual compar
   await user.click(screen.getByRole("button", { name: t.cancelEditing }));
   expect(screen.queryByRole("alertdialog")).toBeNull();
 });
+it.each(["ar", "fr"] as const)(
+  "explains the historical visit day restriction after a rejected reschedule in %s",
+  async (lang) => {
+    const fetcher = transport("visit-day"),
+      t = translations[lang].appointments,
+      user = userEvent.setup();
+    renderPatient(
+      <AppointmentsPage lang={lang} canRead canWrite onExpired={vi.fn()} />,
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: `${t.details}: ${patient.name} 10:00`,
+      }),
+    );
+    await user.click(await screen.findByRole("button", { name: t.reschedule }));
+    await user.click(screen.getByRole("button", { name: t.date }));
+    await user.keyboard("{ArrowRight}{Enter}");
+    await user.click(screen.getByRole("button", { name: t.saveChanges }));
+    await screen.findByText(t.visitDayLocked);
+    const writes = fetcher.mock.calls.filter(
+      ([, options]) => options?.method === "PATCH",
+    );
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(String(writes[0][1]?.body)).date).not.toBe("2090-01-01");
+  },
+);
 it("requires confirmation for cancellation and sends only status and its optional reason", async () => {
   const fetcher = transport(),
     t = translations.fr.appointments,

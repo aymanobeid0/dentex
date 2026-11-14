@@ -3,6 +3,7 @@ export const paths = {
   clinicAccount: "/clinic/account",
   patients: "/clinic/patients",
   appointments: "/clinic/appointments",
+  visits: "/clinic/visits",
   patientNew: "/clinic/patients/new",
   employees: "/clinic/employees",
   rolePermissions: "/clinic/roles",
@@ -27,4 +28,5 @@ export type Page =
   | "employees"
   | "rolePermissions"
   | "patients"
-  | "appointments";
+  | "appointments"
+  | "visits";

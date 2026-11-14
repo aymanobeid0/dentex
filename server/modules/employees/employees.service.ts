@@ -38,47 +38,54 @@ export function createEmployeesOperations(
   repository: EmployeesRepository,
   roles: RolesOperations,
 ): EmployeesOperations {
-  return {
-    async appointmentStaffReferences(clinicId, userIds) {
-      const ids = [...new Set(userIds)];
-      const result = [];
-      for (let offset = 0; offset < ids.length; offset += 500) {
-        const users = await repository.appointmentStaff(
-          clinicId,
-          ids.slice(offset, offset + 500),
-        );
-        result.push(
-          ...(await Promise.all(
-            users.map(async (user) => ({
-              id: user.id,
-              name: user.name,
-              eligible:
-                user.active &&
-                (await roles.assigned(clinicId, user.id)).some(
-                  (role) => role.key === "dentist",
-                ),
-            })),
-          )),
-        );
-      }
-      return result;
-    },
-    async appointmentDoctors(clinicId) {
-      const candidates = (
-        await repository.appointmentEmployees(clinicId)
-      ).filter((user) => user.active);
-      const checked = await Promise.all(
-        candidates.map(async (user) => ({
-          user,
-          dentist: (await roles.assigned(clinicId, user.id)).some(
-            (role) => role.key === "dentist",
-          ),
-        })),
+  async function eligibleDoctors(clinicId: string) {
+    const candidates = (await repository.appointmentEmployees(clinicId)).filter(
+      (user) => user.active,
+    );
+    const checked = await Promise.all(
+      candidates.map(async (user) => ({
+        user,
+        eligible: (await roles.assigned(clinicId, user.id)).some(
+          (role) => role.key === "dentist",
+        ),
+      })),
+    );
+    return checked
+      .filter((row) => row.eligible)
+      .map(({ user }) => ({ id: user.id, name: user.name }));
+  }
+  async function doctorReferences(
+    clinicId: string,
+    userIds: readonly string[],
+  ) {
+    const ids = [...new Set(userIds)];
+    const result = [];
+    for (let offset = 0; offset < ids.length; offset += 500) {
+      const users = await repository.appointmentStaff(
+        clinicId,
+        ids.slice(offset, offset + 500),
       );
-      return checked
-        .filter((item) => item.dentist)
-        .map(({ user }) => ({ id: user.id, name: user.name }));
-    },
+      result.push(
+        ...(await Promise.all(
+          users.map(async (user) => ({
+            id: user.id,
+            name: user.name,
+            eligible:
+              user.active &&
+              (await roles.assigned(clinicId, user.id)).some(
+                (role) => role.key === "dentist",
+              ),
+          })),
+        )),
+      );
+    }
+    return result;
+  }
+  return {
+    attendanceDoctors: eligibleDoctors,
+    attendanceDoctorReferences: doctorReferences,
+    appointmentStaffReferences: doctorReferences,
+    appointmentDoctors: eligibleDoctors,
     async appointmentDoctor(clinicId, id) {
       const [user] = await repository.appointmentEmployees(clinicId, id);
       if (!user) return null;

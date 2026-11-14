@@ -1,26 +1,59 @@
-import type { ErrorRequestHandler } from 'express';
-import { ApplicationError } from '../shared/errors';
+import type { ErrorRequestHandler } from "express";
+import { ApplicationError } from "../shared/errors";
 
 const statuses: Readonly<Record<string, number>> = {
-  invalid_input: 400, invalid_roles: 400, invalid_permissions: 400, incorrect_password: 400,
-  unauthorized: 401, invalid_credentials: 401,
-  forbidden: 403, untrusted_origin: 403, admin_locked: 403,
+  genuine_visit_delete_forbidden: 409,
+  correction_not_allowed: 409,
+  visit_required: 409,
+  appointment_visit_day_locked: 409,
+  appointment_visit_mismatch: 409,
+  appointment_visit_reserved: 409,
+  attendance_active: 409,
+  attendance_not_waiting: 409,
+  doctor_busy: 409,
+  visit_not_in_progress: 409,
+  invalid_input: 400,
+  invalid_roles: 400,
+  invalid_permissions: 400,
+  incorrect_password: 400,
+  unauthorized: 401,
+  invalid_credentials: 401,
+  forbidden: 403,
+  untrusted_origin: 403,
+  admin_locked: 403,
   not_found: 404,
   appointment_reference_not_found: 404,
-  doctor_ineligible: 409, appointment_in_past: 409, appointment_overlap: 409,
+  doctor_ineligible: 409,
+  appointment_in_past: 409,
+  appointment_overlap: 409,
   appointment_not_booked: 409,
-  numbering_exhausted: 409, edit_conflict: 409, patient_archived: 409, duplicate_code: 409, duplicate_username: 409, last_admin: 409, duplicate_phone: 409,
+  numbering_exhausted: 409,
+  edit_conflict: 409,
+  patient_archived: 409,
+  duplicate_code: 409,
+  duplicate_username: 409,
+  last_admin: 409,
+  duplicate_phone: 409,
   too_many_attempts: 429,
 };
 
-export const errorHandler: ErrorRequestHandler = (error: unknown, _request, response, next) => {
-  if (response.headersSent) { next(error); return; }
-  const status = error instanceof ApplicationError ? statuses[error.code] : undefined;
+export const errorHandler: ErrorRequestHandler = (
+  error: unknown,
+  _request,
+  response,
+  next,
+) => {
+  if (response.headersSent) {
+    next(error);
+    return;
+  }
+  const status =
+    error instanceof ApplicationError ? statuses[error.code] : undefined;
   if (status !== undefined && error instanceof ApplicationError) {
     response.status(status).json({ error: error.code });
     return;
   }
   // Do not log request bodies, credentials, SQL parameters or raw error messages.
-  console.error('Request failed');
-  response.status(500).json({ error: 'server_error' });
+  console.error("Request failed");
+  response.status(500).json({ error: "server_error" });
 };

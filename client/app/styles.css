@@ -11,3 +11,5 @@
 @import "../features/patients/patients.css";
 @import "../features/appointments/appointments.css";
 @import "../ui/motion.css";
+
+@import "../features/visits/visits.css";

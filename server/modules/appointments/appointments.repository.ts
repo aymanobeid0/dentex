@@ -72,6 +72,146 @@ export function createAppointmentsRepository(
     createdAt: row.createdAt.toISOString(),
   });
   return {
+    async visitReferences(clinicId, input) {
+      const rows = await database.appointment.findMany({
+        where: {
+          clinicId,
+          patientId: input.patientId,
+          startsAt: {
+            gte: new Date(`${input.day}T00:00:00Z`),
+            lt: new Date(
+              new Date(`${input.day}T00:00:00Z`).getTime() + 86400000,
+            ),
+          },
+        },
+        select: {
+          id: true,
+          patientId: true,
+          doctorId: true,
+          startsAt: true,
+          status: true,
+          editVersion: true,
+        },
+        orderBy: [{ startsAt: "asc" }, { id: "asc" }],
+      });
+      return rows.map((row) => ({
+        ...row,
+        startsAt: row.startsAt.toISOString(),
+        status: row.status as import("./appointments.dto").AppointmentStatus,
+      }));
+    },
+    async visitLinks(clinicId, visitIds) {
+      const rows = await database.appointmentVisitLink.findMany({
+        where: { clinicId, visitId: { in: [...visitIds] } },
+        select: {
+          visitId: true,
+          appointmentId: true,
+          editVersion: true,
+          appointment: {
+            select: {
+              id: true,
+              patientId: true,
+              doctorId: true,
+              startsAt: true,
+              status: true,
+              editVersion: true,
+            },
+          },
+        },
+      });
+      const byId = new Map(
+        rows.map((row) => [
+          row.visitId,
+          {
+            ...row,
+            appointment: row.appointment
+              ? {
+                  ...row.appointment,
+                  startsAt: row.appointment.startsAt.toISOString(),
+                  status: row.appointment
+                    .status as import("./appointments.dto").AppointmentStatus,
+                }
+              : null,
+          },
+        ]),
+      );
+      return visitIds.map(
+        (visitId) =>
+          byId.get(visitId) ?? { visitId, appointmentId: null, editVersion: 0 },
+      );
+    },
+    async visitPins(clinicId, appointmentId) {
+      return database.appointmentVisitPin.findMany({
+        where: { clinicId, appointmentId, valid: true },
+        select: { visitId: true, visitDay: true },
+      });
+    },
+    async saveVisitLink(clinicId, input, previous) {
+      const appointmentId =
+        input.kind === "assign" ? input.appointmentId : null;
+      const next = {
+        visitId: input.visitId,
+        appointmentId,
+        editVersion: previous.editVersion + 1,
+      };
+      try {
+        if (input.kind === "assign")
+          await database.appointmentVisitPin.upsert({
+            where: {
+              clinicId_appointmentId_visitId: {
+                clinicId,
+                appointmentId: input.appointmentId,
+                visitId: input.visitId,
+              },
+            },
+            create: {
+              clinicId,
+              appointmentId: input.appointmentId,
+              visitId: input.visitId,
+              visitDay: input.visitDay,
+            },
+            update: { valid: true, visitDay: input.visitDay },
+          });
+        if (input.kind === "invalidateEntry")
+          await database.appointmentVisitPin.updateMany({
+            where: { clinicId, visitId: input.visitId, valid: true },
+            data: { valid: false },
+          });
+        if (previous.editVersion === 0)
+          await database.appointmentVisitLink.create({
+            data: { clinicId, ...next },
+          });
+        else {
+          const updated = await database.appointmentVisitLink.updateMany({
+            where: {
+              clinicId,
+              visitId: input.visitId,
+              editVersion: previous.editVersion,
+            },
+            data: { appointmentId, editVersion: next.editVersion },
+          });
+          if (updated.count !== 1) throw new AppointmentsError("edit_conflict");
+        }
+        await database.appointmentVisitChange.create({
+          data: {
+            clinicId,
+            visitId: input.visitId,
+            actorId: input.actorId,
+            action: input.kind,
+            before: { ...previous },
+            after: { ...next },
+          },
+        });
+        return next;
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        )
+          throw new AppointmentsError("appointment_visit_reserved");
+        throw error;
+      }
+    },
     async replace(
       clinicId,
       previous,

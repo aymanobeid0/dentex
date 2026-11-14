@@ -11,13 +11,23 @@ import { usePatientsPage } from "../hooks/usePatientsPage";
 import { OldNumberLookup } from "../components/OldNumberLookup";
 import type { PatientView } from "../types";
 import type { ReactNode } from "react";
+import { useRef, useState } from "react";
+import { Tabs } from "../../../ui/Tabs";
 export type PatientAppointmentContext = {
   id: string;
   name: string;
   fileNumber: string;
   archived: boolean;
 };
+export type PatientVisitContext = {
+  id: string;
+  name: string;
+  fileNumber: string;
+  archived: boolean;
+};
 type Props = {
+  onSectionChangeRequest?: NavigationGuard;
+  renderVisits?: (patient: PatientVisitContext) => ReactNode;
   renderAppointments?: (patient: PatientAppointmentContext) => ReactNode;
   lang: Lang;
   canRead: boolean;
@@ -38,6 +48,8 @@ export function PatientPage(props: Props) {
   );
 }
 function PatientFlow({
+  onSectionChangeRequest,
+  renderVisits,
   renderAppointments,
   view,
   onNavigate,
@@ -48,6 +60,8 @@ function PatientFlow({
   onExpired,
   onNavigationGuardChange,
 }: Props) {
+  const [section, setSection] = useState("visits");
+  const sectionChangePending = useRef(false);
   const {
     t,
     creating,
@@ -322,12 +336,50 @@ function PatientFlow({
                 onEdit={startEditing}
                 onArchive={startArchive}
               />
-              {renderAppointments?.({
-                id: patient.id,
-                name: patient.name,
-                fileNumber: patient.fileNumber,
-                archived: patient.archived,
-              })}
+              <Tabs
+                value={section}
+                onValueChange={(next) => {
+                  if (next === section || sectionChangePending.current) return;
+                  sectionChangePending.current = true;
+                  const proceed = () => {
+                    sectionChangePending.current = false;
+                    setSection(next);
+                  };
+                  if (onSectionChangeRequest)
+                    onSectionChangeRequest(proceed, () => {
+                      sectionChangePending.current = false;
+                    });
+                  else proceed();
+                }}
+                direction={lang === "ar" ? "rtl" : "ltr"}
+                label={t.fileSections}
+                items={[
+                  {
+                    value: "visits",
+                    label: t.visitsSection,
+                    content: renderVisits?.(patient) ?? (
+                      <p>{t.sectionUnavailable}</p>
+                    ),
+                  },
+                  {
+                    value: "appointments",
+                    label: t.appointmentsSection,
+                    content: renderAppointments?.(patient) ?? (
+                      <p>{t.sectionUnavailable}</p>
+                    ),
+                  },
+                  {
+                    value: "odontogram",
+                    label: t.odontogramSection,
+                    content: <p>{t.sectionUnavailable}</p>,
+                  },
+                  {
+                    value: "treatmentPlan",
+                    label: t.treatmentSection,
+                    content: <p>{t.sectionUnavailable}</p>,
+                  },
+                ]}
+              />
               {patient.archived && <p role="status">{t.archivedHint}</p>}
             </>
           )

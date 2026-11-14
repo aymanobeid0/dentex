@@ -60,6 +60,13 @@ export interface EmployeesRepository {
 }
 /** Used by auth/account and by clinic workflows bound to the current transaction. */
 export interface EmployeesOperations {
+  attendanceDoctors(
+    clinicId: string,
+  ): Promise<Array<{ id: string; name: string }>>;
+  attendanceDoctorReferences(
+    clinicId: string,
+    ids: readonly string[],
+  ): Promise<AttendanceDoctorReference[]>;
   appointmentStaffReferences(
     clinicId: string,
     userIds: readonly string[],
@@ -106,3 +113,8 @@ export interface AppointmentDoctorReference {
   eligible: boolean;
 }
 export type AppointmentStaffReference = AppointmentDoctorReference;
+export interface AttendanceDoctorReference {
+  id: string;
+  name: string;
+  eligible: boolean;
+}

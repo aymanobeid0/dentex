@@ -1,7 +1,12 @@
 import type { ClinicActor, ClinicMutation } from "../../shared/actor";
 import { AuthorizationError, ApplicationError } from "../../shared/errors";
 import type { TransactionManager } from "../../shared/transaction-manager";
-import type { AppointmentRecord, AppointmentsScope } from "./appointments.dto";
+import type {
+  AppointmentRecord,
+  AppointmentsScope,
+  AppointmentsRepository,
+  AppointmentsOperations,
+} from "./appointments.dto";
 import type {
   BookAppointmentInput,
   ListAppointmentsInput,
@@ -98,6 +103,12 @@ export function createAppointmentsService(
           if (input.kind === "schedule") {
             if (current.status !== "booked")
               throw new AppointmentsError("appointment_not_booked");
+            if (
+              (await scope.repository.visitPins(actor.clinicId, id)).some(
+                (pin) => pin.visitDay !== input.date,
+              )
+            )
+              throw new AppointmentsError("appointment_visit_day_locked");
             const doctor = await scope.employees.appointmentDoctor(
               actor.clinicId,
               input.doctorId,
@@ -333,3 +344,40 @@ export function createAppointmentsService(
   };
 }
 export type AppointmentsService = ReturnType<typeof createAppointmentsService>;
+
+/** Bound by composition to the caller's existing transaction and clinic lock. */
+export function createAppointmentsOperations(
+  repository: AppointmentsRepository,
+): AppointmentsOperations {
+  return {
+    visitReferences: (clinicId, input) =>
+      repository.visitReferences(clinicId, input),
+    visitLinks: (clinicId, ids) => repository.visitLinks(clinicId, ids),
+    async setVisitLink(clinicId, input) {
+      const [previous] = await repository.visitLinks(clinicId, [input.visitId]);
+      if (previous.editVersion !== input.expectedLinkVersion)
+        throw new AppointmentsError("edit_conflict");
+      if (input.kind === "assign") {
+        const appointment = await repository.find(
+          clinicId,
+          input.appointmentId,
+        );
+        if (!appointment) throw new ApplicationError("not_found");
+        if (appointment.editVersion !== input.expectedAppointmentVersion)
+          throw new AppointmentsError("edit_conflict");
+        if (
+          appointment.patientId !== input.patientId ||
+          appointment.startsAt.slice(0, 10) !== input.visitDay
+        )
+          throw new AppointmentsError("appointment_visit_mismatch");
+        if (
+          (await repository.visitPins(clinicId, appointment.id)).some(
+            (pin) => pin.visitId !== input.visitId,
+          )
+        )
+          throw new AppointmentsError("appointment_visit_reserved");
+      }
+      return repository.saveVisitLink(clinicId, input, previous);
+    },
+  };
+}

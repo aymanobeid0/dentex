@@ -15,6 +15,7 @@ import type { Page } from "../navigation";
 type Labels = {
   home: string;
   appointments: string;
+  visits?: string;
   dashboard: string;
   employees: string;
   rolePermissions: string;
@@ -31,6 +32,7 @@ type Props = {
   isAdmin: boolean;
   canAccessPatients?: boolean;
   canAccessAppointments?: boolean;
+  canAccessVisits?: boolean;
   patientsLabel?: string;
   labels: Labels;
 };
@@ -43,10 +45,17 @@ export function AppSidebar({
   isAdmin,
   canAccessPatients,
   canAccessAppointments,
+  canAccessVisits,
   patientsLabel,
   labels: t,
 }: Props) {
   const items = [
+    {
+      page: "visits" as const,
+      visible: kind === "clinic" && canAccessVisits,
+      label: t.visits ?? "",
+      Icon: UsersRound,
+    },
     {
       page: "appointments" as const,
       visible: kind === "clinic" && canAccessAppointments,
