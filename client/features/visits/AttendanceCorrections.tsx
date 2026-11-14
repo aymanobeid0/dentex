@@ -309,6 +309,7 @@ function CorrectionDialog({
           <div className="field">
             <Label htmlFor={`${id}-reason`}>{t.correctionReason}</Label>
             <textarea
+              className="ui-textarea"
               id={`${id}-reason`}
               value={reason}
               maxLength={500}

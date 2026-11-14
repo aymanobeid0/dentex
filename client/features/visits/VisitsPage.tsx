@@ -409,6 +409,8 @@ function AttendanceDialog({
       setReviewBusy(false);
     }
   }
+  const statusLabel = (status: Attendance["status"]) =>
+    status === "completed" ? t.completed : t.attendanceStatuses[status];
   const summary = review && (
     <div aria-label={t.reviewed}>
       {review.items
@@ -416,13 +418,7 @@ function AttendanceDialog({
         .map((row) => (
           <p key={row.id}>
             {row.patient.name} · {row.doctor.name} ·{" "}
-            {row.status === "waiting"
-              ? t.waiting
-              : row.status === "with_doctor"
-                ? t.withDoctor
-                : row.status === "completed"
-                  ? t.completed
-                  : t.leave}{" "}
+            {statusLabel(row.status)}{" "}
             · {arrivalTime(row.arrivedAt, lang)}
           </p>
         ))}
@@ -433,9 +429,7 @@ function AttendanceDialog({
       {reviewedPrevious && (
         <p>
           {t.previousPatient}: {reviewedPrevious.patient.name} ·{" "}
-          {reviewedPrevious.status === "with_doctor"
-            ? t.withDoctor
-            : t.completed}
+          {statusLabel(reviewedPrevious.status)}
         </p>
       )}
     </div>

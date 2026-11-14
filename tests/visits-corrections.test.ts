@@ -839,11 +839,15 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
     });
     it("reopens today's genuine visit on a legacy older arrival without restoring that old attendance to waiting", async () => {
       await freeDoctor();
-      vi.useFakeTimers({ toFake: ["Date"] });
-      vi.setSystemTime(new Date(Date.now() - 172800000));
       const arrived = (await arrive(await fresh())).body;
-      vi.useRealTimers();
       const entered = (await start(arrived)).body;
+      // Legacy02 allowed entry after an old arrival. Preserve that historical fixture
+      // directly;05 now closes old waiting before a new human entry.
+      arrived.arrivedAt = new Date(Date.now() - 172800000).toISOString();
+      await prisma.attendance.update({
+        where: { id: arrived.id },
+        data: { arrivedAt: new Date(arrived.arrivedAt) },
+      });
       expect(entered.visit.startedAt.slice(0, 10)).not.toBe(
         arrived.arrivedAt.slice(0, 10),
       );

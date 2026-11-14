@@ -31,6 +31,110 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
+it.each(["ar", "fr"] as const)(
+  "shows automatic closure reason, due midnight and processing time without a fabricated completion in %s",
+  async (lang) => {
+    const t = translations[lang].visits;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              items: [
+                {
+                  ...waiting,
+                  status: "auto_closed",
+                  editVersion: 2,
+                  autoClosure: {
+                    effectiveClosedAt: "2026-11-14T00:00:00.000Z",
+                    recordedAt: "2026-11-16T08:15:00.000Z",
+                    reason: "clinic_day_end",
+                  },
+                },
+              ],
+              page: 1,
+              hasNext: false,
+            }),
+          ),
+      ),
+    );
+    renderPatient(
+      <PatientVisits
+        patient={patient}
+        lang={lang}
+        canRead
+        onExpired={() => {}}
+      />,
+    );
+    expect(
+      await screen.findByText(t.attendanceStatuses.auto_closed),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        lang === "ar"
+          ? "إغلاق تلقائي بنهاية يوم العيادة؛ لا يؤكد اكتمال الزيارة أو المغادرة."
+          : "Clôture automatique en fin de journée du cabinet ; la fin de visite ou le départ ne sont pas confirmés.",
+      ),
+    ).toBeTruthy();
+    expect(
+      document.querySelector('time[datetime="2026-11-14T00:00:00.000Z"]'),
+    ).toBeTruthy();
+    expect(
+      document.querySelector('time[datetime="2026-11-16T08:15:00.000Z"]'),
+    ).toBeTruthy();
+    expect(screen.queryByText(new RegExp(t.endRecorded))).toBeNull();
+    expect(screen.queryByText(new RegExp(t.entry))).toBeNull();
+  },
+);
+it.each([
+  {
+    effectiveClosedAt: "2026-11-14T00:00:00.000Z",
+    recordedAt: "2026-11-13T23:59:00.000Z",
+    reason: "clinic_day_end",
+  },
+  {
+    effectiveClosedAt: "2026-11-14T00:00:00.000Z",
+    recordedAt: "2026-11-16T08:15:00.000Z",
+    reason: "completed",
+  },
+])(
+  "rejects an invalid automatic closure instead of displaying invented history (%j)",
+  async (autoClosure) => {
+    const t = translations.fr.visits;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              items: [
+                {
+                  ...waiting,
+                  status: "auto_closed",
+                  editVersion: 2,
+                  autoClosure,
+                },
+              ],
+              page: 1,
+              hasNext: false,
+            }),
+          ),
+      ),
+    );
+    renderPatient(
+      <PatientVisits
+        patient={patient}
+        lang="fr"
+        canRead
+        onExpired={() => {}}
+      />,
+    );
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(screen.queryByText(t.autoClosureReason)).toBeNull();
+    expect(screen.queryByText(t.attendanceStatuses.auto_closed)).toBeNull();
+  },
+);
 it.each([
   ["ar", "لا يوجد حضور أو زيارات مسجلة لهذا المريض."],
   ["fr", "Aucune présence ni visite enregistrée pour ce patient."],

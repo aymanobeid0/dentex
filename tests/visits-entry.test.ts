@@ -467,17 +467,28 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
         }
       },
     );
-    it("keeps yesterday arrival distinct from today's actual visit entry", async () => {
+    it("closes yesterday waiting before entry and requires a new day attendance", async () => {
       vi.useFakeTimers({ toFake: ["Date"] });
       try {
         vi.setSystemTime(new Date("2026-11-13T23:59:00.000Z"));
         const waiting = (await arrive(patients[1], doctors[1])).body;
         vi.setSystemTime(new Date("2026-11-14T00:01:00.000Z"));
         const entered = await start(waiting.id, { editVersion: 1 });
-        expect(entered.status).toBe(200);
-        expect(entered.body.arrivedAt).toBe("2026-11-13T23:59:00.000Z");
-        expect(entered.body.visit.startedAt).toBe("2026-11-14T00:01:00.000Z");
-        expect((await complete(entered.body)).status).toBe(200);
+        expect(entered.status).toBe(409);
+        expect(entered.body).toEqual({ error: "edit_conflict" });
+        const closed = (await get(`/${waiting.id}`)).body;
+        expect(closed).toMatchObject({
+          status: "auto_closed",
+          arrivedAt: "2026-11-13T23:59:00.000Z",
+          recordedEndAt: null,
+          editVersion: 2,
+        });
+        expect(closed.visit).toBeUndefined();
+        const fresh = (await arrive(patients[1], doctors[1])).body;
+        const started = await start(fresh.id, { editVersion: 1 });
+        expect(started.status).toBe(200);
+        expect(started.body.visit.startedAt).toBe("2026-11-14T00:01:00.000Z");
+        expect((await complete(started.body)).status).toBe(200);
       } finally {
         vi.useRealTimers();
       }
@@ -502,7 +513,8 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
         second = await get(`/patient/${patients[1]}?page=2`);
       expect(first.body.items).toHaveLength(20);
       expect(first.body).toMatchObject({ page: 1, hasNext: true });
-      expect(second.body.items).toHaveLength(3);
+      //05 retains the closed prior-day attendance as well as the new day's entry.
+      expect(second.body.items).toHaveLength(4);
       expect(second.body).toMatchObject({ page: 2, hasNext: false });
       expect(
         second.body.items.every(
@@ -513,7 +525,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
         new Set(
           [...first.body.items, ...second.body.items].map((r: any) => r.id),
         ).size,
-      ).toBe(23);
+      ).toBe(24);
     });
   },
 );

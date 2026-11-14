@@ -17,6 +17,8 @@ export function createVisitsRepository(
     status: true,
     arrivedAt: true,
     recordedEndAt: true,
+    effectiveClosedAt: true,
+    autoClosedRecordedAt: true,
     editVersion: true,
     corrections: {
       orderBy: [{ recordedAt: "asc" as const }, { id: "asc" as const }],
@@ -37,6 +39,8 @@ export function createVisitsRepository(
         status: true,
         startedAt: true,
         recordedEndAt: true,
+        effectiveClosedAt: true,
+        autoClosedRecordedAt: true,
         editVersion: true,
       },
     },
@@ -48,6 +52,8 @@ export function createVisitsRepository(
     status: string;
     arrivedAt: Date;
     recordedEndAt: Date | null;
+    effectiveClosedAt: Date | null;
+    autoClosedRecordedAt: Date | null;
     editVersion: number;
     corrections: Array<{
       id: string;
@@ -63,12 +69,35 @@ export function createVisitsRepository(
       status: string;
       startedAt: Date;
       recordedEndAt: Date | null;
+      effectiveClosedAt: Date | null;
+      autoClosedRecordedAt: Date | null;
       editVersion: number;
     }>;
   }) => {
-    const { visits, corrections, ...attendance } = row;
-    const exposeVisit = (visit: (typeof visits)[number]) => ({
+    const {
+      visits,
+      corrections,
+      effectiveClosedAt,
+      autoClosedRecordedAt,
+      ...attendance
+    } = row;
+    const closure = (effective: Date | null, recorded: Date | null) =>
+      effective && recorded
+        ? {
+            autoClosure: {
+              effectiveClosedAt: effective.toISOString(),
+              recordedAt: recorded.toISOString(),
+              reason: "clinic_day_end" as const,
+            },
+          }
+        : {};
+    const exposeVisit = ({
+      effectiveClosedAt,
+      autoClosedRecordedAt,
+      ...visit
+    }: (typeof visits)[number]) => ({
       ...visit,
+      ...closure(effectiveClosedAt, autoClosedRecordedAt),
       status: visit.status as VisitRecord["status"],
       startedAt: visit.startedAt.toISOString(),
       recordedEndAt: visit.recordedEndAt?.toISOString() ?? null,
@@ -78,6 +107,7 @@ export function createVisitsRepository(
     );
     return {
       ...attendance,
+      ...closure(effectiveClosedAt, autoClosedRecordedAt),
       ...(valid ? { visit: exposeVisit(valid) } : {}),
       ...(visits.some((visit) => visit.status === "entry_recorded_in_error")
         ? {
@@ -102,6 +132,54 @@ export function createVisitsRepository(
     };
   };
   return {
+    async dueClinics(before) {
+      return (
+        await database.attendance.findMany({
+          where: {
+            status: { in: ["waiting", "with_doctor"] },
+            arrivedAt: { lt: before },
+          },
+          distinct: ["clinicId"],
+          select: { clinicId: true },
+          orderBy: { clinicId: "asc" },
+        })
+      ).map((row) => row.clinicId);
+    },
+    async autoClose(clinicId, current, effectiveAt, recordedAt) {
+      if (current.visit?.status === "in_progress") {
+        const changed = await database.visit.updateMany({
+          where: {
+            clinicId,
+            id: current.visit.id,
+            editVersion: current.visit.editVersion,
+            status: "in_progress",
+          },
+          data: {
+            status: "auto_closed",
+            effectiveClosedAt: effectiveAt,
+            autoClosedRecordedAt: recordedAt,
+            editVersion: { increment: 1 },
+          },
+        });
+        if (changed.count !== 1) throw new VisitsError("edit_conflict");
+      }
+      const changed = await database.attendance.updateMany({
+        where: {
+          clinicId,
+          id: current.id,
+          editVersion: current.editVersion,
+          status: { in: ["waiting", "with_doctor"] },
+        },
+        data: {
+          status: "auto_closed",
+          effectiveClosedAt: effectiveAt,
+          autoClosedRecordedAt: recordedAt,
+          editVersion: { increment: 1 },
+          updatedAt: recordedAt,
+        },
+      });
+      if (changed.count !== 1) throw new VisitsError("edit_conflict");
+    },
     async activeAttendance(clinicId, patientId, excluding) {
       return !!(await database.attendance.findFirst({
         where: {

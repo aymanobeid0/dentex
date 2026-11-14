@@ -6,7 +6,13 @@ export type PatientChoice = {
   archived: boolean;
 };
 export type DoctorChoice = { id: string; name: string; eligible: boolean };
+export type AutoClosure = {
+  effectiveClosedAt: string;
+  recordedAt: string;
+  reason: "clinic_day_end";
+};
 export type Attendance = {
+  autoClosure?: AutoClosure;
   id: string;
   patient: PatientChoice;
   doctor: DoctorChoice;
@@ -22,6 +28,7 @@ export type Attendance = {
   corrections?: Correction[];
   invalidEntries?: VisitEntry[];
   visit?: {
+    autoClosure?: AutoClosure;
     id: string;
     status: "in_progress" | "completed" | "auto_closed";
     startedAt: string;
@@ -31,6 +38,7 @@ export type Attendance = {
   };
 };
 export type VisitEntry = {
+  autoClosure?: AutoClosure;
   id: string;
   status: "entry_recorded_in_error";
   startedAt: string;
@@ -347,6 +355,7 @@ function snapshot(value: Attendance) {
     Number.isInteger(value.editVersion) &&
     value.editVersion > 0 &&
     timestamp(value.arrivedAt) &&
+    validClosure(value.autoClosure, value.arrivedAt) &&
     (!value.invalidEntries ||
       (Array.isArray(value.invalidEntries) &&
         value.invalidEntries.every(
@@ -354,6 +363,7 @@ function snapshot(value: Attendance) {
             identifier(entry.id) &&
             entry.status === "entry_recorded_in_error" &&
             timestamp(entry.startedAt) &&
+            validClosure(entry.autoClosure, entry.startedAt) &&
             Number.isInteger(entry.editVersion) &&
             entry.editVersion > 0 &&
             (entry.recordedEndAt === null || timestamp(entry.recordedEndAt)),
@@ -376,14 +386,20 @@ function snapshot(value: Attendance) {
         (!value.visit.appointmentLink ||
           validLink(value.visit.appointmentLink, value.visit.id)) &&
         timestamp(value.visit.startedAt) &&
+        validClosure(value.visit.autoClosure, value.visit.startedAt) &&
         value.visit.startedAt >= value.arrivedAt &&
         Number.isInteger(value.visit.editVersion) &&
         value.visit.editVersion > 0 &&
         ((value.visit.status === "in_progress" &&
           value.visit.recordedEndAt === null) ||
-          (["completed", "auto_closed"].includes(value.visit.status) &&
+          (value.visit.status === "completed" &&
             timestamp(value.visit.recordedEndAt) &&
-            value.visit.recordedEndAt >= value.visit.startedAt)))) &&
+            value.visit.recordedEndAt >= value.visit.startedAt) ||
+          (value.visit.status === "auto_closed" &&
+            ((value.visit.recordedEndAt === null &&
+              !!value.visit.autoClosure) ||
+              (timestamp(value.visit.recordedEndAt) &&
+                value.visit.recordedEndAt >= value.visit.startedAt)))))) &&
     ((value.status === "waiting" &&
       value.recordedEndAt === null &&
       !value.visit) ||
@@ -394,11 +410,24 @@ function snapshot(value: Attendance) {
         value.visit?.status === "completed" &&
         value.recordedEndAt === value.visit.recordedEndAt) ||
       (value.status === "auto_closed" &&
-        timestamp(value.recordedEndAt) &&
+        ((value.recordedEndAt === null && !!value.autoClosure) ||
+          timestamp(value.recordedEndAt)) &&
         (!value.visit || value.visit.status === "auto_closed")) ||
       (value.status === "left_before_entry" &&
         timestamp(value.recordedEndAt) &&
         value.recordedEndAt >= value.arrivedAt))
+  );
+}
+function validClosure(value: AutoClosure | undefined, activity: string) {
+  return (
+    value === undefined ||
+    (!!value &&
+      value.reason === "clinic_day_end" &&
+      timestamp(value.effectiveClosedAt) &&
+      timestamp(value.recordedAt) &&
+      value.effectiveClosedAt.endsWith("T00:00:00.000Z") &&
+      value.effectiveClosedAt > activity &&
+      value.recordedAt >= value.effectiveClosedAt)
   );
 }
 const base = "/api/clinic/visits";

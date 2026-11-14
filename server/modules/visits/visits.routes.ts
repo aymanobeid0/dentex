@@ -17,6 +17,7 @@ export function visitsRouter(
 ) {
   const router = Router();
   router.use(requireAttendance);
+  router.use(controller.catchUp);
   router.get("/doctors", controller.doctors);
   router.get("/patients", controller.patients);
   router.get("/patient/:patientId", controller.history);

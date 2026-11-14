@@ -39,6 +39,8 @@ app.use("/api", (req, _res, next) => {
   next();
 });
 const services = createServices(prisma);
+export const visitsMaintenance: import("./modules/visits").VisitsMaintenance =
+  services.visits;
 const secret = () => {
   const value = process.env.JWT_SECRET;
   if (!value || value.length < 32)

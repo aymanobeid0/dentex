@@ -15,6 +15,10 @@ import {
 } from "./visits.schemas";
 import type { VisitsService } from "./visits.service";
 export function createVisitsController(service: VisitsService) {
+  const catchUp: RequestHandler = async (_req, res, next) => {
+    await service.catchUp(clinicActor(res));
+    next();
+  };
   const remove: RequestHandler = async (req, res) => {
     await service.remove(
       clinicActor(res),
@@ -118,6 +122,7 @@ export function createVisitsController(service: VisitsService) {
     );
   };
   return {
+    catchUp,
     correct,
     remove,
     appointmentOptions,

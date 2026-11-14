@@ -86,6 +86,8 @@ model User {
 }
 
 model Attendance {
+  effectiveClosedAt DateTime? @map("effective_closed_at") @db.Timestamptz
+  autoClosedRecordedAt DateTime? @map("auto_closed_recorded_at") @db.Timestamptz
   corrections AttendanceCorrection[]
   visits Visit[]
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -109,6 +111,8 @@ model Attendance {
   @@map("attendances")
 }
 model Visit {
+  effectiveClosedAt DateTime? @map("effective_closed_at") @db.Timestamptz
+  autoClosedRecordedAt DateTime? @map("auto_closed_recorded_at") @db.Timestamptz
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   attendanceId String @map("attendance_id") @db.Uuid

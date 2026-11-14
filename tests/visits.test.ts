@@ -293,13 +293,12 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
         ),
       ).toBe(false);
     });
-    it("keeps old-day waiting and tied arrival priority visible and unchanged after transfer", async () => {
+    it("preserves tied arrival priority during transfer, then closes old waiting and permits a new day attendance", async () => {
       vi.useFakeTimers({ toFake: ["Date"] });
       vi.setSystemTime(new Date("2026-11-12T23:59:00.000Z"));
       try {
         const first = (await arrive(patients[5])).body,
           second = (await arrive(patients[6])).body;
-        vi.setSystemTime(new Date("2026-11-13T00:01:00.000Z"));
         expect((await arrive(patients[5])).body).toEqual({
           error: "attendance_active",
         });
@@ -314,6 +313,24 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
         expect(rows.findIndex((r) => r.id === first.id)).toBeLessThan(
           rows.findIndex((r) => r.id === second.id),
         );
+        vi.setSystemTime(new Date("2026-11-13T00:01:00.000Z"));
+        const closed = await get(`/${first.id}`);
+        expect(closed.body).toMatchObject({
+          status: "auto_closed",
+          editVersion: 2,
+          recordedEndAt: null,
+          autoClosure: {
+            effectiveClosedAt: "2026-11-13T00:00:00.000Z",
+            recordedAt: "2026-11-13T00:01:00.000Z",
+          },
+        });
+        expect(closed.body.visit).toBeUndefined();
+        expect((await get(`/${second.id}`)).body).toMatchObject({
+          status: "auto_closed",
+          editVersion: 3,
+          arrivedAt: second.arrivedAt,
+        });
+        expect((await arrive(patients[5])).status).toBe(201);
       } finally {
         vi.useRealTimers();
       }

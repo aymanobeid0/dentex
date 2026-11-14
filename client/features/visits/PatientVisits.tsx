@@ -90,6 +90,26 @@ export function PatientVisits({
                         ? t.completed
                         : t.attendanceStatuses[row.status]}
                     </span>
+                    {row.autoClosure && (
+                      <>
+                        <span>{t.autoClosureReason}</span>
+                        <span>
+                          {t.autoClosureEffective}:{" "}
+                          <time dateTime={row.autoClosure.effectiveClosedAt}>
+                            {arrivalTime(
+                              row.autoClosure.effectiveClosedAt,
+                              lang,
+                            )}
+                          </time>
+                        </span>
+                        <span>
+                          {t.autoClosureRecorded}:{" "}
+                          <time dateTime={row.autoClosure.recordedAt}>
+                            {arrivalTime(row.autoClosure.recordedAt, lang)}
+                          </time>
+                        </span>
+                      </>
+                    )}
                     {row.visit && (
                       <span>
                         {t.entry}:{" "}

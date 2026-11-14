@@ -20,12 +20,43 @@ export function createVisitsService(
   transactions: TransactionManager<VisitsScope, ClinicMutation>,
   now: () => Date = () => new Date(),
 ) {
-  function locked<T>(
+  // Africa/Nouakchott is UTC+00:00, with no seasonal clock change.
+  const dayStart = (at: Date) =>
+    new Date(`${at.toISOString().slice(0, 10)}T00:00:00.000Z`);
+  async function catchUp(clinicId: string) {
+    return transactions.run(
+      async (scope) => {
+        const at = now(),
+          today = dayStart(at);
+        for (const row of await scope.repository.list(clinicId)) {
+          const activity =
+            row.visit?.status === "in_progress"
+              ? row.visit.startedAt
+              : row.arrivedAt;
+          if (new Date(activity) >= today) continue;
+          const effectiveAt = new Date(
+            dayStart(new Date(activity)).getTime() + 86400000,
+          );
+          await scope.repository.autoClose(clinicId, row, effectiveAt, at);
+        }
+        return today.getTime();
+      },
+      { clinicId },
+    );
+  }
+  async function locked<T>(
     actor: ClinicActor,
     operation: (scope: VisitsScope) => Promise<T>,
   ) {
-    return transactions.run(
-      (scope) => {
+    for (;;) {
+      const maintainedDay = await catchUp(actor.clinicId);
+      const result = await transactions.run(
+      async (scope) => {
+        // The independently committed maintenance may have waited on a lock or
+        // finished just before midnight. Release this lock before catching up
+        // again, so the human operation never runs against the previous day.
+        if (dayStart(now()).getTime() !== maintainedDay)
+          return { retry: true as const };
         const fresh = scope.actor;
         if (
           !fresh?.active ||
@@ -35,10 +66,12 @@ export function createVisitsService(
           )
         )
           throw new AuthorizationError();
-        return operation(scope);
+        return { retry: false as const, value: await operation(scope) };
       },
       { clinicId: actor.clinicId, actor },
     );
+      if (!result.retry) return result.value;
+    }
   }
   async function snapshots(
     scope: VisitsScope,
@@ -134,6 +167,27 @@ export function createVisitsService(
       });
   }
   return {
+    catchUp: async (actor: ClinicActor) => {
+      await catchUp(actor.clinicId);
+    },
+    async maintain() {
+      const clinics = await transactions.run((scope) =>
+        scope.repository.dueClinics(dayStart(now())),
+      );
+      const failures: unknown[] = [];
+      for (const clinicId of clinics) {
+        try {
+          await catchUp(clinicId);
+        } catch (error) {
+          failures.push(error);
+        }
+      }
+      if (failures.length)
+        throw new AggregateError(
+          failures,
+          "Visits day-close maintenance failed",
+        );
+    },
     remove: (actor: ClinicActor, id: string, input: DeleteAttendanceInput) =>
       locked(actor, async (scope) => {
         const row = await scope.repository.find(actor.clinicId, id);

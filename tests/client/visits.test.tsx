@@ -38,6 +38,59 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
+it.each((["ar", "fr"] as const).flatMap((lang) =>
+  (["start", "complete", "compound"] as const).map((command) => ({ lang, command })),
+))(
+  "shows automatic closure during $command recovery, including the previous patient, in $lang",
+  async ({ lang, command }) => {
+    const t = translations[lang].visits, e = translations[lang].editing;
+    const visit = {
+      id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+      status: "in_progress", startedAt: "2026-11-13T09:10:00.000Z",
+      recordedEndAt: null, editVersion: 1,
+    };
+    const current = command === "complete"
+      ? { ...row, status: "with_doctor", editVersion: 2, visit }
+      : row;
+    const previous = {
+      ...row, id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      patient: { ...patient, id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", name: "Previous patient" },
+      status: "with_doctor", editVersion: 2, visit,
+    };
+    const autoClosure = {
+      effectiveClosedAt: "2026-11-14T00:00:00.000Z",
+      recordedAt: "2026-11-14T00:00:01.000Z", reason: "clinic_day_end",
+    };
+    const closed = (entry: typeof current | typeof previous) => ({
+      ...entry, status: "auto_closed", editVersion: entry.editVersion + 1, autoClosure,
+      ...("visit" in entry ? { visit: { ...entry.visit, status: "auto_closed", editVersion: 2, autoClosure } } : {}),
+    });
+    const fetcher = vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST")
+        return new Response(JSON.stringify({ error: "edit_conflict" }), { status: 409 });
+      if (url.endsWith("/doctors")) return new Response(JSON.stringify({ items: [doctor] }));
+      if (url.endsWith(`/${current.id}`)) return new Response(JSON.stringify(closed(current)));
+      if (url.endsWith(`/${previous.id}`)) return new Response(JSON.stringify(closed(previous)));
+      return new Response(JSON.stringify({ items: command === "compound" ? [previous, current] : [current], doctors: [doctor] }));
+    });
+    vi.stubGlobal("fetch", fetcher);
+    renderPatient(<VisitsPage lang={lang} onExpired={() => {}} />);
+    const user = userEvent.setup();
+    const trigger = command === "complete" ? t.complete : t.start;
+    await user.click(await screen.findByRole("button", { name: trigger }));
+    const dialog = screen.getByRole("alertdialog");
+    const submit = command === "compound" ? t.completePrevious : trigger;
+    await user.click(within(dialog).getByRole("button", { name: submit }));
+    await within(dialog).findByText(e.conflict);
+    await user.click(within(dialog).getByRole("button", { name: e.review }));
+    const summary = await within(dialog).findByLabelText(t.reviewed);
+    expect(within(summary).getAllByText(new RegExp(t.attendanceStatuses.auto_closed)).length).toBe(command === "compound" ? 2 : 1);
+    expect(summary.textContent).not.toContain(t.leave);
+    expect(summary.textContent).not.toContain(t.completed);
+    expect(fetcher.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(1);
+    expect(within(dialog).getByRole("button", { name: submit }).hasAttribute("disabled")).toBe(true);
+  },
+);
 function transport(
   write: (body: any) => Promise<Response> = async () =>
     new Response(JSON.stringify(row), { status: 201 }),

@@ -13,6 +13,11 @@ import type {
 } from "../employees";
 export type AttendanceStatus =
   "waiting" | "left_before_entry" | "with_doctor" | "completed" | "auto_closed";
+export interface AutoClosure {
+  effectiveClosedAt: string;
+  recordedAt: string;
+  reason: "clinic_day_end";
+}
 export interface VisitRecord {
   id: string;
   attendanceId: string;
@@ -24,6 +29,7 @@ export interface VisitRecord {
   recordedEndAt: string | null;
   editVersion: number;
   appointmentLink?: AppointmentVisitLink;
+  autoClosure?: AutoClosure;
 }
 export type CorrectionState = {
   status: AttendanceStatus;
@@ -48,6 +54,7 @@ export type AttendanceVisit = Omit<
   "attendanceId" | "patientId" | "doctorId"
 >;
 export interface AttendanceRecord {
+  autoClosure?: AutoClosure;
   id: string;
   patientId: string;
   doctorId: string;
@@ -70,6 +77,13 @@ export interface AttendanceSnapshot extends Omit<
   doctor: AttendanceDoctorReference;
 }
 export interface VisitsRepository {
+  dueClinics(before: Date): Promise<string[]>;
+  autoClose(
+    clinicId: string,
+    current: AttendanceRecord,
+    effectiveAt: Date,
+    recordedAt: Date,
+  ): Promise<void>;
   activeAttendance(
     clinicId: string,
     patientId: string,
