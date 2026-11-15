@@ -1,0 +1,51 @@
+export const procedureCopy = {
+  ar: {
+    title: "الإجراءات العلاجية",
+    record: "تسجيل إجراء منفذ",
+    standalone: "إجراء خارج الخطة",
+    choice: "الربط بخطة العلاج",
+    performed: "الإجراء المنفذ",
+    void: "إبطال تسجيل الإجراء",
+    voided: "تسجيل مبطل",
+    empty: "لا توجد إجراءات علاجية مسجلة في هذه الزيارة.",
+    independent:
+      "إنهاء الزيارة لا يعني اكتمال خطة العلاج. تُسجل الإجراءات المنفذة فقط.",
+    closed:
+      "الزيارة مغلقة أو غير متاحة لتسجيل علاج جديد. يبقى العرض والتصحيح المعلل متاحين.",
+    planned: "المخطط المتبقي",
+    visit: "عرض الزيارة",
+    doctor: "طبيب الزيارة",
+    actor: "سجله",
+    reason: "سبب إبطال التسجيل",
+    cancel: "إلغاء التحرير",
+    linked: "مرتبط بخطة العلاج",
+    recordedAt: "وقت التسجيل",
+    voidedBy: "أبطل التسجيل",
+    noPending: "لا توجد بنود متاحة في خطط نشطة؛ يمكن تسجيل إجراء خارج الخطة.",
+  },
+  fr: {
+    title: "Actes réalisés",
+    record: "Enregistrer un acte réalisé",
+    standalone: "Acte hors plan",
+    choice: "Lien avec le plan de traitement",
+    performed: "Acte réalisé",
+    void: "Invalider l’acte enregistré",
+    voided: "Enregistrement invalidé",
+    empty: "Aucun acte de traitement enregistré pour cette visite.",
+    independent:
+      "Terminer la visite ne termine pas le plan. Enregistrez uniquement les actes réalisés.",
+    closed:
+      "Visite fermée ou indisponible pour de nouveaux actes. Consultation et correction motivée restent possibles.",
+    planned: "Actes restant à réaliser",
+    visit: "Voir la visite",
+    doctor: "Praticien de la visite",
+    actor: "Enregistré par",
+    reason: "Motif de l’invalidation",
+    cancel: "Annuler la modification",
+    linked: "Lié au plan de traitement",
+    recordedAt: "Date d’enregistrement",
+    voidedBy: "Invalidé par",
+    noPending:
+      "Aucun acte disponible dans les plans actifs ; un acte hors plan reste possible.",
+  },
+};

@@ -7,9 +7,39 @@ import {
   planEditSchema,
   itemCreateSchema,
   itemEditSchema,
+  procedureCreateSchema,
+  procedureVoidSchema,
 } from "./treatments.schemas";
 import type { TreatmentsService } from "./treatments.service";
 export function createTreatmentsController(service: TreatmentsService) {
+  const procedures: RequestHandler = async (req, res) => {
+    res.json(
+      await service.procedures(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.attendanceId, "not_found"),
+      ),
+    );
+  };
+  const record: RequestHandler = async (req, res) => {
+    res
+      .status(201)
+      .json(
+        await service.record(
+          clinicActor(res),
+          parseInput(uuidSchema, req.params.attendanceId, "not_found"),
+          parseInput(procedureCreateSchema, req.body),
+        ),
+      );
+  };
+  const voidProcedure: RequestHandler = async (req, res) => {
+    res.json(
+      await service.void(
+        clinicActor(res),
+        parseInput(uuidSchema, req.params.procedureId, "not_found"),
+        parseInput(procedureVoidSchema, req.body),
+      ),
+    );
+  };
   const list: RequestHandler = async (req, res) => {
     res.json(
       await service.list(
@@ -58,5 +88,14 @@ export function createTreatmentsController(service: TreatmentsService) {
       ),
     );
   };
-  return { list, create, edit, addItem, editItem };
+  return {
+    list,
+    create,
+    edit,
+    addItem,
+    editItem,
+    procedures,
+    record,
+    voidProcedure,
+  };
 }

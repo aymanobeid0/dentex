@@ -471,6 +471,7 @@ function SessionApp({
               patient={patient}
               lang={lang}
               canRead={canAccessVisits}
+              canTreat={account.kind === "clinic" && account.roles.some(role=>["admin","dentist"].includes(role))}
               onNavigationGuardChange={registerVisitGuard}
               onExpired={expire}
             />
@@ -514,6 +515,7 @@ function SessionApp({
         />
       ) : page === "visits" ? (
         <VisitsPage
+          canTreat={account.kind === "clinic" && account.roles.some(role=>["admin","dentist"].includes(role))}
           lang={lang}
           onExpired={expire}
           onNavigationGuardChange={registerPageGuard}

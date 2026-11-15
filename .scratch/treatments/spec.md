@@ -1,6 +1,8 @@
 # Treatment plans and performed visit procedures
 
-Status: ready-for-agent — delegated implementation 2026-11-14.
+Status: ready-for-human — delegated implementation 2026-11-14, completed2026-11-15. No human acceptance claimed.
+
+Execution follow-up2026-11-15: both slices complete, independent review corrections applied, final592/592 and report guard passed. Development migrated additively with backups and exact preservation. Verification/contracts are tracked in integration-verification.md; browser evidence distinguishes real synthetic QA from human acceptance. No push/PR/merge/deployment.
 
 ## Problem Statement
 The patient file has no usable treatment plan and administrative visits cannot document performed care. Planned care must never be mistaken for completed treatment.

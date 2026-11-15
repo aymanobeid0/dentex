@@ -3,20 +3,62 @@ import type {
   TreatmentsRepository,
   TreatmentPlan,
   TreatmentItem,
+  TreatmentProcedure,
 } from "./treatments.dto";
 import { ApplicationError } from "../../shared/errors";
 
 export function createTreatmentsRepository(
   db: Prisma.TransactionClient,
 ): TreatmentsRepository {
+  const procedureInclude = {
+    visit: {
+      select: {
+        id: true,
+        attendanceId: true,
+        doctorId: true,
+        startedAt: true,
+        status: true,
+      },
+    },
+  };
+  const exposeProcedure = (
+    row: Prisma.TreatmentProcedureGetPayload<{
+      include: typeof procedureInclude;
+    }>,
+  ): TreatmentProcedure => ({
+    id: row.id,
+    patientId: row.patientId,
+    visitId: row.visitId,
+    itemId: row.itemId,
+    description: row.description,
+    location: row.location,
+    notes: row.notes,
+    actorId: row.actorId,
+    recordedAt: row.recordedAt.toISOString(),
+    editVersion: row.editVersion,
+    voidedAt: row.voidedAt?.toISOString() ?? null,
+    voidActorId: row.voidActorId,
+    voidReason: row.voidReason,
+    visit: { ...row.visit, startedAt: row.visit.startedAt.toISOString() },
+  });
   const include = {
-    items: { orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }] },
+    items: {
+      include: {
+        procedures: {
+          include: procedureInclude,
+          orderBy: [{ recordedAt: "asc" as const }, { id: "asc" as const }],
+        },
+      },
+      orderBy: [{ createdAt: "asc" as const }, { id: "asc" as const }],
+    },
     history: {
       orderBy: [{ recordedAt: "asc" as const }, { id: "asc" as const }],
     },
   };
   const exposeItem = (
-    row: Prisma.TreatmentItemGetPayload<{ include: { plan: true } }>,
+    row: Prisma.TreatmentItemGetPayload<{
+      include: { plan: true; procedures: { include: typeof procedureInclude } };
+    }>,
   ): TreatmentItem => ({
     id: row.id,
     planId: row.planId,
@@ -26,6 +68,10 @@ export function createTreatmentsRepository(
     notes: row.notes,
     status: row.status as TreatmentItem["status"],
     editVersion: row.editVersion,
+    procedure: row.procedures.find((p) => !p.voidedAt)
+      ? exposeProcedure(row.procedures.find((p) => !p.voidedAt)!)
+      : null,
+    performances: row.procedures.map(exposeProcedure),
   });
   const expose = (
     row: Prisma.TreatmentPlanGetPayload<{ include: typeof include }>,
@@ -88,6 +134,90 @@ export function createTreatmentsRepository(
     }
   }
   return {
+    procedures: async (clinicId, visitId) =>
+      (
+        await db.treatmentProcedure.findMany({
+          where: { clinicId, visitId },
+          include: procedureInclude,
+          orderBy: [{ recordedAt: "asc" }, { id: "asc" }],
+        })
+      ).map(exposeProcedure),
+    procedure: async (clinicId, id) => {
+      const row = await db.treatmentProcedure.findFirst({
+        where: { clinicId, id },
+        include: procedureInclude,
+      });
+      return row ? exposeProcedure(row) : null;
+    },
+    hasHistory: async (clinicId, visitId) =>
+      !!(await db.treatmentProcedure.findFirst({
+        where: { clinicId, visitId },
+        select: { id: true },
+      })),
+    async recordProcedure(clinicId, input) {
+      await unique(() =>
+        db.treatmentProcedure.create({ data: { ...input, clinicId } }),
+      );
+      if (input.itemId) {
+        const item = await db.treatmentItem.update({
+          where: { id: input.itemId },
+          data: { editVersion: { increment: 1 } },
+        });
+        await db.treatmentPlan.update({
+          where: { id: item.planId },
+          data: { editVersion: { increment: 1 } },
+        });
+        await audit(
+          clinicId,
+          item.planId,
+          input.actorId,
+          "procedure_recorded",
+          {},
+          input,
+        );
+      }
+    },
+    async voidProcedure(clinicId, current, actorId, reason) {
+      const result = await db.treatmentProcedure.updateMany({
+        where: {
+          clinicId,
+          id: current.id,
+          editVersion: current.editVersion,
+          voidedAt: null,
+        },
+        data: {
+          voidedAt: new Date(),
+          voidActorId: actorId,
+          voidReason: reason,
+          editVersion: { increment: 1 },
+        },
+      });
+      if (result.count !== 1) throw new ApplicationError("edit_conflict");
+      if (current.itemId) {
+        const item = await db.treatmentItem.update({
+          where: { id: current.itemId },
+          data: { editVersion: { increment: 1 } },
+        });
+        await db.treatmentPlan.update({
+          where: { id: item.planId },
+          data: { editVersion: { increment: 1 } },
+        });
+        await audit(
+          clinicId,
+          item.planId,
+          actorId,
+          "procedure_voided",
+          {
+            id: current.id,
+            description: current.description,
+            location: current.location,
+            notes: current.notes,
+          },
+          { id: current.id, status: "voided" },
+          reason,
+        );
+      }
+    },
     plans: async (clinicId, patientId) =>
       (
         await db.treatmentPlan.findMany({
@@ -106,7 +236,13 @@ export function createTreatmentsRepository(
     item: async (clinicId, id) => {
       const row = await db.treatmentItem.findFirst({
         where: { clinicId, id },
-        include: { plan: true },
+        include: {
+          plan: true,
+          procedures: {
+            include: procedureInclude,
+            orderBy: [{ recordedAt: "asc" as const }, { id: "asc" as const }],
+          },
+        },
       });
       return row ? exposeItem(row) : null;
     },

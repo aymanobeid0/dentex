@@ -12,6 +12,8 @@ import { TreatmentEditor, type TreatmentEdit } from "./TreatmentEditor";
 import { treatmentCopy } from "./treatments.copy";
 import { arrivalTime } from "./visits.format";
 import { TreatmentHistoryValues } from "./TreatmentHistoryValues";
+import { VisitTreatments } from "./VisitTreatments";
+import { procedureCopy } from "./procedures.copy";
 export function PatientTreatmentPlans({
   patient,
   lang,
@@ -102,6 +104,17 @@ export function PatientTreatmentPlans({
                 </div>
               </div>
               {plan.notes && <p>{plan.notes}</p>}
+              {plan.progress && (
+                <p role="status">
+                  {t.progress}:{" "}
+                  <bdi>
+                    {plan.progress.completed} /{" "}
+                    {plan.progress.completed + plan.progress.pending}
+                  </bdi>{" "}
+                  · {t.pending}: {plan.progress.pending} · {t.cancelled}:{" "}
+                  {plan.progress.cancelled}
+                </p>
+              )}
               {!plan.items.length && <p>{t.noItems}</p>}
               <ol className="visits-list">
                 {plan.items.map((item) => (
@@ -114,32 +127,64 @@ export function PatientTreatmentPlans({
                         </span>
                       )}
                       {item.notes && <span>{item.notes}</span>}
-                      <span className="badge badge-neutral">
-                        {t[item.status]}
+                      <span
+                        className={
+                          "badge " +
+                          (item.procedure ? "badge-success" : "badge-neutral")
+                        }
+                      >
+                        {item.procedure ? t.completed : t[item.status]}
                       </span>
                     </div>
-                    {!patient.archived && plan.status === "active" && (
-                      <div className="visits-actions">
-                        <button
-                          className="ui-button"
-                          disabled={item.status !== "pending" || !query.online}
-                          onClick={() =>
-                            setChoice({ kind: "item", plan, item })
-                          }
-                        >
-                          {t.edit}
-                        </button>
-                        <button
-                          className="ui-button"
-                          disabled={!query.online}
-                          onClick={() =>
-                            setChoice({ kind: "status", plan, item })
-                          }
-                        >
-                          {item.status === "pending" ? t.cancel : t.restore}
-                        </button>
+                    {!!item.performances?.length && (
+                      <div>
+                        {item.performances.map((performed) => (
+                          <div key={performed.id}>
+                            <p>
+                              {performed.voidedAt
+                                ? procedureCopy[lang].voided
+                                : t.completed}{" "}
+                              · {performed.description} ·{" "}
+                              {performed.visit.doctorName} ·{" "}
+                              {arrivalTime(performed.visit.startedAt, lang)}
+                            </p>
+                            <VisitTreatments
+                              attendanceId={performed.visit.attendanceId}
+                              lang={lang}
+                              label={procedureCopy[lang].visit}
+                              onExpired={onExpired}
+                              onNavigationGuardChange={onNavigationGuardChange}
+                            />
+                          </div>
+                        ))}
                       </div>
                     )}
+                    {!patient.archived &&
+                      plan.status === "active" &&
+                      !item.procedure && (
+                        <div className="visits-actions">
+                          <button
+                            className="ui-button"
+                            disabled={
+                              item.status !== "pending" || !query.online
+                            }
+                            onClick={() =>
+                              setChoice({ kind: "item", plan, item })
+                            }
+                          >
+                            {t.edit}
+                          </button>
+                          <button
+                            className="ui-button"
+                            disabled={!query.online}
+                            onClick={() =>
+                              setChoice({ kind: "status", plan, item })
+                            }
+                          >
+                            {item.status === "pending" ? t.cancel : t.restore}
+                          </button>
+                        </div>
+                      )}
                   </li>
                 ))}
               </ol>
@@ -170,7 +215,22 @@ export function PatientTreatmentPlans({
                           {arrivalTime(change.recordedAt, lang)}
                         </span>
                         {change.reason && <p>{change.reason}</p>}
-                        <div className="treatment-change-values"><div><h4>{lang==="ar"?"قبل":"Avant"}</h4><TreatmentHistoryValues value={change.before} lang={lang}/></div><div><h4>{lang==="ar"?"بعد":"Après"}</h4><TreatmentHistoryValues value={change.after} lang={lang}/></div></div>
+                        <div className="treatment-change-values">
+                          <div>
+                            <h4>{lang === "ar" ? "قبل" : "Avant"}</h4>
+                            <TreatmentHistoryValues
+                              value={change.before}
+                              lang={lang}
+                            />
+                          </div>
+                          <div>
+                            <h4>{lang === "ar" ? "بعد" : "Après"}</h4>
+                            <TreatmentHistoryValues
+                              value={change.after}
+                              lang={lang}
+                            />
+                          </div>
+                        </div>
                       </li>
                     ))}
                   </ol>

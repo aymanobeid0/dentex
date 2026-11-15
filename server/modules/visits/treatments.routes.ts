@@ -11,6 +11,8 @@ export function treatmentsRouter(
       "/patient/:patientId/treatment-plans",
       "/treatment-plans/:planId",
       "/treatment-items/:itemId",
+      "/:attendanceId/procedures",
+      "/procedures/:procedureId/void",
     ],
     (_req, res, next) => {
       const identity = res.locals.identity;
@@ -29,5 +31,8 @@ export function treatmentsRouter(
   router.patch("/treatment-plans/:planId", controller.edit);
   router.post("/treatment-plans/:planId/items", controller.addItem);
   router.patch("/treatment-items/:itemId", controller.editItem);
+  router.get("/:attendanceId/procedures", controller.procedures);
+  router.post("/:attendanceId/procedures", controller.record);
+  router.patch("/procedures/:procedureId/void", controller.voidProcedure);
   return router;
 }

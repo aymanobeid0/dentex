@@ -27,6 +27,7 @@ model Clinic {
   @@map("clinics")
 }
 model Patient {
+  procedures TreatmentProcedure[]
   treatmentPlans TreatmentPlan[]
   visits Visit[]
   attendances Attendance[]
@@ -68,6 +69,7 @@ model TreatmentPlan {
   @@map("treatment_plans")
 }
 model TreatmentItem {
+  procedures TreatmentProcedure[]
   id String @id @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
   planId String @map("plan_id") @db.Uuid
@@ -81,6 +83,30 @@ model TreatmentItem {
   @@unique([clinicId,id])
   @@index([clinicId,planId,createdAt])
   @@map("treatment_items")
+}
+model TreatmentProcedure {
+  id String @id @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  patientId String @map("patient_id") @db.Uuid
+  visitId String @map("visit_id") @db.Uuid
+  itemId String? @map("item_id") @db.Uuid
+  description String @db.VarChar(200)
+  location String @db.VarChar(80)
+  notes String @db.VarChar(2000)
+  actorId String @map("actor_id") @db.Uuid
+  recordedAt DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+  editVersion Int @default(1) @map("edit_version")
+  voidedAt DateTime? @map("voided_at") @db.Timestamptz
+  voidActorId String? @map("void_actor_id") @db.Uuid
+  voidReason String? @map("void_reason") @db.VarChar(500)
+  patient Patient @relation(fields:[clinicId,patientId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  visit Visit @relation(fields:[clinicId,visitId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  item TreatmentItem? @relation(fields:[clinicId,itemId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  actor User @relation("ProcedureActor",fields:[clinicId,actorId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  voidActor User? @relation("ProcedureVoidActor",fields:[clinicId,voidActorId], references:[clinicId,id], onDelete:NoAction, onUpdate:NoAction)
+  @@index([clinicId,visitId,recordedAt])
+  @@index([clinicId,patientId])
+  @@map("treatment_procedures")
 }
 model TreatmentChange {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -108,6 +134,8 @@ model PlatformAdmin {
   @@map("platform_admins")
 }
 model User {
+  treatmentProcedures TreatmentProcedure[] @relation("ProcedureActor")
+  voidedProcedures TreatmentProcedure[] @relation("ProcedureVoidActor")
   treatmentChanges TreatmentChange[]
   attendanceCorrections AttendanceCorrection[]
   appointmentVisitChanges AppointmentVisitChange[]
@@ -161,6 +189,7 @@ model Attendance {
   @@map("attendances")
 }
 model Visit {
+  procedures TreatmentProcedure[]
   effectiveClosedAt DateTime? @map("effective_closed_at") @db.Timestamptz
   autoClosedRecordedAt DateTime? @map("auto_closed_recorded_at") @db.Timestamptz
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

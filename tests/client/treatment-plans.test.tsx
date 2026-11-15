@@ -6,6 +6,9 @@ import userEvent from "@testing-library/user-event";
 import { renderPatient } from "./render-patient";
 import { PatientTreatmentPlans } from "../../client/features/visits/PatientTreatmentPlans";
 import { TreatmentEditor } from "../../client/features/visits/TreatmentEditor";
+import { VisitTreatments } from "../../client/features/visits/VisitTreatments";
+import { procedureCopy } from "../../client/features/visits/procedures.copy";
+import { treatmentCopy } from "../../client/features/visits/treatments.copy";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -120,4 +123,90 @@ it("retains an uncertain draft and requires a successful server review before cl
   );
   expect(close).toHaveBeenCalledOnce();
   expect(posts).toBe(1);
+});
+it("uses the confirmed visit version for successive procedures even if refreshing fails", async () => {
+  const t = treatmentCopy.fr,
+    p = procedureCopy.fr,
+    user = userEvent.setup(),
+    versions: number[] = [],
+    records: object[] = [];
+  const at = "2026-11-14T10:00:00.000Z";
+  const snapshot = () => ({
+    patientId: "patient",
+    visitId: "visit",
+    visitVersion: 1 + records.length,
+    visitStatus: "in_progress",
+    canRecord: true,
+    plans: [],
+    items: records,
+  });
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        const input = JSON.parse(options.body as string);
+        versions.push(input.visitVersion);
+        records.push({
+          id: input.id,
+          patientId: "patient",
+          visitId: "visit",
+          itemId: null,
+          description: input.description,
+          location: input.location,
+          notes: input.notes,
+          actorId: "dentist",
+          actorName: "Dentist",
+          recordedAt: at,
+          editVersion: 1,
+          voidedAt: null,
+          voidActorId: null,
+          voidReason: null,
+          visit: {
+            id: "visit",
+            attendanceId: "attendance",
+            doctorId: "dentist",
+            doctorName: "Dentist",
+            startedAt: at,
+            status: "in_progress",
+          },
+        });
+        return new Response(JSON.stringify(snapshot()), { status: 201 });
+      }
+      return new Response(
+        JSON.stringify(records.length ? { error: "server_error" } : snapshot()),
+        { status: records.length ? 500 : 200 },
+      );
+    }),
+  );
+  renderPatient(
+    <VisitTreatments
+      attendanceId="attendance"
+      lang="fr"
+      onExpired={() => {}}
+    />,
+  );
+  await user.click(screen.getByRole("button", { name: p.title }));
+  for (const name of ["Scaling", "Polishing"]) {
+    await user.click(await screen.findByRole("button", { name: p.record }));
+    await user.type(screen.getByRole("textbox", { name: p.performed }), name);
+    await user.click(screen.getByRole("button", { name: t.save }));
+    await screen.findByText(name);
+  }
+  expect(versions).toEqual([1, 2]);
+});
+it("uses confirmed plan versions for successive item additions while refresh fails",async()=>{
+  const t=treatmentCopy.fr,user=userEvent.setup(),versions:number[]=[];
+  const plan={id:"plan",patientId:"p",title:"Restoration",notes:"",status:"active",editVersion:1,createdAt:"2026-11-14T10:00:00.000Z",items:[] as object[],history:[]};
+  let writes=0;
+  vi.stubGlobal("fetch",vi.fn(async(_url:string,options?:RequestInit)=>{
+    if(options?.method==="POST"){
+      const input=JSON.parse(options.body as string);versions.push(input.editVersion);writes++;
+      plan.items.push({...input,planId:"plan",patientId:"p",status:"pending",editVersion:1});plan.editVersion++;
+      return new Response(JSON.stringify(plan),{status:201});
+    }
+    return new Response(JSON.stringify(writes?{error:"server_error"}:{items:[plan]}),{status:writes?500:200});
+  }));
+  renderPatient(<PatientTreatmentPlans patient={{id:"p",name:"Patient",fileNumber:"1",archived:false}} lang="fr" canTreat onExpired={()=>{}}/>);
+  for(const name of ["First","Second"]){await user.click(await screen.findByRole("button",{name:t.addItem}));const input=screen.getByRole("textbox",{name:t.description});expect((input as HTMLInputElement).value).toBe("");await user.type(input,name);await user.click(screen.getByRole("button",{name:t.save}));await screen.findByText(name);}
+  expect(versions).toEqual([1,2]);
 });

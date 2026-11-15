@@ -52,7 +52,8 @@ export function TreatmentEditor({
   const changed =
     !!plan &&
     !!review.data &&
-    (!latestPlan || latestPlan.status !== plan.status ||
+    (!latestPlan ||
+      latestPlan.status !== plan.status ||
       (item
         ? latestPlan.items.find((row) => row.id === item.id)?.editVersion !==
           item.editVersion
@@ -69,7 +70,13 @@ export function TreatmentEditor({
   const guard = useDraftGuard(
     dirty,
     write.isPending,
-    () => { setName(originalName); setNotes(originalNotes); setLocation(item?.location??""); setReason(""); setIssue(null); },
+    () => {
+      setName(originalName);
+      setNotes(originalNotes);
+      setLocation(item?.location ?? "");
+      setReason("");
+      setIssue(null);
+    },
     onNavigationGuardChange,
   );
   async function save(event: React.FormEvent) {

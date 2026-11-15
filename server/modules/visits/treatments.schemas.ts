@@ -52,3 +52,30 @@ export type PlanCreate = z.infer<typeof planCreateSchema>;
 export type PlanEdit = z.infer<typeof planEditSchema>;
 export type ItemCreate = z.infer<typeof itemCreateSchema>;
 export type ItemEdit = z.infer<typeof itemEditSchema>;
+export const procedureCreateSchema = z.discriminatedUnion("source", [
+  z
+    .object({
+      source: z.literal("plan"),
+      id: uuidSchema,
+      visitVersion: version,
+      itemId: uuidSchema,
+      itemVersion: version,
+      notes,
+    })
+    .strict(),
+  z
+    .object({
+      source: z.literal("standalone"),
+      id: uuidSchema,
+      visitVersion: version,
+      description: title,
+      location: z.string().trim().max(80),
+      notes,
+    })
+    .strict(),
+]);
+export const procedureVoidSchema = z
+  .object({ editVersion: version, reason })
+  .strict();
+export type ProcedureCreate = z.infer<typeof procedureCreateSchema>;
+export type ProcedureVoid = z.infer<typeof procedureVoidSchema>;

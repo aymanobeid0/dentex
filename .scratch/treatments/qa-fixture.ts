@@ -19,5 +19,12 @@ if(!clinic) {
   await db.visit.create({data:{clinicId:clinic.id,attendanceId:attendance.id,patientId:p.id,doctorId:user.id,createdBy:user.id,startedAt:new Date()}});
 }
 const patient=await db.patient.findFirstOrThrow({where:{clinicId:clinic.id}});
+if(process.argv.includes("--new-visit")){
+  const doctor=await db.user.findFirstOrThrow({where:{clinicId:clinic.id,username:"qa.dentist"}});
+  if(!await db.visit.findFirst({where:{clinicId:clinic.id,status:"in_progress"}})){
+    const row=await db.attendance.create({data:{clinicId:clinic.id,patientId:patient.id,doctorId:doctor.id,createdBy:doctor.id,status:"with_doctor",editVersion:2}});
+    await db.visit.create({data:{clinicId:clinic.id,attendanceId:row.id,patientId:patient.id,doctorId:doctor.id,createdBy:doctor.id,startedAt:new Date()}});
+  }
+}
 console.log(JSON.stringify({patientId:patient.id,clinicCode:clinic.code}));
 await db.$disconnect();
