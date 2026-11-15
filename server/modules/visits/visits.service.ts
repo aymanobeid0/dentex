@@ -195,6 +195,7 @@ export function createVisitsService(
         if (row.editVersion !== input.editVersion)
           throw new VisitsError("edit_conflict");
         if (row.visit) throw new VisitsError("genuine_visit_delete_forbidden");
+        for(const entry of row.invalidEntries??[])if(await scope.treatments.hasHistory(actor.clinicId,entry.id))throw new ApplicationError("treatment_history_exists");
         await invalidateLinks(
           scope,
           actor.clinicId,
@@ -236,6 +237,7 @@ export function createVisitsService(
             next = { status: "left_before_entry", recordedEndAt: at };
             break;
           case "invalidate_entry":
+            if(row.visit&&await scope.treatments.hasHistory(actor.clinicId,row.visit.id))throw new ApplicationError("treatment_history_exists");
             if (
               !row.visit ||
               !["in_progress", "completed", "auto_closed"].includes(

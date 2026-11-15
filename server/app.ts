@@ -23,6 +23,8 @@ import { createAppointmentsController } from "./modules/appointments/appointment
 import { appointmentsRouter } from "./modules/appointments/appointments.routes";
 import { createVisitsController } from "./modules/visits/visits.controller";
 import { visitsRouter } from "./modules/visits/visits.routes";
+import { createTreatmentsController } from "./modules/visits/treatments.controller";
+import { treatmentsRouter } from "./modules/visits/treatments.routes";
 
 export const prisma = createPrismaClient();
 export const app = express();
@@ -77,6 +79,10 @@ app.use(
 app.use(
   "/api/clinic/appointments",
   appointmentsRouter(createAppointmentsController(services.appointments)),
+);
+app.use(
+  "/api/clinic/visits",
+  treatmentsRouter(createTreatmentsController(services.treatments)),
 );
 app.use(
   "/api/clinic/visits",

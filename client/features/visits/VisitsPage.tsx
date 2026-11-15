@@ -25,7 +25,9 @@ import {
   useAttendanceReview,
 } from "./queries";
 import { type Attendance, type PatientChoice } from "./api";
+import {VisitTreatments} from "./VisitTreatments";
 type Props = {
+  canTreat?:boolean;
   lang: Lang;
   onExpired: () => void;
   onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
@@ -145,6 +147,7 @@ export function VisitsPage(props: Props) {
                         </div>
                         <div className="visits-actions">
                           <AttendanceCorrections row={row} {...props} />
+                          {row.visit&&props.canTreat&&<VisitTreatments attendanceId={row.id} lang={lang} onExpired={onExpired} onNavigationGuardChange={props.onNavigationGuardChange}/>}
                           {row.visit && (
                             <button
                               className="ui-button"

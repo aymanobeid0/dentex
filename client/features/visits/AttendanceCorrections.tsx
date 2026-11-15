@@ -196,6 +196,8 @@ function CorrectionDialog({
       if (error instanceof ApiError && error.status === 404) setMissing(true);
       else if (error instanceof ApiError && error.status === 403)
         setIssue(t.readDenied);
+      else if(error instanceof ApiError&&error.code==="treatment_history_exists")
+        setIssue(lang==="ar"?"تحتوي الزيارة تاريخ علاج محفوظًا؛ لا يمكن إبطال الدخول أو حذف الحضور إداريًا. صحح تسجيل العلاج من الإجراءات العلاجية.":"La visite contient un historique de soins conservé ; l’entrée et la présence ne peuvent pas être invalidées administrativement. Corrigez l’acte depuis les actes réalisés.");
       else if (error instanceof ApiError && error.status === 401) onExpired();
       else setReviewFailed(true);
     } finally {

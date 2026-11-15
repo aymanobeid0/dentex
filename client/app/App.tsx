@@ -21,7 +21,7 @@ import {
   AppointmentsPage,
   PatientAppointments,
 } from "../features/appointments";
-import { VisitsPage, PatientVisits } from "../features/visits";
+import { VisitsPage, PatientVisits, PatientTreatmentPlans } from "../features/visits";
 import { RolePermissionsPage } from "../features/roles";
 import { LanguageSwitch, translations, useLanguage } from "../shared/i18n";
 import type { NavigationGuard } from "../ui/useDraftGuard";
@@ -463,6 +463,7 @@ function SessionApp({
         </>
       ) : page === "patients" ? (
         <PatientPage
+          renderTreatmentPlans={(patient) => <PatientTreatmentPlans key={patient.id} patient={patient} lang={lang} canTreat={account.kind === "clinic" && account.roles.some(role=>["admin","dentist"].includes(role))} onExpired={expire} onNavigationGuardChange={registerVisitGuard}/>}
           onSectionChangeRequest={requestClinicLeave}
           renderVisits={(patient) => (
             <PatientVisits
@@ -470,6 +471,7 @@ function SessionApp({
               patient={patient}
               lang={lang}
               canRead={canAccessVisits}
+              canTreat={account.kind === "clinic" && account.roles.some(role=>["admin","dentist"].includes(role))}
               onNavigationGuardChange={registerVisitGuard}
               onExpired={expire}
             />
@@ -513,6 +515,7 @@ function SessionApp({
         />
       ) : page === "visits" ? (
         <VisitsPage
+          canTreat={account.kind === "clinic" && account.roles.some(role=>["admin","dentist"].includes(role))}
           lang={lang}
           onExpired={expire}
           onNavigationGuardChange={registerPageGuard}

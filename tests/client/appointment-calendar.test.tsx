@@ -252,6 +252,26 @@ it.each(["ar", "fr"] as const)(
 );
 
 it.each(["ar", "fr"] as const)(
+  "opens a day hour with its date/time and returns keyboard focus without a dirty draft in %s",
+  async (lang) => {
+    transport();
+    const t=translations[lang].appointments,user=userEvent.setup();
+    renderPatient(<AppointmentsPage lang={lang} canRead canWrite onExpired={vi.fn()}/>);
+    await user.click(screen.getByRole("button",{name:t.filters}));
+    await chooseDate(user,t.date,"2090-01-01",lang);
+    const hour=await screen.findByRole("button",{name:t.bookAt+" 14:00"});
+    await user.click(hour);
+    const dialog=screen.getByRole("dialog",{name:t.title});
+    expect(within(dialog).getByLabelText(t.date).getAttribute("value")).toBe("2090-01-01");
+    expect(within(dialog).getByLabelText(t.time).getAttribute("value")).toBe("14:00");
+    await user.click(within(dialog).getByRole("button",{name:t.close}));
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    await waitFor(()=>expect(document.activeElement).toBe(hour));
+    hour.focus();await user.keyboard("{Enter}");
+    expect(screen.getByRole("dialog",{name:t.title})).toBeTruthy();
+  },
+);
+it.each(["ar", "fr"] as const)(
   "books from a day hour with an editable initial time and a clean next booking in %s",
   async (lang) => {
     const t = translations[lang].appointments,
@@ -301,12 +321,6 @@ it.each(["ar", "fr"] as const)(
     expect(within(dialog).getByLabelText(t.time).getAttribute("value")).toBe(
       "14:00",
     );
-    await user.click(within(dialog).getByRole("button", { name: t.close }));
-    expect(screen.queryByRole("alertdialog")).toBeNull();
-    await waitFor(() => expect(document.activeElement).toBe(hour));
-    hour.focus();
-    await user.keyboard("{Enter}");
-    dialog = screen.getByRole("dialog", { name: t.title });
     await user.type(
       within(dialog).getByRole("combobox", { name: t.patientSearch }),
       "Calendar",

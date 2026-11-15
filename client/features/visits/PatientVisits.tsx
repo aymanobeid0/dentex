@@ -10,17 +10,20 @@ import { useRef, useState } from "react";
 import { translations, type Lang } from "../../shared/i18n";
 import { usePatientHistory } from "./queries";
 import { arrivalTime } from "./visits.format";
+import {VisitTreatments} from "./VisitTreatments";
 
 export function PatientVisits({
   patient,
   lang,
   canRead,
+  canTreat=false,
   onExpired,
   onNavigationGuardChange,
 }: {
   patient: { id: string; name: string; fileNumber: string; archived: boolean };
   lang: Lang;
   canRead: boolean;
+  canTreat?:boolean;
   onExpired: () => void;
   onNavigationGuardChange?: (guard: NavigationGuard | null) => void;
 }) {
@@ -128,6 +131,7 @@ export function PatientVisits({
                     )}
                   </div>
                   <div className="visits-actions">
+                    {row.visit&&canTreat&&<VisitTreatments attendanceId={row.id} lang={lang} onExpired={onExpired} onNavigationGuardChange={onNavigationGuardChange}/>}
                     <AttendanceCorrections
                       row={row}
                       lang={lang}
