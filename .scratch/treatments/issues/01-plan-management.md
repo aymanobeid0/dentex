@@ -13,4 +13,6 @@
 - [x] Browser, targeted tests, architecture/style/build checks and independent Standards/Spec review recorded in ../01-verification.md.
 
 ## Comments
+PR: https://github.com/aymanobeid0/dentex/pull/16 — open, no human acceptance or merge implied.
+
 Spec: ../spec.md. User delegated product/interface decisions; no interview or approval pause.

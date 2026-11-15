@@ -15,4 +15,6 @@
 - [x] Final full suite592/592, independent reviews, safe cumulative dev migration/backup/preservation and check:dev completed.
 
 ## Comments
+PR: https://github.com/aymanobeid0/dentex/pull/16 — open, no human acceptance or merge implied.
+
 Evidence: [integration](../integration-verification.md), [review](../02-review.md), [browser](../browser-verification.md). Ready for human review, not accepted/closed. No push/PR/merge/deployment.
