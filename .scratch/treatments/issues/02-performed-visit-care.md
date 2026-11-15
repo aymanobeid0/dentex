@@ -17,4 +17,4 @@
 ## Comments
 PR: https://github.com/aymanobeid0/dentex/pull/16 — open, no human acceptance or merge implied.
 
-Evidence: [integration](../integration-verification.md), [review](../02-review.md), [browser](../browser-verification.md). Ready for human review, not accepted/closed. No push/PR/merge/deployment.
+Evidence: [integration](../integration-verification.md), [review](../02-review.md), [browser](../browser-verification.md). Published in PR16 at the user's request. Ready for human review, not accepted/closed; no merge/deployment.
